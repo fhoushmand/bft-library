@@ -1,0 +1,22 @@
+Changed the java.security config file in order to remove "NULL" tls algorithm from the disabled tls algorithms
+Otherwise, handshake will fail
+    My secuirty file location: (this might be different on other machines - look at initialize function in security class)
+        /home/farzin/.jdks/openjdk-14.0.2/conf/security/java.security
+
+
+
+To create a replicated register, follow the steps below:
+    1) create "hosts.config{#}" file under config/ directory. This file includes the list of hosts with their ip address and connection ports.
+       It comes from the quorum of the object that can host it.
+    2) create "system.config{#}" file under config/ directory similar to the existing file. The parameters are selfe explanatory.
+        Added "system.servers.processNumber = #" entry to the system.config file
+        It assigns a unique processNumber to each cluster. This is done to let multiple clusters run on same set of hosts if needed
+        hosts.config{#} and currenView{#} are needed and created according to the {#}
+    3) Create and run multiple instances of "RegisterServer<T>" with three arguments:
+        first is the type of the register, we support: "Integer", "Float" and "String"
+        second is the replica processNumber (must match the processNumber of the hosts.config and system.config)
+        third is the cluster processNumber -> you need to keep track of cluster ids to the memory location each cluster stores
+        normaly, each variable in the program must be stored in a replicated register. keep a mapping from cluster processNumber to
+        variables.
+    4) Create instances of RegisterClient<T>(clientID, clusterID) per program variable, you can call write(a) and read() on it
+        Look at RegisterClient<T> class, main function for a test
