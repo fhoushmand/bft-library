@@ -12,10 +12,10 @@
             Building the .jar file.
         </echo>
 	</target>
-	<path processNumber="libs">
+	<path id="libs">
 		<fileset dir="${lib}" includes="*.jar" />
 	</path>
-	<path processNumber="classpath.test">
+	<path id="classpath.test">
 			<fileset dir="${lib.dir}" includes="*.jar" />
 		    <pathelement location="${dist.dir}" />
   </path>

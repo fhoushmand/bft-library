@@ -9,6 +9,11 @@ public class Quorum {
     {
         nodes = new TreeSet<>();
     }
+    public Quorum(int node)
+    {
+        nodes = new TreeSet<>();
+        nodes.add(node);
+    }
 
     public void addNode(int n)
     {

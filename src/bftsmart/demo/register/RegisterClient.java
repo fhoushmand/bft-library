@@ -22,6 +22,7 @@ public class RegisterClient<T>{
 
 	ServiceProxy serviceProxy;
 
+
 	public RegisterClient(int clientId, int clusterId) {
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

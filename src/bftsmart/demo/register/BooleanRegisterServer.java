@@ -14,7 +14,8 @@ public class BooleanRegisterServer extends DefaultSingleRecoverable {
     private boolean memory;
     private Logger logger;
 
-    public BooleanRegisterServer(int id, int clusterId) {
+    public BooleanRegisterServer(boolean init, int id, int clusterId) {
+        memory = init;
         logger = Logger.getLogger(MapServer.class.getName());
         new ServiceReplica(id, this, this, clusterId);
     }
@@ -24,14 +25,7 @@ public class BooleanRegisterServer extends DefaultSingleRecoverable {
             System.out.println("Usage: demo.map.RegisterServer <Type> <server id> <cluster id>");
             System.exit(-1);
         }
-        String type = args[0];
-        switch (type){
-            case "Boolean":
-                new BooleanRegisterServer(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-                break;
-            default:
-                throw new RuntimeException("Type is not supported");
-        }
+        new BooleanRegisterServer(Boolean.parseBoolean(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
     @Override

@@ -14,24 +14,18 @@ public class IntegerRegisterServer extends DefaultSingleRecoverable {
     private int memory;
     private Logger logger;
 
-    public IntegerRegisterServer(int id, int clusterId) {
+    public IntegerRegisterServer(int init, int id, int clusterId) {
+        memory = init;
         logger = Logger.getLogger(MapServer.class.getName());
         new ServiceReplica(id, this, this, clusterId);
     }
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: demo.map.RegisterServer <Type> <server id> <cluster id>");
+            System.out.println("Usage: demo.map.RegisterServer <init_value> <server id> <cluster id>");
             System.exit(-1);
         }
-        String type = args[0];
-        switch (type){
-            case "Integer":
-                new IntegerRegisterServer(Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-                break;
-            default:
-                throw new RuntimeException("Type is not supported");
-        }
+        new IntegerRegisterServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
     @Override

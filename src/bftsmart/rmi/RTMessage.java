@@ -27,22 +27,24 @@ import java.io.*;
  */
 public class RTMessage extends SystemMessage implements Externalizable, Comparable, Cloneable {
 
-	private RTMessageType type; // request type: application or reconfiguration request
-
+	//method name
 	private byte[] method;
+
 	private Object arg;
 
-	// There is a sequence number for ordered and anothre for unordered messages
-	private int sequence;
-	private int operationId; // Sequence number defined by the client
+	private int operationId; // Sequence number from the runtime
 
+	//currently not used
 	private byte[] content = null; // Content of the message
 
+
 	//the fields bellow are not serialized!!!
-	private transient int id; // ID for this message. It should be unique
+
+	//message identifier
+	//concatanation of method::operationId in string
+	private transient String methodIdentifier;
 
 	public transient long timestamp = 0; // timestamp to be used by the application
-
 
 	public transient int destination = -1; // message destination
 	public transient boolean signed = false; // is this message signed?
@@ -81,20 +83,31 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 	 * Creates a new instance of RTMessage. This one has an operationId parameter
 	 * used for FIFO executions
 	 * @param sender The client processNumber
-	 * @param sequence The sequence number created based on the message type
+//	 * @param sequence The sequence number created based on the message type
 	 * @param operationId The operation sequence number disregarding message type
 	 * @param content The command to be executed
-	 * @param type Ordered or Unordered request
 	 */
-	public RTMessage(int sender, int sequence, int operationId, byte[] method, Object arg, byte[] content, RTMessageType type) {
+	public RTMessage(int sender, int operationId, byte[] method, Object arg, byte[] content) {
 		super(sender);
-		this.sequence = sequence;
+//		this.sequence = sequence;
 		this.operationId = operationId;
-		buildId();
+//		buildId();
 		this.method = method;
 		this.arg = arg;
 		this.content = content;
-		this.type = type;
+		setMethodIdentifier();
+	}
+
+
+	public String getMethodIdentifier() {
+		return methodIdentifier;
+	}
+
+	public void setMethodIdentifier() {
+		String uniqueId = sender + "";
+		uniqueId += "::";
+		uniqueId += String.valueOf(operationId);
+		this.methodIdentifier = uniqueId;
 	}
 
 	public String getMethodName() { return new String(method); }
@@ -105,25 +118,22 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 	 * Retrieves the sequence number defined by the client
 	 * @return The sequence number defined by the client
 	 */
-	public int getSequence() {
-		return sequence;
-	}
+//	public int getSequence() {
+//		return sequence;
+//	}
 	
 	public int getOperationId() {
 		return operationId;
 	}
 
-	public RTMessageType getReqType() {
-		return type;
-	}
 
-	/**
-	 * Retrieves the ID for this message. It should be unique
-	 * @return The ID for this message.
-	 */
-	public int getId() {
-		return id;
-	}
+//	/**
+//	 * Retrieves the ID for this message. It should be unique
+//	 * @return The ID for this message.
+//	 */
+//	public int getId() {
+//		return id;
+//	}
 
 	/**
 	 * Retrieves the content of the message
@@ -151,8 +161,9 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		}
 
 		RTMessage mc = (RTMessage) o;
-
-		return (mc.getSender() == sender) && (mc.getSequence() == sequence) && (mc.getOperationId() == operationId);
+//		return (mc.getSender() == sender) && (mc.getSequence() == sequence) && (mc.getOperationId() == operationId);
+		//changed
+		return mc.getMethodIdentifier().equals(getMethodIdentifier());
 	}
 
 	@Override
@@ -161,12 +172,12 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		hash = 59 * hash + this.sequence;
 		hash = 59 * hash + this.getSender();
 		hash = 59 * hash + this.getOperationId();*/
-		return this.id;
+		return toString().hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "[" + sender + ":" + sequence + "]";
+		return "[" + sender + ":" + new String(method) + ":" + methodIdentifier + ":" + arg + "]";
 	}
 
 	public void wExternal(DataOutput out) throws IOException {
@@ -179,8 +190,7 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		out.writeInt(TOMUtil.getBytes(arg).length);
 		out.write(TOMUtil.getBytes(arg));
 
-		out.writeInt(type.toInt());
-		out.writeInt(sequence);
+//		out.writeInt(sequence);
 		out.writeInt(operationId);
 		
 		if (content == null) {
@@ -204,8 +214,7 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		in.readFully(objectBytes);
 		arg = TOMUtil.getObject(objectBytes);
 
-		type = RTMessageType.fromInt(in.readInt());
-		sequence = in.readInt();
+//		sequence = in.readInt();
 		operationId = in.readInt();
 		int toRead = in.readInt();
 		if (toRead != -1) {
@@ -213,28 +222,41 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 			in.readFully(content);
 		}
 
-		buildId();
+//		buildId();
+		setMethodIdentifier();
 	}
 
 	/**
 	 * Used to build an unique processNumber for the message
 	 */
-	 private void buildId() {
-		 //processNumber = (sender << 20) | sequence;
-             	int hash = 5;
- 		hash = 59 * hash + this.getSender();               
-		hash = 59 * hash + this.sequence;
-		id = hash;
-	 }
+//	private void buildIdentifier() {
+//		//processNumber = (sender << 20) | sequence;
+//		int hash = 5;
+//		hash = 59 * hash + this.getSender(); //sender
+//		hash = 59 * hash + method;
+//		hash = 59 * hash + this.sequence;
+//		id = hash;
+//	}
 
-	 /**
-	  * Retrieves the process ID of the sender given a message ID
-	  * @param id Message ID
-	  * @return Process ID of the sender
-	  */
-	 public static int getSenderFromId(int id) {
-		 return id >>> 20;
-	 }
+	/**
+	 * Used to build an unique processNumber for the message
+	 */
+//	 private void buildId() {
+//		 //processNumber = (sender << 20) | sequence;
+//             	int hash = 5;
+// 		hash = 59 * hash + this.getSender();
+////		hash = 59 * hash + this.sequence;
+//		id = hash;
+//	 }
+
+//	 /**
+//	  * Retrieves the process ID of the sender given a message ID
+//	  * @param id Message ID
+//	  * @return Process ID of the sender
+//	  */
+//	 public static int getSenderFromId(int id) {
+//		 return id >>> 20;
+//	 }
 
 	 public static byte[] messageToBytes(RTMessage m) {
 		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -262,6 +284,7 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		 return m;
 	 }
 
+	 //TODO unchecked
 	 @Override
 	 public int compareTo(Object o) {
 		 final int BEFORE = -1;
@@ -278,10 +301,10 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		 if (this.getSender() > tm.getSender())
 			 return AFTER;
 
-		 if (this.getSequence() < tm.getSequence())
-			 return BEFORE;
-		 if (this.getSequence() > tm.getSequence())
-			 return AFTER;
+//		 if (this.getSequence() < tm.getSequence())
+//			 return BEFORE;
+//		 if (this.getSequence() > tm.getSequence())
+//			 return AFTER;
 
 		 if(this.getOperationId() < tm.getOperationId())
 			 return BEFORE;
@@ -295,8 +318,8 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 	 public Object clone() throws CloneNotSupportedException {
              
                           
-                    RTMessage clone = new RTMessage(sender, sequence,
-                            operationId, method, arg, content, type);
+                    RTMessage clone = new RTMessage(sender,
+                            operationId, method, arg, content);
 
 
                     clone.authenticated = this.authenticated;
