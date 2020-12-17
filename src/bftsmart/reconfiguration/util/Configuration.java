@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import bftsmart.runtime.RMIRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ import bftsmart.tom.util.KeyLoader;
 import bftsmart.tom.util.TOMUtil;
 
 public class Configuration {
+
 
 	private Logger logger;
 
@@ -328,7 +330,10 @@ public class Configuration {
 		configs = new HashMap<>();
 		try {
 			if (configHome == null || configHome.equals("")) {
-				configHome = "config";
+				if(RMIRuntime.test)
+					configHome = "testconfig";
+				else
+					configHome = "config";
 			}
 			String sep = System.getProperty("file.separator");
 			//

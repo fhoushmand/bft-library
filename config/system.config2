@@ -72,11 +72,18 @@ system.servers.quorums = 1,2/1,2,3/1,3,4/1,2,3,4
 #Fail-prone system
 system.servers.bs = 2/3,4
 
-#Number of servers in the group 
+#Number of servers in the group
+# OT usecase
 system.servers.num = 4
+# Test
+# system.servers.num = 1
 
-#Maximum number of faulty replicas 
+
+#Maximum number of faulty replicas
+# OT usecase
 system.servers.f = 1
+# Test
+# system.servers.f = 0
 
 #Timeout to asking for a client request. This value should be greater than the batch timeout
 system.totalordermulticast.timeout = 2000
@@ -160,7 +167,10 @@ system.totalordermulticast.sync_ckp = false
 
 #Replicas ID for the initial view, separated by a comma.
 # The number of replicas in this parameter should be equal to that specified in 'system.servers.num'
+# OT usecase
 system.initial.view = 7,8,9,10
+# Test
+# system.initial.view = 2
 
 #The ID of the trust third party (TTP)
 system.ttp.processNumber = 7002

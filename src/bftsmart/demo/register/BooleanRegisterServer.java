@@ -46,7 +46,7 @@ public class BooleanRegisterServer extends DefaultSingleRecoverable {
                     memory = newVal;
                     hasReply = true;
                     break;
-                default:
+                 default:
                     logger.log(Level.WARNING, "in appExecuteOrdered only write operations are supported");
             }
             if (hasReply) {
