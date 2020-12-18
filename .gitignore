@@ -1,5 +1,4 @@
-bin/bftsmart
-bin/qsbftsmart
+bin/*
 config/currentView*
 myconfig/currentView*
 test
