@@ -110,7 +110,6 @@ public class RMIRuntime{
         {
             for(int i = 0; i < 10; i++)
                 ((OTClient)o).transfer(i);
-            runtime.shutdown();
         }
     }
 
