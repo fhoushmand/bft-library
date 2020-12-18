@@ -1,11 +1,5 @@
 package bftsmart.usecase;
-
-import bftsmart.demo.register.BooleanRegisterServer;
-import bftsmart.demo.register.IntegerRegisterServer;
-import bftsmart.demo.register.RegisterClient;
-import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.RMIRuntime;
-import bftsmart.runtime.ServerCommunicationSystem;
 import bftsmart.runtime.quorum.H;
 import bftsmart.runtime.quorum.Q;
 import bftsmart.runtime.quorum.QAnd;
