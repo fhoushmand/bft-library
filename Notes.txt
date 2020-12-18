@@ -20,3 +20,8 @@ To create a replicated register, follow the steps below:
         variables.
     4) Create instances of RegisterClient<T>(clientID, clusterID) per program variable, you can call write(a) and read() on it
         Look at RegisterClient<T> class, main function for a test
+
+
+
+To run on cluster, make sure you load java/11 module, otherwise
+"InvalidKeyStoreFormat" is thrown

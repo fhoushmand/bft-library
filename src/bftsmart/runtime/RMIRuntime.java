@@ -105,12 +105,8 @@ public class RMIRuntime{
 
         if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
         {
-            String work = "";
-            Scanner input = new Scanner(System.in);
-            while(!work.equals("exit")){
-                work = input.nextLine();
-                ((OTClient)o).transfer(Integer.valueOf(work));
-            }
+            for(int i = 0; i < 10; i++)
+                ((OTClient)o).transfer(i);
             runtime.shutdown();
         }
     }
