@@ -40,8 +40,12 @@
 
 <!--  <logger name="bftsmart.consensus.roles.Acceptor" level="TRACE"></logger>-->
   <logger name="bftsmart.runtime.RMIRuntime" level="TRACE"></logger>
+  <logger name="bftsmart.usecase.oblivioustransfer.OTA" level="TRACE"></logger>
+  <logger name="bftsmart.usecase.oblivioustransfer.OTB" level="TRACE"></logger>
+  <logger name="bftsmart.usecase.oblivioustransfer.OTClient" level="TRACE"></logger>
 
-<!--   <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>-->
+
+  <!--   <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>-->
 <!--  <logger name="bftsmart.reconfiguration.util.RSAKeyLoader" level="TRACE"></logger>-->
   
 </configuration>

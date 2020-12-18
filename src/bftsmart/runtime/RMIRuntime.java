@@ -181,8 +181,8 @@ public class RMIRuntime{
     {
         String mId = method + n.getAndIncrement();
         RTMessage tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), v, null);
-        System.out.println("sending message with id: " + tmm.toString() + " to " + String.join(" ", Arrays.stream(methodsHosts.get(method)).mapToObj(String::valueOf).toArray(String[]::new)));
-        System.out.println("sending method with id: " + mId);
+//        System.out.println("sending message with id: " + tmm.toString() + " to " + String.join(" ", Arrays.stream(methodsHosts.get(method)).mapToObj(String::valueOf).toArray(String[]::new)));
+//        System.out.println("sending method with id: " + mId);
         cs.send(methodsHosts.get(method), tmm);
     }
 
@@ -259,7 +259,7 @@ public class RMIRuntime{
     public Object executeMethod(Method m, Object obj, Object... args)
     {
         try {
-            System.out.println("executing method " + m.getName() + " at " + id);
+//            System.out.println("executing method " + m.getName() + " at " + id);
             return m.invoke(obj, args);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
