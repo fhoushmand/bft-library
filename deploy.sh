@@ -26,11 +26,9 @@ do
         sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime $a 1 bftsmart.usecase.oblivioustransfer.OTA&
 done
 
-for b in {7..9}
+for b in {7..10}
 do
         sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime $b 2 bftsmart.usecase.oblivioustransfer.OTB&
 done
-
-sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime 10 2 bftsmart.usecase.oblivioustransfer.OTB;
 
 sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime 11 3 bftsmart.usecase.oblivioustransfer.OTClient
