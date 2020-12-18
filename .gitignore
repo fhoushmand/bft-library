@@ -1,4 +1,4 @@
-bin/*
+bin
 config/currentView*
 myconfig/currentView*
 test
