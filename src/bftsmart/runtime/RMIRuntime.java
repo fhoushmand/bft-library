@@ -100,6 +100,9 @@ public class RMIRuntime{
 
         PartitionedObject o = (PartitionedObject) Class.forName(className).getConstructor().newInstance();
 
+        if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
+            Thread.sleep(1000);
+
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         o.setRuntime(runtime);
 

@@ -1,7 +1,9 @@
 Changed the java.security config file in order to remove "NULL" tls algorithm from the disabled tls algorithms
 Otherwise, handshake will fail
-    My secuirty file location: (this might be different on other machines - look at initialize function in security class)
-        /home/farzin/.jdks/openjdk-14.0.2/conf/security/java.security
+to do so, redefine "jdk.tls.disabledAlgorithms=SSLv3, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, anon"
+in the config/java.security file (notice there is no NULL)
+NULL is for when there is no check I assume.
+need to change for production
 
 
 
