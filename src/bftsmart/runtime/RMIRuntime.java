@@ -12,8 +12,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
@@ -31,6 +31,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RMIRuntime{
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private java.util.logging.Logger javaLogger = java.util.logging.Logger.getLogger(this.getClass().getName());
 
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
@@ -53,13 +55,13 @@ public class RMIRuntime{
     //counter for the object method invocations
     //counter is simply a sequence number appended to operationId to uniquely identify method invocations
     //n
-    AtomicInteger n = new AtomicInteger(0);
+//    AtomicInteger n = new AtomicInteger(0);
     //methodIdentifier -> methodId::counter
     //operationId in the RTMessage is the counter of the runtime
 
     //mapping from methodIdentifier -> return value
     //this is to make sure that we don't execute a method multiple times
-    HashMap<String,Object> methodsRecord = new HashMap<>();
+//    HashMap<String,Object> methodsRecord = new HashMap<>();
 
     //sequential objects state
     //mapping from objects(names) to states (objects state)
@@ -101,15 +103,29 @@ public class RMIRuntime{
         PartitionedObject o = (PartitionedObject) Class.forName(className).getConstructor().newInstance();
 
         if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
-            Thread.sleep(20000);
+            Thread.sleep(5000);
 
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         o.setRuntime(runtime);
 
+        Scanner input = new Scanner(System.in);
+
         if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
         {
-            for(int i = 0; i < 10; i++)
-                ((OTClient)o).transfer(i);
+//            for(int i = 0; i < 10; i++)
+//                ((OTClient)o).transfer(i);
+//            ((OTClient)o).transfer(0);
+//            Thread.sleep(3000);
+//            ((OTClient)o).transfer(1);
+//            Thread.sleep(3000);
+//            ((OTClient)o).transfer(2);
+            while (input.hasNext()) {
+                String value = input.nextLine();
+                if (value.equals("exit"))
+                    break;
+                ((OTClient) o).transfer(Integer.valueOf(value));
+            }
+
         }
     }
 
@@ -156,33 +172,68 @@ public class RMIRuntime{
     }
 
     // ObjCall
-    public Object invokeObj(String obj, String method, Object... v)
+    public Object invokeObj(String obj, String method, Object... args)
     {
-        String methodId = obj+"_"+method+"::"+n.get();
-        if(methodsRecord.containsKey(methodId))
-            return methodsRecord.get(methodId);
-        else{
+        int argsLength = args.length;
+        String objectCall = obj+"_"+method;
+        // normally it is the line below:
+//        String methodId = args[args.length-1] + "::" + n.getAndIncrement();
+
+        int n = (Integer) args[argsLength-1];
+        String mId = (String)args[argsLength-2] + "::" + n;
+
+//        String methodId = args[args.length-1] + "::" + method + "::" + n.getAndIncrement();
+
+//        logger.trace("cache: " + methodsRecord);
+        javaLogger.log(Level.WARNING, "obj call " + objectCall + " with method id " + mId);
+//        if(methodsRecord.containsKey(mId)) {
+//            System.out.println("Hitting cache for " + mId + " when calling " + obj + "." + method);
+//            return methodsRecord.get(mId);
+//        }
+//        else{
             try {
                 //TODO maybe later inject a class with partitioned methods - Done??
-                Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(obj+"_"+method));
-                Object returnValue = executeMethod(m, objectsState.get(obj), v);
-                methodsRecord.put(methodId, returnValue);
+                Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+
+                // the extra argument is the id of this object call
+                Object[] objectCallArgs = new Object[argsLength - 2 + 1];
+                int i = 0;
+                for (; i < argsLength - 2; i++)
+                    objectCallArgs[i] = args[i];
+                objectCallArgs[i] = mId;
+
+                Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
+//                methodsRecord.put(mId, returnValue);
                 return returnValue;
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
-        }
+//        }
+        javaLogger.log(Level.SEVERE, "must never happen");
         return null;
     }
 
     //ThisCallSend
     //TODO hard-coded argument???
-    public void invoke(String method, int v)
+    public void invoke(String method, Object... args)
     {
-        String mId = method + n.getAndIncrement();
-        RTMessage tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), v, null);
-//        System.out.println("sending message with id: " + tmm.toString() + " to " + String.join(" ", Arrays.stream(methodsHosts.get(method)).mapToObj(String::valueOf).toArray(String[]::new)));
-//        System.out.println("sending method with id: " + mId);
+        int argsLength = args.length;
+        // normally it is the line below
+//        String mId = (String)args[argsLength-1] + "::" + n.getAndIncrement();
+
+        int n = (Integer) args[argsLength-1];
+        String mId = (String)args[argsLength-2] + "::" + n;
+
+
+//        String mId = args[argsLength-1] + "::" + method + "::" + n.getAndIncrement();
+        RTMessage tmm = null;
+        if(argsLength > 2)
+             tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), (Integer)args[0], null);
+        else
+            tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), null, null);
+
+        tmm.setN(n);
+
         cs.send(methodsHosts.get(method), tmm);
     }
 
@@ -200,8 +251,11 @@ public class RMIRuntime{
                 q.addNode(sm.getSender());
                 network.put(sm, q);
             }
-            else
-                network.get(sm).addNode(sm.getSender());
+            else {
+                // don't accept messages for a quorum which is bot -> bot union n = bot
+                if(!network.get(sm).isBot())
+                    network.get(sm).addNode(sm.getSender());
+            }
             logger.trace("received invocation for {} with argument(s) {} from {} at node {}", methodName, sm.getArg(), sm.getSender(), id);
             checkExecution();
 
@@ -212,12 +266,15 @@ public class RMIRuntime{
     // Previously, this was checked by another thread
     public void checkExecution()
     {
-        ArrayList<RTMessage> methodsToRemove = new ArrayList<>();
         logger.trace("messages: " + network);
         for(Map.Entry<RTMessage,Quorum> mEntry : network.entrySet())
         {
             String method = mEntry.getKey().getMethodName();
             Quorum receivedQ = mEntry.getValue();
+
+            // don't consider quorums that are bot
+            if(receivedQ.isBot())
+                continue;
 
             if(receivedQ.isSubsetEqual(methodsQuorums.get(method))) {
                 Class[] argumentsTypeArray = methodArgs.get(method);
@@ -228,44 +285,61 @@ public class RMIRuntime{
                 //TODO support multi arguments. for now we only support
                 //TODO one argument. need to pass an array of objects as argument
                 //TODO to the network and deserialize the object array
+                // the last argument is the caller method Id
                 Object[] args = new Object[argumentsTypeArray.length];
-                for(int i = 0; i < argumentsTypeArray.length; i++)
+                // for ret method all of the arguments are relevant
+                for(int i = 0; i< (mEntry.getKey().getMethodName().equals("ret") ? argumentsTypeArray.length : argumentsTypeArray.length - 2); i++)
                 {
                     if(argumentsTypeArray[i].equals(Integer.class))
-                        args[i] = (Integer) mEntry.getKey().getArg();
+                        args[i] =  mEntry.getKey().getArg();
                     else if(argumentsTypeArray[i].equals(Boolean.class))
                     {
-                        args[i] = (Boolean) mEntry.getKey().getArg();
+                        args[i] =  mEntry.getKey().getArg();
                     }
                     else
                         throw new RuntimeException("unsupported type " + methodArgs.get(method));
                 }
+                // setting the callerId except if it is "ret"
+                if(!mEntry.getKey().getMethodName().equals("ret")) {
+                    args[argumentsTypeArray.length - 1] = mEntry.getKey().getN();
+                    args[argumentsTypeArray.length - 2] = mEntry.getKey().getOperationId();
+                }
 
                 try {
-                    //TODO maybe later inject a class with partitioned methods - Done??
                     Method m = obj.getClass().getMethod(method, methodArgs.get(method));
                     executeMethod(m, obj, args);
-                    methodsToRemove.add(mEntry.getKey());
+                    // to make this quorum bot
+                    network.get(mEntry.getKey()).setBot();
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 }
             }
         }
-        for(RTMessage removedMethod : methodsToRemove)
-            network.remove(removedMethod);
-
     }
 
     public Object executeMethod(Method m, Object obj, Object... args)
     {
         try {
 //            System.out.println("executing method " + m.getName() + " at " + id);
-            return m.invoke(obj, args);
+            logger.trace("executing method {}", m.getName());
+            Object returnValue = m.invoke(obj, args);
+
+            // only print return value if it is not void
+            if(!m.getReturnType().equals(Void.TYPE)) {
+                if (returnValue instanceof Boolean)
+                    logger.trace("return value: {}", (Boolean) returnValue);
+                else if (returnValue instanceof Integer)
+                    logger.trace("return value: {}", (Integer) returnValue);
+                else
+                    logger.trace("return value: {}", returnValue);
+            }
+            return returnValue;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+        javaLogger.log(Level.SEVERE, "must never happen!");
         return null;
     }
 }

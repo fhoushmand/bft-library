@@ -5,6 +5,7 @@ import bftsmart.runtime.quorum.Q;
 import bftsmart.runtime.quorum.QAnd;
 import bftsmart.runtime.quorum.QOr;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PartitionedObject {
     protected RMIRuntime runtime;
@@ -39,19 +40,21 @@ public class PartitionedObject {
         Client.addHost(11);
 
         argsMap = new HashMap<>();
-        argsMap.put("m4", new Class[]{Integer.class});
-        argsMap.put("m3", new Class[]{Integer.class});
-        argsMap.put("m2", new Class[]{});
-        argsMap.put("m1", new Class[]{});
+        argsMap.put("m4", new Class[]{Integer.class,String.class,Integer.class});
+        argsMap.put("m3", new Class[]{Integer.class,String.class,Integer.class});
+        argsMap.put("m2", new Class[]{String.class,Integer.class});
+        argsMap.put("m1", new Class[]{String.class,Integer.class});
+
+        // always here
         argsMap.put("ret", new Class[]{Integer.class});
 
         //object fields methods
-        argsMap.put("i1_read", new Class[]{});
-        argsMap.put("i2_read", new Class[]{});
-        argsMap.put("a_read", new Class[]{});
-        argsMap.put("i1_write", new Class[]{Integer.class});
-        argsMap.put("i2_write", new Class[]{Integer.class});
-        argsMap.put("a_write", new Class[]{Boolean.class});
+        argsMap.put("i1_read", new Class[]{String.class});
+        argsMap.put("i2_read", new Class[]{String.class});
+        argsMap.put("a_read", new Class[]{String.class});
+        argsMap.put("i1_write", new Class[]{Integer.class,String.class});
+        argsMap.put("i2_write", new Class[]{Integer.class,String.class});
+        argsMap.put("a_write", new Class[]{Boolean.class,String.class});
 
 
         methodsH = new HashMap<>();

@@ -3,17 +3,16 @@ package bftsmart.demo.register;
 import bftsmart.tom.ServiceProxy;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Scanner;
 
-public class IntegerRegisterClient{
+public class BooleanRegisterClient2 {
 
 	ServiceProxy serviceProxy;
 
 	public static void main(String[] args)
 	{
 		Scanner in = new Scanner(System.in);
-		IntegerRegisterClient client = new IntegerRegisterClient(0, 4);
+		BooleanRegisterClient2 client = new BooleanRegisterClient2(1, 4);
 		int id = 0;
 		while (in.hasNext())
 		{
@@ -21,21 +20,22 @@ public class IntegerRegisterClient{
 			if(next.equals("exit"))
 				break;
 			System.out.println("old: " + client.read(String.valueOf(++id)));
-			client.write(Integer.parseInt(next),String.valueOf(++id));
+			client.write(Boolean.parseBoolean(next),String.valueOf(++id));
 			System.out.println("new: " + client.read(String.valueOf(++id)));
+
 		}
 	}
 
 
-	public IntegerRegisterClient(int clientId, int clusterId)
+	public BooleanRegisterClient2(int clientId, int clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}
 
-	public Integer write(Integer newVal, String id) {
+	public Boolean write(Boolean newVal, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-			 ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-
+				ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
+			
 			objOut.writeObject(RegisterRequestType.WRITE);
 
 			objOut.writeInt(id.getBytes().length);
@@ -45,41 +45,41 @@ public class IntegerRegisterClient{
 
 			objOut.flush();
 			byteOut.flush();
-
+			
 			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 			if (reply.length == 0)
 				return null;
 			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
-				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
-				return (Integer) objIn.readObject();
+					ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return (Boolean) objIn.readObject();
 			}
-
+				
 		} catch (IOException | ClassNotFoundException e) {
 			System.out.println("Exception writing value into register: " + e.getMessage());
 		}
 		return null;
 	}
 
-	public Integer read(String id) {
+	public Boolean read(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+			
+			 objOut.writeObject(RegisterRequestType.READ);
 
-			objOut.writeObject(RegisterRequestType.READ);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
-			objOut.flush();
-			byteOut.flush();
-
-			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
-			if (reply.length == 0)
-				return null;
-			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
-				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
-				return (Integer) objIn.readObject();
-			}
-
+			 objOut.writeInt(id.getBytes().length);
+			 objOut.write(id.getBytes());
+			
+		 	 objOut.flush();
+			 byteOut.flush();
+			
+			 byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			 if (reply.length == 0)
+			 	 return null;
+			 try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				  ObjectInput objIn = new ObjectInputStream(byteIn)) {
+			 	return (Boolean) objIn.readObject();
+			 }
+				
 		} catch (IOException | ClassNotFoundException e) {
 			System.out.println("Exception getting value from register: " + e.getMessage());
 		}

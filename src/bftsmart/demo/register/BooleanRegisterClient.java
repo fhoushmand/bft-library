@@ -4,26 +4,45 @@ import bftsmart.tom.ServiceProxy;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class BooleanRegisterClient{
 
 	ServiceProxy serviceProxy;
 
-	HashMap<String,Boolean> cachedInvocations;
+	public static void main(String[] args)
+	{
+		Scanner in = new Scanner(System.in);
+		BooleanRegisterClient client = new BooleanRegisterClient(0, 4);
+		int id = 0;
+		while (in.hasNext())
+		{
+			String next = in.nextLine();
+			if(next.equals("exit"))
+				break;
+			System.out.println("old: " + client.read(String.valueOf(++id)));
+			client.write(Boolean.parseBoolean(next),String.valueOf(++id));
+			System.out.println("new: " + client.read(String.valueOf(++id)));
+		}
+	}
 
 
 	public BooleanRegisterClient(int clientId, int clusterId)
 	{
-		cachedInvocations = new HashMap<>();
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}
 
-	public Boolean write(Boolean newVal) {
+	public Boolean write(Boolean newVal, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 				ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
 			
 			objOut.writeObject(RegisterRequestType.WRITE);
+
+			objOut.writeInt(id.getBytes().length);
+			objOut.write(id.getBytes());
+
 			objOut.writeObject(newVal);
+
 			objOut.flush();
 			byteOut.flush();
 			
@@ -41,11 +60,14 @@ public class BooleanRegisterClient{
 		return null;
 	}
 
-	public Boolean read() {
+	public Boolean read(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 			
 			 objOut.writeObject(RegisterRequestType.READ);
+
+			 objOut.writeInt(id.getBytes().length);
+			 objOut.write(id.getBytes());
 			
 		 	 objOut.flush();
 			 byteOut.flush();

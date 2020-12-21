@@ -20,6 +20,7 @@ import bftsmart.tom.util.TOMUtil;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class represents a total ordered message
@@ -35,6 +36,9 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 
 	// method id
 	private byte[] operationId;
+
+	// n
+	private int n;
 
 	//currently not used
 	private byte[] content = null; // Content of the message
@@ -96,8 +100,15 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		return new String(operationId);
 	}
 
+	public void setN(int n) {
+		this.n = n;
+	}
 
-//	/**
+	public int getN() {
+		return n;
+	}
+
+	//	/**
 //	 * Retrieves the ID for this message. It should be unique
 //	 * @return The ID for this message.
 //	 */
@@ -149,7 +160,7 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 	public String toString() {
 		String m = new String(method);
 		String id = new String(operationId);
-		return "[" + m + ":" + id + ":" + arg + "]";
+		return "[" + m + "_" + id + "_" + arg + "]";
 	}
 
 	public void wExternal(DataOutput out) throws IOException {
@@ -164,6 +175,8 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 
 		out.writeInt(operationId.length);
 		out.write(operationId);
+
+		out.writeInt(n);
 		
 		if (content == null) {
 			out.writeInt(-1);
@@ -189,6 +202,8 @@ public class RTMessage extends SystemMessage implements Externalizable, Comparab
 		int opIdSize = in.readInt();
 		operationId = new byte[opIdSize];
 		in.readFully(operationId);
+
+		n = in.readInt();
 
 		int toRead = in.readInt();
 		if (toRead != -1) {

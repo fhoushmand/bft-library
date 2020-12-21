@@ -25,5 +25,17 @@ To create a replicated register, follow the steps below:
 
 
 
-To run on cluster, make sure you load java/11 module, otherwise
-"InvalidKeyStoreFormat" is thrown
+-To run on cluster, make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
+
+-For now, the method id and the method sequence number are passed to each method in the partition object
+-Later think about how to move them to the runtime
+
+-Check why passing x=1 to transfer results in error (must be a simple bug since this case is very similar to passing x=0 which calls m1 on A nodes which works fine)
+
+-Check whether the ObjCalls are cached correctly at different nodes.
+-ObjReCall rule which is implemented in register server and client by adding ids to client methods and a cache (map) from id to return value to the sever code
+
+
+
+
+

@@ -4,6 +4,9 @@ import java.util.HashSet;
 
 public class Quorum{
 
+    // to mark a quorum as bot and later don't reexecute the method again
+    private boolean isBot = false;
+
     HashSet<Integer> nodes;
 
     public Quorum()
@@ -23,6 +26,15 @@ public class Quorum{
         return q.isSubset(this);
     }
 
+    public void setBot()
+    {
+        isBot = true;
+        nodes.clear();
+    }
+
+    public boolean isBot() {
+        return isBot;
+    }
 
     @Override
     public boolean equals(Object obj) {
