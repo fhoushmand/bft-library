@@ -1,5 +1,7 @@
 package bftsmart.runtime.quorum;
 
+import bftsmart.reconfiguration.util.HostsConfig;
+
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -35,5 +37,31 @@ public class H {
         output.hosts.addAll(hosts1.hosts);
         output.hosts.addAll(hosts2.hosts);
         return output;
+    }
+
+    public static H fromIntArray(int[] arr)
+    {
+        H host = new H();
+        for (int i: arr) {
+            host.addHost(i);
+        }
+        return host;
+    }
+
+    // checks if this object is subset of the given quorum q.
+    public boolean isSubset(Quorum q){
+        if(q.nodes.size() > hosts.size())
+            return false;
+        for (int h : hosts)
+        {
+            if(!q.nodes.contains(h))
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return hosts.toString();
     }
 }

@@ -15,6 +15,7 @@ limitations under the License.
 */
 package bftsmart.runtime;
 
+import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -159,16 +160,22 @@ public class ServerConnection {
     /**
      * Used to send packets to the remote server.
      */
-    public final void send(byte[] data) throws InterruptedException {
-    	if (useSenderThread) {
-			// only enqueue messages if there queue is not full
+    public void send(byte[] data){
+    	try {
+			if (useSenderThread) {
+				// only enqueue messages if there queue is not full
 			if (!outQueue.offer(data)) {
 				logger.debug("Out queue for " + remoteId + " full (message discarded).");
 			}
-		} else {
-			sendLock.lock();
-			sendBytes(data);
-			sendLock.unlock();
+			} else {
+				sendLock.lock();
+				sendBytes(data);
+				sendLock.unlock();
+			}
+		}
+    	catch (Exception e)
+		{
+			e.printStackTrace();
 		}
     }
 
@@ -386,8 +393,16 @@ public class ServerConnection {
 
 						logger.trace("Read: {}, HasMAC: {}", read, hasMAC);
 
-						RTMessage sm = new RTMessage();
-						sm.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
+//						MethodCallMessage m = new MethodCallMessage();
+//						m.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
+//
+//						ObjCallMessage m2 = new ObjCallMessage();
+//						m2.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
+
+
+						RTMessage sm = (RTMessage) (new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
+
+//						sm.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
 
 						//The verification it is done for the SSL/TLS protocol.
 						sm.authenticated = true;
@@ -399,9 +414,8 @@ public class ServerConnection {
 								logger.trace("Message: {} queued, remoteId: {}", sm.toString(), sm.getSender());
 							}*/
 						}
-					} catch (ClassNotFoundException ex) {
-						logger.info("Invalid message received. Ignoring!");
-					} catch (IOException ex) {
+					} catch (IOException | ClassNotFoundException ex) {
+						ex.printStackTrace();
 						if (doWork) {
 							logger.debug("Closing socket and reconnecting");
 							closeSocket();

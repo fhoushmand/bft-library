@@ -71,7 +71,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
     public Acceptor acceptor; // Acceptor role of the PaW algorithm
     private ServerCommunicationSystem communication; // Communication system between replicas
     //private OutOfContextMessageThread ot; // Thread which manages messages that do not belong to the current consensus
-    private DeliveryThread dt; // Thread which delivers total ordered messages to the appication
+    private DeliveryThread dt; // Thread which delivers total ordered messages to the application
     public StateManager stateManager = null; // object which deals with the state transfer protocol
 
     //thread pool used to paralelise verification of requests contained in a batch

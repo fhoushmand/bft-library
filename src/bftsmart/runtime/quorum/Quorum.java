@@ -21,9 +21,14 @@ public class Quorum{
     }
 
 
-    public boolean isSubsetEqual(Q q)
+    public boolean isSuperSetEqual(Q q)
     {
         return q.isSubset(this);
+    }
+
+    public boolean isSuperSetEqual(int[] hosts)
+    {
+        return H.fromIntArray(hosts).isSubset(this);
     }
 
     public void setBot()

@@ -35,6 +35,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -258,8 +259,14 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
 		int quorum;
 
-		Integer[] targetArray = Arrays.stream(targets).boxed().toArray(Integer[]::new);
-		Collections.shuffle(Arrays.asList(targetArray), new Random());
+		// old code to shuffle the target array
+		// it randomly changes shuffles the actual VALUES
+//		Integer[] targetArray = Arrays.stream(targets).boxed().toArray(Integer[]::new);
+//		Collections.shuffle(Arrays.asList(targetArray), new Random());
+
+		// new code that generates random target indecies
+		Integer[] targetArrayIndecies = Stream.iterate(0, t -> t + 1).limit(targets.length).toArray(Integer[]::new);
+		Collections.shuffle(Arrays.asList(targetArrayIndecies), new Random());
 
 		if (controller.getStaticConf().isBFT()) {
 			quorum = (int) Math.ceil((controller.getCurrentViewN() + controller.getCurrentViewF()) / 2) + 1;
@@ -270,7 +277,7 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 		listener.waitForChannels(quorum); // wait for the previous transmission to complete
 
 		logger.debug("Sending request from " + sm.getSender() + " with sequence number " + sm.getSequence() + " to "
-				+ Arrays.toString(targetArray));
+				+ Arrays.toString(targets));
 
 		if (sm.serializedMessage == null) {
 
@@ -297,7 +304,8 @@ public class NettyClientServerCommunicationSystemClientSide extends SimpleChanne
 
 		int sent = 0;
 
-		for (int target : targetArray) {
+		//TODO changed below for loop to iterate on indecies instead of the VALUES
+		for (int target : targetArrayIndecies) {
 			// This is done to avoid a race condition with the writeAndFush method. Since
 			// the method is asynchronous,
 			// each iteration of this loop could overwrite the destination of the previous

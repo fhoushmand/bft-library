@@ -15,12 +15,12 @@ limitations under the License.
 */
 package bftsmart.runtime;
 
+import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.SecretKey;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +32,6 @@ public class ServerCommunicationSystem extends Thread {
     private boolean doWork = true;
     public final long MESSAGE_WAIT_TIME = 100;
     private LinkedBlockingQueue<RTMessage> inQueue = null;
-    //new LinkedBlockingQueue<SystemMessage>(IN_QUEUE_SIZE);
     protected MessageHandlerRMI messageHandlerRMI;
     
     private ServersCommunicationLayer serversConn;
@@ -66,7 +65,7 @@ public class ServerCommunicationSystem extends Thread {
                 RTMessage sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
 
                 if (sm != null) {
-                    logger.debug("<-- receiving, msg:" + sm);
+                    logger.debug("<-- receiving, msg:" + sm + " from " + sm.getSender());
                     messageHandlerRMI.processData(sm);
                     count++;
                 }
@@ -88,8 +87,11 @@ public class ServerCommunicationSystem extends Thread {
      * @param sm the message to be sent
      */
     public void send(int[] targets, RTMessage sm) {
-        logger.debug("--> sending message from: {} -> {}" + sm.getSender(), targets);
-        serversConn.send(targets, sm, true);
+        if(sm instanceof MethodCallMessage)
+            logger.debug("sending message {} from: {} -> {}",((MethodCallMessage) sm).getOperationId(), sm.getSender(), targets);
+        else if(sm instanceof ObjCallMessage)
+            logger.debug("sending message {} from: {} -> {}",((ObjCallMessage) sm).getOperationId(), sm.getSender(), targets);
+        serversConn.send(targets, sm);
     }
     
     @Override
@@ -104,8 +106,4 @@ public class ServerCommunicationSystem extends Thread {
         this.doWork = false;
         serversConn.shutdown();
     }
-    
-    public SecretKey getSecretKey(int id) {
-		return serversConn.getSecretKey(id);
-	}
 }

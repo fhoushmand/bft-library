@@ -12,8 +12,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
@@ -28,11 +31,9 @@ import java.util.logging.Level;
 
 // host is simply a process
 
-public class RMIRuntime{
+public class RMIRuntime extends Thread{
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private java.util.logging.Logger javaLogger = java.util.logging.Logger.getLogger(this.getClass().getName());
 
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
@@ -46,27 +47,14 @@ public class RMIRuntime{
     ServerViewController viewController;
 
     //mapping from <methodIdentifier,methodArgument> -> Quorum
-    HashMap<RTMessage,Quorum> network = new HashMap<>();
+    ConcurrentHashMap<MethodCallMessage,Quorum> network = new ConcurrentHashMap<MethodCallMessage,Quorum>();
 
-
-    // To synchronize access to the messages (network map)
-    ReentrantLock messagesLock = new ReentrantLock();
-
-    //counter for the object method invocations
-    //counter is simply a sequence number appended to operationId to uniquely identify method invocations
-    //n
-//    AtomicInteger n = new AtomicInteger(0);
-    //methodIdentifier -> methodId::counter
-    //operationId in the RTMessage is the counter of the runtime
-
-    //mapping from methodIdentifier -> return value
-    //this is to make sure that we don't execute a method multiple times
-//    HashMap<String,Object> methodsRecord = new HashMap<>();
+    //mapping from <methodIdentifier,methodArgument> -> Quorum
+    HashMap<ObjCallMessage,Quorum> objCallReceived = new HashMap<>();
 
     //sequential objects state
     //mapping from objects(names) to states (objects state)
     HashMap<String,Object> objectsState = new HashMap<>();
-
 
     // instance of the hosted class.
     // This represents the partitioned object therefore it is subclass of PartitionedObject
@@ -78,18 +66,33 @@ public class RMIRuntime{
     // The quorum required for the methods to be able to execute
     HashMap<String,Q> methodsQuorums;
 
-    // A mapping to store the argument type of the all the methods
+    // A mapping to store the argument type of all the methods
     HashMap<String,Class[]> methodArgs;
 
+    // reading from command line thread
+    CMDReader inputReader;
+
+    private ReentrantLock objCallLock = new ReentrantLock();
+    private Condition objCallBlock = objCallLock.newCondition();
+
+    public void unblockObjectCall()
+    {
+        objCallLock.lock();
+        objCallBlock.signalAll();
+        objCallLock.unlock();
+    }
 
     /**
-    * @param args [0] is the id of the runtime (unique)
-    * @param args [1] cluster id for the replication of the object
+     * @param args [0] is the id of the runtime (unique)
+     * @param args [1] cluster id for the replication of the object
         cluster id responsible for replicating the piece of
         information in the partitioned object. for OTA it is 1
         and for OTB it is 3
-    * @param args [2] class name of the PartitionedObject subclass
+     * @param args [2] class name of the PartitionedObject subclass
      */
+
+    public static String className = null;
+    public static PartitionedObject o = null;
     public static void main(String[] args) throws Exception{
         int id = Integer.valueOf(args[0]);
         // cluster id responsible for replicating the piece of
@@ -98,34 +101,20 @@ public class RMIRuntime{
         //TODO need to make it general for other partitioned objects with multiple object fields
         int clusterId = Integer.valueOf(args[1]);
         //name of the class to host
-        String className = args[2]; //"bftsmart.usecase.oblivioustransfer.OTA"
+        className = args[2];
 
-        PartitionedObject o = (PartitionedObject) Class.forName(className).getConstructor().newInstance();
-
-        if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
-            Thread.sleep(5000);
+        o = (PartitionedObject) Class.forName(className).getConstructor().newInstance();
 
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         o.setRuntime(runtime);
+        runtime.start();
 
-        Scanner input = new Scanner(System.in);
-
+        //read from standard input
         if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient"))
         {
-//            for(int i = 0; i < 10; i++)
-//                ((OTClient)o).transfer(i);
-//            ((OTClient)o).transfer(0);
-//            Thread.sleep(3000);
-//            ((OTClient)o).transfer(1);
-//            Thread.sleep(3000);
-//            ((OTClient)o).transfer(2);
-            while (input.hasNext()) {
-                String value = input.nextLine();
-                if (value.equals("exit"))
-                    break;
-                ((OTClient) o).transfer(Integer.valueOf(value));
-            }
-
+            LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
+            runtime.inputReader = new CMDReader(inputs);
+            runtime.inputReader.start();
         }
     }
 
@@ -133,7 +122,6 @@ public class RMIRuntime{
     {
         this.id = p;
         this.obj = object;
-
 
         if(test)
             viewController = new ServerViewController(id, "testmyconfig", null, 1);
@@ -166,75 +154,75 @@ public class RMIRuntime{
         cs.start();
     }
 
+    @Override
+    public void run() {
+        if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient")) {
+            try {
+                Thread.sleep(7000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        while (true)
+        {
+            try {
+                Thread.sleep(100);
+                if (className.equals("bftsmart.usecase.oblivioustransfer.OTClient")) {
+                    String in = inputReader.getInQueue().poll(100, TimeUnit.MILLISECONDS);
+                    if (in != null) {
+                        if (in.equals("exit"))
+                            break;
+                        ((OTClient) o).transfer(Integer.valueOf(in));
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            checkExecution();
+        }
+    }
+
     public void shutdown()
     {
         cs.shutdown();
     }
 
-    // ObjCall
-    public Object invokeObj(String obj, String method, Object... args)
+
+    //ThisCallSend
+    //TODO hard-coded argument???
+    public void invoke(String method, String callerId, Integer n, Object... args)
     {
         int argsLength = args.length;
-        String objectCall = obj+"_"+method;
-        // normally it is the line below:
-//        String methodId = args[args.length-1] + "::" + n.getAndIncrement();
 
-        int n = (Integer) args[argsLength-1];
-        String mId = (String)args[argsLength-2] + "::" + n;
+        String mId = callerId + "::" + n;
 
-//        String methodId = args[args.length-1] + "::" + method + "::" + n.getAndIncrement();
+        MethodCallMessage tmm = null;
+        if(argsLength >= 1)
+            tmm = new MethodCallMessage(id, mId.getBytes(), method.getBytes(), args);
+        else
+            tmm = new MethodCallMessage(id, mId.getBytes(), method.getBytes(), null);
 
-//        logger.trace("cache: " + methodsRecord);
-        javaLogger.log(Level.WARNING, "obj call " + objectCall + " with method id " + mId);
-//        if(methodsRecord.containsKey(mId)) {
-//            System.out.println("Hitting cache for " + mId + " when calling " + obj + "." + method);
-//            return methodsRecord.get(mId);
-//        }
-//        else{
-            try {
-                //TODO maybe later inject a class with partitioned methods - Done??
-                Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
-
-                // the extra argument is the id of this object call
-                Object[] objectCallArgs = new Object[argsLength - 2 + 1];
-                int i = 0;
-                for (; i < argsLength - 2; i++)
-                    objectCallArgs[i] = args[i];
-                objectCallArgs[i] = mId;
-
-                Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
-//                methodsRecord.put(mId, returnValue);
-                return returnValue;
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-//        }
-        javaLogger.log(Level.SEVERE, "must never happen");
-        return null;
+        tmm.setN(n);
+        cs.send(methodsHosts.get(method), tmm);
     }
 
     //ThisCallSend
     //TODO hard-coded argument???
-    public void invoke(String method, Object... args)
+    public void sendObjectCall(String method, String callingMethod, String callerId, Integer n, Object... args)
     {
         int argsLength = args.length;
-        // normally it is the line below
-//        String mId = (String)args[argsLength-1] + "::" + n.getAndIncrement();
 
-        int n = (Integer) args[argsLength-1];
-        String mId = (String)args[argsLength-2] + "::" + n;
+        String mId = callerId + "::" + n;
 
-
-//        String mId = args[argsLength-1] + "::" + method + "::" + n.getAndIncrement();
-        RTMessage tmm = null;
-        if(argsLength > 2)
-             tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), (Integer)args[0], null);
+        ObjCallMessage tmm = null;
+        if(argsLength >= 1)
+            tmm = new ObjCallMessage(id, mId.getBytes(), method.getBytes(), args[0], callingMethod.getBytes());
         else
-            tmm = new RTMessage(id, mId.getBytes(), method.getBytes(), null, null);
+            tmm = new ObjCallMessage(id, mId.getBytes(), method.getBytes(), null, callingMethod.getBytes());
 
         tmm.setN(n);
-
-        cs.send(methodsHosts.get(method), tmm);
+        cs.send(methodsHosts.get(callingMethod), tmm);
     }
 
     //ThisCallReceive
@@ -245,30 +233,99 @@ public class RMIRuntime{
         public MessageHandler() {}
 
         protected void processData(RTMessage sm) {
-            String methodName = sm.getMethodName();
-            if(!network.containsKey(sm)) {
-                Quorum q = new Quorum();
-                q.addNode(sm.getSender());
-                network.put(sm, q);
+
+
+            if(sm instanceof ObjCallMessage)
+            {
+                if(!objCallReceived.containsKey(sm)) {
+                    Quorum q = new Quorum();
+                    q.addNode(sm.getSender());
+                    objCallReceived.put((ObjCallMessage) sm, q);
+                }
+                else {
+                    // don't accept messages for a quorum which is bot -> bot union n = bot
+                    if(!objCallReceived.get(sm).isBot())
+                        objCallReceived.get(sm).addNode(sm.getSender());
+                }
+                // unblock objcall if we have receive enough messages to call the object method
+                if(!objCallReceived.get(sm).isBot() && objCallReceived.get(sm).isSuperSetEqual(methodsHosts.get(((ObjCallMessage) sm).getCallerName())))
+                {
+
+                    logger.trace("unblocking object call {}", sm.toString());
+                    unblockObjectCall();
+                    objCallReceived.get(sm).setBot();
+                }
             }
-            else {
-                // don't accept messages for a quorum which is bot -> bot union n = bot
-                if(!network.get(sm).isBot())
-                    network.get(sm).addNode(sm.getSender());
+            else if(sm instanceof MethodCallMessage)
+            {
+                if(!network.containsKey(sm)) {
+                    Quorum q = new Quorum();
+                    q.addNode(sm.getSender());
+                    network.put((MethodCallMessage) sm, q);
+                }
+                else {
+                    // don't accept messages for a quorum which is bot -> bot union n = bot
+                    if(!network.get(sm).isBot())
+                        network.get(sm).addNode(sm.getSender());
+                }
             }
-            logger.trace("received invocation for {} with argument(s) {} from {} at node {}", methodName, sm.getArg(), sm.getSender(), id);
-            checkExecution();
 
         }
     }
 
-    //ThisCallExec
-    // Previously, this was checked by another thread
-    public void checkExecution()
+    // ObjCall
+    // Must block until hear from Q to execute this object call
+    // Q is the quorum of the callingMethod
+    public Object invokeObj(String obj, String method, String callingMethod, String callerId, Integer n, Object... args)
     {
-        logger.trace("messages: " + network);
-        for(Map.Entry<RTMessage,Quorum> mEntry : network.entrySet())
+        int argsLength = args == null ? 0 : args.length;
+
+        String objectCall = obj+"-"+method;
+        String mId = callerId + "::" + n;
+
+        // the extra argument is the id of this object call
+        Object[] objectCallArgs = new Object[argsLength + 1];
+        int i = 0;
+        for (; i < argsLength; i++)
+            objectCallArgs[i] = args[i];
+        objectCallArgs[i] = mId;
+
+        logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
+        // send object call to the quorum
+        sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
+        // block until get Q messages to execute object call
+        logger.trace("unblocking object call {}", mId);
+        objCallLock.lock();
+        try {
+            objCallBlock.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        finally {
+            objCallLock.unlock();
+        }
+
+
+        logger.trace("obj call {} with method id {}", objectCall, mId);
+        try {
+            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
+            return returnValue;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        logger.error("must never happen");
+        return null;
+    }
+
+    // ThisCallExec
+    // Previously, this was checked by another thread
+    public synchronized void checkExecution()
+    {
+//        logger.trace("messages: " + network);
+        for (Iterator<Map.Entry<MethodCallMessage, Quorum>> it = network.entrySet().iterator(); it.hasNext();)
         {
+            Map.Entry<MethodCallMessage,Quorum> mEntry = it.next();
             String method = mEntry.getKey().getMethodName();
             Quorum receivedQ = mEntry.getValue();
 
@@ -276,7 +333,7 @@ public class RMIRuntime{
             if(receivedQ.isBot())
                 continue;
 
-            if(receivedQ.isSubsetEqual(methodsQuorums.get(method))) {
+            if(receivedQ.isSuperSetEqual(methodsQuorums.get(method))) {
                 Class[] argumentsTypeArray = methodArgs.get(method);
                 // to deserialize the arguments received from the network
                 // we have to make sure to pass the correct number of
@@ -287,22 +344,25 @@ public class RMIRuntime{
                 //TODO to the network and deserialize the object array
                 // the last argument is the caller method Id
                 Object[] args = new Object[argumentsTypeArray.length];
-                // for ret method all of the arguments are relevant
-                for(int i = 0; i< (mEntry.getKey().getMethodName().equals("ret") ? argumentsTypeArray.length : argumentsTypeArray.length - 2); i++)
-                {
-                    if(argumentsTypeArray[i].equals(Integer.class))
-                        args[i] =  mEntry.getKey().getArg();
-                    else if(argumentsTypeArray[i].equals(Boolean.class))
-                    {
-                        args[i] =  mEntry.getKey().getArg();
-                    }
-                    else
-                        throw new RuntimeException("unsupported type " + methodArgs.get(method));
-                }
-                // setting the callerId except if it is "ret"
+
+                // setting the callerId and n except if it is "ret"
                 if(!mEntry.getKey().getMethodName().equals("ret")) {
-                    args[argumentsTypeArray.length - 1] = mEntry.getKey().getN();
-                    args[argumentsTypeArray.length - 2] = mEntry.getKey().getOperationId();
+                    args[0] = mEntry.getKey().getOperationId();
+                    args[1] = mEntry.getKey().getN();
+                }
+                // for ret method all of the arguments are relevant
+                for(int j = 0; j < ((Object[])mEntry.getKey().getArg()).length; j++)
+                {
+                    int i = j+2;
+                    args[i] = ((Object[])mEntry.getKey().getArg())[j];
+//                    if(argumentsTypeArray[i].equals(Integer.class))
+//                        args[i] =  (Integer)mEntry.getKey().getArg();
+//                    else if(argumentsTypeArray[i].equals(Boolean.class))
+//                    {
+//                        args[i] =  (Boolean)mEntry.getKey().getArg();
+//                    }
+//                    else
+//                        throw new RuntimeException("unsupported type " + methodArgs.get(method));
                 }
 
                 try {
@@ -320,26 +380,44 @@ public class RMIRuntime{
     public Object executeMethod(Method m, Object obj, Object... args)
     {
         try {
-//            System.out.println("executing method " + m.getName() + " at " + id);
             logger.trace("executing method {}", m.getName());
             Object returnValue = m.invoke(obj, args);
-
             // only print return value if it is not void
             if(!m.getReturnType().equals(Void.TYPE)) {
-                if (returnValue instanceof Boolean)
-                    logger.trace("return value: {}", (Boolean) returnValue);
-                else if (returnValue instanceof Integer)
-                    logger.trace("return value: {}", (Integer) returnValue);
-                else
-                    logger.trace("return value: {}", returnValue);
+                logger.trace("return value: {}", returnValue);
             }
             return returnValue;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+            System.out.println(args.length);
+            if(args.length >=2 )
+            {
+                System.out.println(args[0] + ", " + args[1]);
+            }
+            else if(args.length == 1)
+            {
+                System.out.println((String)args[0]);
+            }
+
         }
-        javaLogger.log(Level.SEVERE, "must never happen!");
+        logger.error("must never happen!");
         return null;
+    }
+
+    //TODO integrate into the code - do we need casting??
+    public Object[] castArguments(Class[] argumentsType, Object... args)
+    {
+        Object[] argumentsArray = new Object[args.length];
+        for(int i = 0; i < args.length; i++) {
+            if (argumentsType[i].equals(Integer.class))
+                argumentsArray[i] = args[i];
+            else if (argumentsType[i].equals(Boolean.class)) {
+                argumentsArray[i] = args[i];
+            } else
+                throw new RuntimeException("unsupported type " + argumentsType[i]);
+        }
+        return argumentsArray;
     }
 }

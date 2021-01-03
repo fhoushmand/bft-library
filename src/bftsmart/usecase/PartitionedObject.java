@@ -40,8 +40,8 @@ public class PartitionedObject {
         Client.addHost(11);
 
         argsMap = new HashMap<>();
-        argsMap.put("m4", new Class[]{Integer.class,String.class,Integer.class});
-        argsMap.put("m3", new Class[]{Integer.class,String.class,Integer.class});
+        argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m3", new Class[]{String.class,Integer.class,Integer.class});
         argsMap.put("m2", new Class[]{String.class,Integer.class});
         argsMap.put("m1", new Class[]{String.class,Integer.class});
 
@@ -49,12 +49,12 @@ public class PartitionedObject {
         argsMap.put("ret", new Class[]{Integer.class});
 
         //object fields methods
-        argsMap.put("i1_read", new Class[]{String.class});
-        argsMap.put("i2_read", new Class[]{String.class});
-        argsMap.put("a_read", new Class[]{String.class});
-        argsMap.put("i1_write", new Class[]{Integer.class,String.class});
-        argsMap.put("i2_write", new Class[]{Integer.class,String.class});
-        argsMap.put("a_write", new Class[]{Boolean.class,String.class});
+        argsMap.put("i1-read", new Class[]{String.class});
+        argsMap.put("i2-read", new Class[]{String.class});
+        argsMap.put("a-read", new Class[]{String.class});
+        argsMap.put("i1-write", new Class[]{Integer.class,String.class});
+        argsMap.put("i2-write", new Class[]{Integer.class,String.class});
+        argsMap.put("a-write", new Class[]{Boolean.class,String.class});
 
 
         methodsH = new HashMap<>();

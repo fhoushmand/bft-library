@@ -18,8 +18,9 @@ public class OTClient extends PartitionedObject {
 
     public void transfer(Integer x)
     {
-//        logger.trace("execute transfer with x={}",x);
-        runtime.invoke("m4", x, "transfer", n++); // send m4(x) message to the hosts of m4;
+        logger.info("execute transfer with x={}",x);
+        System.out.println("calling to transfer(" + x + ")");
+        runtime.invoke("m4", "transfer", n++, x); // send m4(x) message to the hosts of m4;
     }
 
     public void ret(Integer x)

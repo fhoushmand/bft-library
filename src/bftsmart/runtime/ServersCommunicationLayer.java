@@ -15,6 +15,7 @@ limitations under the License.
 */
 package bftsmart.runtime;
 
+import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -180,39 +181,39 @@ public class ServersCommunicationLayer extends Thread {
     }
 
     //******* EDUARDO BEGIN **************//
-    public void updateConnections() {
-        connectionsLock.lock();
-
-        if (this.controller.isInCurrentView()) {
-
-            Iterator<Integer> it = this.connections.keySet().iterator();
-            List<Integer> toRemove = new LinkedList<Integer>();
-            while (it.hasNext()) {
-                int rm = it.next();
-                if (!this.controller.isCurrentViewMember(rm)) {
-                    toRemove.add(rm);
-                }
-            }
-            for (int i = 0; i < toRemove.size(); i++) {
-                this.connections.remove(toRemove.get(i)).shutdown();
-            }
-
-            int[] newV = controller.getCurrentViewAcceptors();
-            for (int i = 0; i < newV.length; i++) {
-                if (newV[i] != me) {
-                    getConnection(newV[i]);
-                }
-            }
-        } else {
-
-            Iterator<Integer> it = this.connections.keySet().iterator();
-            while (it.hasNext()) {
-                this.connections.get(it.next()).shutdown();
-            }
-        }
-
-        connectionsLock.unlock();
-    }
+//    public void updateConnections() {
+//        connectionsLock.lock();
+//
+//        if (this.controller.isInCurrentView()) {
+//
+//            Iterator<Integer> it = this.connections.keySet().iterator();
+//            List<Integer> toRemove = new LinkedList<Integer>();
+//            while (it.hasNext()) {
+//                int rm = it.next();
+//                if (!this.controller.isCurrentViewMember(rm)) {
+//                    toRemove.add(rm);
+//                }
+//            }
+//            for (int i = 0; i < toRemove.size(); i++) {
+//                this.connections.remove(toRemove.get(i)).shutdown();
+//            }
+//
+//            int[] newV = controller.getCurrentViewAcceptors();
+//            for (int i = 0; i < newV.length; i++) {
+//                if (newV[i] != me) {
+//                    getConnection(newV[i]);
+//                }
+//            }
+//        } else {
+//
+//            Iterator<Integer> it = this.connections.keySet().iterator();
+//            while (it.hasNext()) {
+//                this.connections.get(it.next()).shutdown();
+//            }
+//        }
+//
+//        connectionsLock.unlock();
+//    }
 
     private ServerConnection getConnection(int remoteId) {
         connectionsLock.lock();
@@ -228,19 +229,22 @@ public class ServersCommunicationLayer extends Thread {
     //******* EDUARDO END **************//
 
 
-    public final void send(int[] targets, RTMessage sm, boolean useMAC) {
+    public final void send(int[] targets, RTMessage sm) {
 
-        byte[] data = null;
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream dos = new ObjectOutputStream(baos);
-            sm.wExternal(dos);
-            dos.flush();
-            data = baos.toByteArray();
-            sm.serializedMessage = data;
+            new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("Failed to serialize message", ex);
         }
+
+        byte[] data2 = bOut.toByteArray();
+
+//        byte[] data2 = null;
+//        if(sm instanceof MethodCallMessage)
+//            data2 = MethodCallMessage.messageToBytes((MethodCallMessage) sm);
+//        else if(sm instanceof ObjCallMessage)
+//            data2 = ObjCallMessage.messageToBytes((ObjCallMessage) sm);
 
         // this shuffling is done to prevent the replica with the lowest ID/index  from being always
         // the last one receiving the messages, which can result in that replica  to become consistently
@@ -256,8 +260,8 @@ public class ServersCommunicationLayer extends Thread {
 					inQueue.put(sm);
 					logger.debug("Queueing (delivering) my own message, me:{}", target);
 				} else {
-					logger.debug("Sending message from:{} -> to:{}.", me,  target);
-					getConnection(target).send(data);
+//					logger.debug("Sending message from:{} -> to:{}.", me,  target);
+					getConnection(target).send(data2);
 				}
 			} catch (InterruptedException ex) {
 				logger.error("Interruption while inserting message into inqueue", ex);

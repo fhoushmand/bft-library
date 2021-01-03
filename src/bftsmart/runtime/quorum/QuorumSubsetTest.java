@@ -27,7 +27,7 @@ public class QuorumSubsetTest {
         rec.addNode(10);
 
         //must return true
-        System.out.println(rec.isSubsetEqual(object.getMethodsQ().get("ret")));
+        System.out.println(rec.isSuperSetEqual(object.getMethodsQ().get("ret")));
 
 
         Quorum rec2 = new Quorum();
@@ -40,7 +40,7 @@ public class QuorumSubsetTest {
 
 
         //must return false
-        System.out.println(rec2.isSubsetEqual(object.getMethodsQ().get("m3")));
+        System.out.println(rec2.isSuperSetEqual(object.getMethodsQ().get("m3")));
 
     }
 }

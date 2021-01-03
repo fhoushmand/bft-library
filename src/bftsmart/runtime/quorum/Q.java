@@ -28,4 +28,13 @@ public class Q {
         return count >= size;
     }
 
+    public int getSize()
+    {
+        return size;
+    }
+
+    @Override
+    public String toString() {
+        return referenceHosts.toString();
+    }
 }

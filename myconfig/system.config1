@@ -47,7 +47,7 @@ system.communication.defaultKeyLoader = ECDSA
 
 
 #Specify if the communication system should use a thread to send data (true or false)
-system.communication.useSenderThread = false
+system.communication.useSenderThread = true
 
 #Force all processes to use the same public/private keys pair and secret key. This is useful when deploying experiments
 #and benchmarks, but must not be used in production systems. This parameter will only work with the default key loader.

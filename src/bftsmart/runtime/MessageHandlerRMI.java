@@ -15,7 +15,6 @@ limitations under the License.
 */
 package bftsmart.runtime;
 
-
 abstract class MessageHandlerRMI {
 
 	abstract protected void processData(RTMessage msg);

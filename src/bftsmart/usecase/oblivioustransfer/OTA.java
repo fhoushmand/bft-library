@@ -10,6 +10,11 @@ import org.slf4j.LoggerFactory;
 // client host: 11
 
 
+/**
+ * if x == 0 for the first time -> return value = i1 (10)
+ * if x != 0 for the first time -> return value = i2 (5)
+ * for the later invocations -> return value = 0
+ */
 //TODO should be able to move the arguments of the partitioned methods to the runtime -- (how?)
 public class OTA extends PartitionedObject {
 
@@ -20,26 +25,22 @@ public class OTA extends PartitionedObject {
     public Boolean a = false;
 
 
-    public void m4(Integer x, String callerId, Integer n)
+    public void m4(String callerId, Integer n, Integer x)
     {
-//        logger.trace("execute m4 with x={}",x);
-        if(!(Boolean)runtime.invokeObj("a", "read", callerId, ++n)) {
-            runtime.invoke("m3", x, callerId+"::m4", ++n);
+        logger.trace("execute m4 with x={}",x);
+        if(!(Boolean)runtime.invokeObj("a", "read", "m4", callerId+"::m4", ++n)) {
+            runtime.invoke("m3", callerId+"::m4", ++n, x);
         }
         else {
-            runtime.invoke("ret", 0, callerId+"::m4", ++n); //send ret(0) message to the client;
+            runtime.invoke("ret", callerId+"::m4", ++n, 0); //send ret(0) message to the client;
         }
     }
 
-    public void m3(Integer x, String callerId, Integer n)
+    public void m3(String callerId, Integer n, Integer x)
     {
-//        logger.trace("execute m3 with x={}",x);
-        //the return value of this call should be recorded in order
-        //to avoid multiple execution of object method calls
-        //must translate to invocation from runtime
-        runtime.invokeObj("a", "write", true, callerId+"::m3", ++n);
-
-//        logger.trace("a={}",runtime.invokeObj("a", "read", callerId));
+        logger.trace("execute m3 with x={}",x);
+        runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, true);
+//        logger.trace("a={}",runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, true));
         if(x != 0)
             runtime.invoke("m2", callerId+"::m3", ++n); // send m2() message to the hosts of m2;
         else
@@ -48,8 +49,8 @@ public class OTA extends PartitionedObject {
 
     public void m1(String callerId, Integer n)
     {
-//        logger.trace("execute m1");
-        int o = (Integer) runtime.invokeObj("i1", "read", callerId+"::m1", ++n);
-        runtime.invoke("ret", o, callerId+"::m1", ++n); //send ret(i1.read()) message to the client;
+        logger.trace("execute m1");
+        int o = (Integer) runtime.invokeObj("i1", "read", "m1",callerId+"::m1", ++n);
+        runtime.invoke("ret", callerId+"::m1", ++n, o); //send ret(i1.read()) message to the client;
     }
 }
