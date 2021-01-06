@@ -22,21 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 
-public class MethodCallMessage extends RTMessage implements Externalizable, Comparable, Cloneable {
-
-	// method name
-	protected byte[] method;
-
-	// method argument
-	// TODO multiple args
-	protected Object arg;
-
-	// method id
-	private byte[] operationId;
-
-	// n
-	private int n;
-
+public class MethodCallMessage extends RTMessage implements Externalizable, Comparable {
 
 	public MethodCallMessage() {
 	}
@@ -55,23 +41,6 @@ public class MethodCallMessage extends RTMessage implements Externalizable, Comp
 		this.operationId = operationId;
 		this.arg = arg;
 	}
-
-	public String getMethodName() { return new String(method); }
-
-	public Object getArg() { return arg; }
-	
-	public String getOperationId() {
-		return new String(operationId);
-	}
-
-	public void setN(int n) {
-		this.n = n;
-	}
-
-	public int getN() {
-		return n;
-	}
-
 
 	/**
 	 * Verifies if two RTMessage are equal. For performance reasons, the method
@@ -105,124 +74,6 @@ public class MethodCallMessage extends RTMessage implements Externalizable, Comp
 		return toString().hashCode();
 	}
 
-	@Override
-	public String toString() {
-		String m = new String(method);
-		String id = new String(operationId);
-		String args = "(";
-		for(int i = 0; i < ((Object[])arg).length; i++) {
-			args += ((Object[])arg)[i].toString();
-			if (i != ((Object[]) arg).length - 1)
-				args += ",";
-		}
-		args += ")";
-		return "[" + m + "_" + id + "_" + args + "]";
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		super.writeExternal(out);
-
-		//write method name in bytes
-		out.writeInt(method.length);
-		out.write(method);
-		//write argument obj
-		out.writeInt(TOMUtil.getBytes(arg).length);
-		out.write(TOMUtil.getBytes(arg));
-
-		out.writeInt(operationId.length);
-		out.write(operationId);
-		out.writeInt(n);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		super.readExternal(in);
-
-		//read method name in bytes
-		int methodNameSize = in.readInt();
-		method = new byte[methodNameSize];
-		in.readFully(method);
-		//read argument object
-		int objectSize = in.readInt();
-		byte[] objectBytes = new byte[objectSize];
-		in.readFully(objectBytes);
-		arg = TOMUtil.getObject(objectBytes);
-
-		int opIdSize = in.readInt();
-		operationId = new byte[opIdSize];
-		in.readFully(operationId);
-		n = in.readInt();
-	}
-
-//	@Override
-//	public void wExternal(DataOutput out) throws IOException {
-//		super.wExternal(out);
-//
-//		//write method name in bytes
-//		out.writeInt(method.length);
-//		out.write(method);
-//		//write argument obj
-//		out.writeInt(TOMUtil.getBytes(arg).length);
-//		out.write(TOMUtil.getBytes(arg));
-//
-//		out.writeInt(operationId.length);
-//		out.write(operationId);
-//
-//		out.writeInt(n);
-//	}
-//
-//	@Override
-//	public void rExternal(DataInput in) throws IOException {
-//		super.rExternal(in);
-////
-//		//read method name in bytes
-//		int methodNameSize = in.readInt();
-//		method = new byte[methodNameSize];
-//		in.readFully(method);
-//		//read argument object
-//		int objectSize = in.readInt();
-//		byte[] objectBytes = new byte[objectSize];
-//		in.readFully(objectBytes);
-//		arg = TOMUtil.getObject(objectBytes);
-//
-//		int opIdSize = in.readInt();
-//		operationId = new byte[opIdSize];
-//		in.readFully(operationId);
-//
-//		n = in.readInt();
-//	}
-
-	 public static byte[] messageToBytes(MethodCallMessage m) {
-	 	byte[] data = null;
-		 try{
-			 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			 ObjectOutputStream dos = new ObjectOutputStream(baos);
-			 m.wExternal(dos);
-			 dos.flush();
-			 data = baos.toByteArray();
-			 m.serializedMessage = data;
-		 }catch(Exception e) {
-			 LoggerFactory.getLogger(MethodCallMessage.class).error("Failed to serialize MethodCallMessage",e);
-			 return null;
-		 }
-		 return data;
-	 }
-
-	 public static MethodCallMessage bytesToMessage(byte[] b) {
-		 MethodCallMessage m = new MethodCallMessage();
-		 try{
-			 ByteArrayInputStream bais = new ByteArrayInputStream(b);
-			 ObjectInputStream dis = new ObjectInputStream(bais);
-			 m.rExternal(dis);
-		 }catch(Exception e) {
-			 LoggerFactory.getLogger(MethodCallMessage.class).error("Failed to deserialize MethodCallMessage",e);
-			 return null;
-		 }
-
-		 return m;
-	 }
-
 	 //TODO unchecked
 	 @Override
 	 public int compareTo(Object o) {
@@ -241,26 +92,4 @@ public class MethodCallMessage extends RTMessage implements Externalizable, Comp
 			 return AFTER;
 		 return EQUAL;
 	 }
-	 
-        @Override
-	 public Object clone() throws CloneNotSupportedException {
-             
-                          
-                    MethodCallMessage clone = new MethodCallMessage(sender, operationId, method, arg);
-
-                    clone.authenticated = this.authenticated;
-                    clone.destination = this.destination;
-                    clone.isValid = this.isValid;
-                    clone.receptionTime = this.receptionTime;
-                    clone.receptionTimestamp = this.receptionTimestamp;
-                    clone.recvFromClient = this.recvFromClient;
-                    clone.serializedMessage = this.serializedMessage;
-                    clone.serializedMessageSignature = this.serializedMessageSignature;
-                    clone.signed = this.signed;
-                    clone.timeout = this.timeout;
-                    clone.timestamp = this.timestamp;
-
-                    return clone;
-                        
-		}
 }

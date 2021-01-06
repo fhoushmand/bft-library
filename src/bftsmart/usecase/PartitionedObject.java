@@ -6,9 +6,14 @@ import bftsmart.runtime.quorum.QAnd;
 import bftsmart.runtime.quorum.QOr;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class PartitionedObject {
     protected RMIRuntime runtime;
+
+    protected int sequenceNumber = 0;
+
+    protected ReentrantLock objCallLock = new ReentrantLock();
 
     // The id of the processes that host the methods in the given partitioned class
     private HashMap<String,int[]> methodsH;
@@ -18,6 +23,8 @@ public class PartitionedObject {
 
     // A mapping to store the argument type of the all the methods
     private HashMap<String,Class[]> argsMap;
+
+    private H allHosts;
 
 //    actual oblivious transfer usecase
     public PartitionedObject() {
@@ -39,6 +46,11 @@ public class PartitionedObject {
         H Client = new H();
         Client.addHost(11);
 
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, Client);
+
         argsMap = new HashMap<>();
         argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
         argsMap.put("m3", new Class[]{String.class,Integer.class,Integer.class});
@@ -56,14 +68,12 @@ public class PartitionedObject {
         argsMap.put("i2-write", new Class[]{Integer.class,String.class});
         argsMap.put("a-write", new Class[]{Boolean.class,String.class});
 
-
         methodsH = new HashMap<>();
         methodsH.put("m1", A.pickFirst(5).toIntArray());
-        methodsH.put("m2", B.pickFirst(4).toIntArray());
+        methodsH.put("m2", B.pickFirst(3).toIntArray());
         methodsH.put("m3", H.union(A.pickFirst(5), B.pickFirst(3)).toIntArray());
         methodsH.put("m4", H.union(A.pickFirst(5), B.pickFirst(3)).toIntArray());
         methodsH.put("ret", Client.pickFirst(1).toIntArray());
-
 
         // initialize methods qs. there are three possibilities:
         // 1) Single Q
@@ -140,5 +150,9 @@ public class PartitionedObject {
 
     public HashMap<String, Class[]> getArgsMap() {
         return argsMap;
+    }
+
+    public H getAllHosts() {
+        return allHosts;
     }
 }

@@ -33,6 +33,19 @@ public abstract class RTMessage implements Externalizable {
                                             // note that if the message arrives with an
                                             // invalid MAC, it won't be delivered
 
+    // method name
+    protected byte[] method;
+
+    // method argument
+    // TODO multiple args
+    protected Object arg;
+
+    // method id
+    protected byte[] operationId;
+
+    // n
+    protected int n;
+
     //the fields bellow are not serialized!!!
 
     public transient long timestamp = 0; // timestamp to be used by the application
@@ -73,22 +86,119 @@ public abstract class RTMessage implements Externalizable {
         return sender;
     }
 
+    public String getMethodName() { return new String(method); }
+
+    public Object getArg() { return arg; }
+
+    public String getOperationId() {
+        return new String(operationId);
+    }
+
+    public void setN(int n) {
+        this.n = n;
+    }
+
+    public int getN() {
+        return n;
+    }
+
     // This methods implement the Externalizable interface
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(sender);
+
+        //write method name in bytes
+        if(method != null) {
+            out.writeInt(method.length);
+            out.write(method);
+        }
+        if(arg != null) {
+            //write argument obj
+            out.writeInt(TOMUtil.getBytes(arg).length);
+            out.write(TOMUtil.getBytes(arg));
+        }
+
+        if(operationId !=null) {
+            out.writeInt(operationId.length);
+            out.write(operationId);
+        }
+        out.writeInt(n);
     }
     
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         sender = in.readInt();
+
+        try
+        {
+            //read method name in bytes
+            int methodNameSize = in.readInt();
+            method = new byte[methodNameSize];
+            in.readFully(method);
+            //read argument object
+            int objectSize = in.readInt();
+            byte[] objectBytes = new byte[objectSize];
+            in.readFully(objectBytes);
+            arg = TOMUtil.getObject(objectBytes);
+
+            int opIdSize = in.readInt();
+            operationId = new byte[opIdSize];
+            in.readFully(operationId);
+            n = in.readInt();
+        }catch (EOFException e)
+        {
+//            e.printStackTrace();
+        }
+
     }
 
     public void wExternal(DataOutput out) throws IOException {
         out.writeInt(sender);
+
+        //write method name in bytes
+        out.writeInt(method.length);
+        out.write(method);
+        //write argument obj
+        out.writeInt(TOMUtil.getBytes(arg).length);
+        out.write(TOMUtil.getBytes(arg));
+
+        out.writeInt(operationId.length);
+        out.write(operationId);
+        out.writeInt(n);
     }
 
     public void rExternal(DataInput in) throws IOException {
         sender = in.readInt();
+
+        //read method name in bytes
+        int methodNameSize = in.readInt();
+        method = new byte[methodNameSize];
+        in.readFully(method);
+        //read argument object
+        int objectSize = in.readInt();
+        byte[] objectBytes = new byte[objectSize];
+        in.readFully(objectBytes);
+        arg = TOMUtil.getObject(objectBytes);
+
+        int opIdSize = in.readInt();
+        operationId = new byte[opIdSize];
+        in.readFully(operationId);
+        n = in.readInt();
+    }
+
+    @Override
+    public String toString() {
+        String m = new String(method);
+        String id = new String(operationId);
+        String args = "(";
+        if(arg != null) {
+            for (int i = 0; i < ((Object[]) arg).length; i++) {
+                args += ((Object[]) arg)[i].toString();
+                if (i != ((Object[]) arg).length - 1)
+                    args += ",";
+            }
+        }
+        args += ")";
+        return "[" + m + "_" + id + "_" + args + "]";
     }
 }

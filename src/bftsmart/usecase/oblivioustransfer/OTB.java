@@ -42,5 +42,4 @@ public class OTB extends PartitionedObject {
         int o = (Integer) runtime.invokeObj("i2", "read", "m2", callerId+"::m2", ++n);
         runtime.invoke("ret", callerId+"::m2", ++n, o); //send ret(i2.read()) message to client;
     }
-
 }

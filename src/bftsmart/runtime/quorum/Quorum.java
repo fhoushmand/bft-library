@@ -1,17 +1,18 @@
 package bftsmart.runtime.quorum;
 
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Quorum{
 
     // to mark a quorum as bot and later don't reexecute the method again
     private boolean isBot = false;
 
-    HashSet<Integer> nodes;
+    ConcurrentSkipListSet<Integer> nodes;
 
     public Quorum()
     {
-        nodes = new HashSet<>();
+        nodes = new ConcurrentSkipListSet<>();
     }
 
 

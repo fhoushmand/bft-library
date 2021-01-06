@@ -22,20 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 
-public class ObjCallMessage extends RTMessage implements Externalizable, Comparable, Cloneable {
-
-	// method name
-	protected byte[] method;
-
-	// method argument
-	// TODO multiple args
-	protected Object arg;
-
-	// obj call id
-	private byte[] operationId;
-
-	// n
-	private int n;
+public class ObjCallMessage extends RTMessage implements Externalizable, Comparable {
 
 	// calling method name
 	protected byte[] caller;
@@ -58,25 +45,8 @@ public class ObjCallMessage extends RTMessage implements Externalizable, Compara
 		this.caller = caller;
 	}
 
-	public Object getArg() {
-		return arg;
-	}
-
-	public String getMethodName() { return new String(method); }
-
 	public String getCallerName() { return new String(caller); }
 
-	public String getOperationId() {
-		return new String(operationId);
-	}
-
-	public void setN(int n) {
-		this.n = n;
-	}
-
-	public int getN() {
-		return n;
-	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -102,35 +72,9 @@ public class ObjCallMessage extends RTMessage implements Externalizable, Compara
 	}
 
 	@Override
-	public String toString() {
-		String m = new String(method);
-		String id = new String(operationId);
-//		String args = "(";
-//		for(int i = 0; i < ((Object[])arg).length; i++) {
-//			args += ((Object[])arg)[i].toString();
-//			if (i != ((Object[]) arg).length - 1)
-//				args += ",";
-//		}
-//		args += ")";
-		return "[" + m + "_" + id + "_" + arg + "]";
-	}
-
-	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
 
-		//write method name in bytes
-		out.writeInt(method.length);
-		out.write(method);
-		//write argument obj
-		out.writeInt(TOMUtil.getBytes(arg).length);
-		out.write(TOMUtil.getBytes(arg));
-
-		out.writeInt(operationId.length);
-		out.write(operationId);
-		out.writeInt(n);
-
-		//write method name in bytes
 		out.writeInt(caller.length);
 		out.write(caller);
 	}
@@ -139,82 +83,12 @@ public class ObjCallMessage extends RTMessage implements Externalizable, Compara
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		super.readExternal(in);
 
-		//read method name in bytes
-		int methodNameSize = in.readInt();
-		method = new byte[methodNameSize];
-		in.readFully(method);
-		//read argument object
-		int objectSize = in.readInt();
-		byte[] objectBytes = new byte[objectSize];
-		in.readFully(objectBytes);
-		arg = TOMUtil.getObject(objectBytes);
-
-		int opIdSize = in.readInt();
-		operationId = new byte[opIdSize];
-		in.readFully(operationId);
-		n = in.readInt();
-
 		//read caller name in bytes
 		int callerNameSize = in.readInt();
 		caller = new byte[callerNameSize];
 		in.readFully(caller);
 	}
 
-//	@Override
-//	public void wExternal(DataOutput out) throws IOException {
-//		super.wExternal(out);
-//
-//		//write method name in bytes
-//		out.writeInt(method.length);
-//		out.write(method);
-//		//write argument obj
-//		out.writeInt(TOMUtil.getBytes(arg).length);
-//		out.write(TOMUtil.getBytes(arg));
-//	}
-//
-//	@Override
-//	public void rExternal(DataInput in) throws IOException {
-//		super.rExternal(in);
-////
-//		//read method name in bytes
-//		int methodNameSize = in.readInt();
-//		method = new byte[methodNameSize];
-//		in.readFully(method);
-//		//read argument object
-//		int objectSize = in.readInt();
-//		byte[] objectBytes = new byte[objectSize];
-//		in.readFully(objectBytes);
-//		arg = TOMUtil.getObject(objectBytes);
-//	}
-
-	public static byte[] messageToBytes(ObjCallMessage m) {
-		byte[] data = null;
-		try{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream dos = new ObjectOutputStream(baos);
-			m.wExternal(dos);
-			dos.flush();
-			data = baos.toByteArray();
-			m.serializedMessage = data;
-		}catch(Exception e) {
-			LoggerFactory.getLogger(ObjCallMessage.class).error("Failed to serialize ObjCallMessage",e);
-			return null;
-		}
-		return data;
-	}
-
-	 public static ObjCallMessage bytesToMessage(byte[] b) {
-		 ObjCallMessage m = new ObjCallMessage();
-		 try{
-			 ByteArrayInputStream bais = new ByteArrayInputStream(b);
-			 ObjectInputStream dis = new ObjectInputStream(bais);
-			 m.rExternal(dis);
-		 }catch(Exception e) {
-			 LoggerFactory.getLogger(ObjCallMessage.class).error("Failed to deserialize ObjCallMessage",e);
-			 return null;
-		 }
-		 return m;
-	 }
 
 	 //TODO unchecked
 	 @Override
@@ -234,27 +108,4 @@ public class ObjCallMessage extends RTMessage implements Externalizable, Compara
 			 return AFTER;
 		 return EQUAL;
 	 }
-
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-
-
-		ObjCallMessage clone = new ObjCallMessage(sender, operationId, method, arg, caller);
-
-
-		clone.authenticated = this.authenticated;
-		clone.destination = this.destination;
-		clone.isValid = this.isValid;
-		clone.receptionTime = this.receptionTime;
-		clone.receptionTimestamp = this.receptionTimestamp;
-		clone.recvFromClient = this.recvFromClient;
-		clone.serializedMessage = this.serializedMessage;
-		clone.serializedMessageSignature = this.serializedMessageSignature;
-		clone.signed = this.signed;
-		clone.timeout = this.timeout;
-		clone.timestamp = this.timestamp;
-
-		return clone;
-
-	}
 }
