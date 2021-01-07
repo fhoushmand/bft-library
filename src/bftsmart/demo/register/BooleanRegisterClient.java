@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class BooleanRegisterClient{
 
-	ServiceProxy serviceProxy;
+	public ServiceProxy serviceProxy;
 
 	public static void main(String[] args)
 	{

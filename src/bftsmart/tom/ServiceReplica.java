@@ -104,8 +104,7 @@ public class ServiceReplica {
     
     /**
      * Constructor
-     * 
-     * @see bellow
+     *
      */
     public ServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier, Replier replier, int clusterId) {
         this(id, "", executor, recoverer, verifier, replier, null, clusterId);
@@ -113,8 +112,7 @@ public class ServiceReplica {
     
     /**
      * Constructor
-     * 
-     * @see bellow
+     *
      */
     public ServiceReplica(int id, Executable executor, Recoverable recoverer, RequestVerifier verifier, Replier replier, KeyLoader loader, Provider provider, int clusterId) {
         this(id, "", executor, recoverer, verifier, replier, loader, clusterId);
@@ -446,9 +444,6 @@ public class ServiceReplica {
 
     /**
      * This method initializes the object
-     *
-     * @param cs Server side communication System
-     * @param conf Total order messaging configuration
      */
     private void initTOMLayer() {
         if (tomStackCreated) { // if this object was already initialized, don't do it again

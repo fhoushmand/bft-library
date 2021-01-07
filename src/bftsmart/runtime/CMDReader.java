@@ -16,6 +16,9 @@ limitations under the License.
 package bftsmart.runtime;
 
 
+import bftsmart.usecase.oblivioustransfer.OTClient;
+
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -43,12 +46,19 @@ public class CMDReader extends Thread {
 
     @Override
     public void run() {
-        
-        long count = 0;
-        Scanner reader = new Scanner(System.in);
-        while (reader.hasNext()) {
-            String input = reader.nextLine();
-            inQueue.offer(input);
+        for (int i = 0; i < 20; i++) {
+            try {
+                inQueue.offer(String.valueOf(new Random().nextInt(2)));
+                Thread.sleep(2000);
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            }
         }
+        inQueue.offer("exit");
+//        Scanner reader = new Scanner(System.in);
+//        while (reader.hasNext()) {
+//            String input = reader.nextLine();
+//            inQueue.offer(input);
+//        }
     }
 }

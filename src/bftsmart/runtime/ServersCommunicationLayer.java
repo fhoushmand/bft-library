@@ -119,7 +119,7 @@ public class ServersCommunicationLayer extends Thread {
 
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("config/keysSSL_TLS/" + controller.getStaticConf().getSSLTLSKeyStore());
+			fis = new FileInputStream("systemconfig/keysSSL_TLS/" + controller.getStaticConf().getSSLTLSKeyStore());
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(fis, SECRET.toCharArray());
 		} finally {

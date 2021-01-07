@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import bftsmart.runtime.RMIRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public class ViewManager {
             String path = "";
             String sep = System.getProperty("file.separator");
             if (configHome == null || configHome.equals("")) {
-                path = "config" + sep + "system.config";
+                path = "config" + RMIRuntime.CONFIGURATION + sep + "system.config";
             } else {
                 path = configHome + sep + "system.config";
             }

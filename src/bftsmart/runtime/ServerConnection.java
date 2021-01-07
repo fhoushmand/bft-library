@@ -415,7 +415,6 @@ public class ServerConnection {
 							}*/
 						}
 					} catch (IOException | ClassNotFoundException ex) {
-						ex.printStackTrace();
 						if (doWork) {
 							logger.debug("Closing socket and reconnecting");
 							closeSocket();
@@ -456,7 +455,7 @@ public class ServerConnection {
 
 		String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
 		try {
-			fis = new FileInputStream("config/keysSSL_TLS/" + this.controller.getStaticConf().getSSLTLSKeyStore());
+			fis = new FileInputStream("systemconfig/keysSSL_TLS/" + this.controller.getStaticConf().getSSLTLSKeyStore());
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(fis, SECRET.toCharArray());
 		} catch (FileNotFoundException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {

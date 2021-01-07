@@ -24,12 +24,37 @@ To create a replicated register, follow the steps below:
 
 -To run on cluster:
   make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
-  make sure to set defaultkeys to false and usesignature to 1. also, in config/keys there should exists a privatekey{#id} file
+  make sure to set defaultkeys to false and usesignature to 1. also, in config*/keys there should exists a privatekey{#id} file
 
 -For now, the method id and the method sequence number are passed to each method in the partition object
 -Later think about how to move them to the runtime
 
 -ObjReCall rule which is implemented in register server and client by adding ids to client methods and a cache (map) from id to return value to the sever code
+
+To kill all the process running :
+    kill $(lsof -t -i:13000-14000 -sTCP:LISTEN)
+
+Results:
+*)A:1;B:1
+    20 calls = 114ms - 114ms - 114ms
+*)A:2;B:1
+    20 calls = 145ms - 140ms - 145ms
+*)A:2;B:2
+    20 calls = 175ms - 175ms - 176ms
+*)A:3;B:1
+    20 calls = 168ms - 157ms - 173ms
+*)A:3;B:2
+    20 calls = 205ms - 185ms - 205ms
+*)A:4;B:1
+    20 calls = 199ms - 198ms - 194ms
+*)A:3;B:3
+    20 calls = 220ms - 226ms - 223ms
+*)A:4;B:4
+    20 calls = 297ms - 307ms - 301ms
+
+
+
+
 
 
 

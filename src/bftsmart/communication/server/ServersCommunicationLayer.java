@@ -36,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
 import java.net.InetAddress;
@@ -143,7 +144,7 @@ public class ServersCommunicationLayer extends Thread {
 
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("config/keysSSL_TLS/" + controller.getStaticConf().getSSLTLSKeyStore());
+			fis = new FileInputStream("systemconfig/keysSSL_TLS/" + controller.getStaticConf().getSSLTLSKeyStore());
 			ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			ks.load(fis, SECRET.toCharArray());
 		} finally {

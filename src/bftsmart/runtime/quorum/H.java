@@ -60,6 +60,10 @@ public class H {
         return true;
     }
 
+    public int size() {
+        return hosts.size();
+    }
+
     @Override
     public String toString() {
         return hosts.toString();

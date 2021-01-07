@@ -1,5 +1,5 @@
 bin
-config/currentView*
-myconfig/currentView*
+oldconfig/currentView*
+oldmyconfig/currentView*
 test
 out

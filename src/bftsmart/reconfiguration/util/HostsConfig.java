@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import bftsmart.runtime.RMIRuntime;
 import org.slf4j.LoggerFactory;
 
 public class HostsConfig {
@@ -53,9 +54,9 @@ public class HostsConfig {
 
             if(configHome.equals("")){
                 if (fileName.equals(""))
-                    path = "config"+sep+"hosts.config"+instanceId;
+                    path = "config" + RMIRuntime.CONFIGURATION +sep+"hosts.config"+instanceId;
                 else
-                    path = "config"+sep+fileName+instanceId;
+                    path = "config" + RMIRuntime.CONFIGURATION +sep+fileName+instanceId;
             }else{
                 if (fileName.equals(""))
                     path = configHome+sep+"hosts.config"+instanceId;

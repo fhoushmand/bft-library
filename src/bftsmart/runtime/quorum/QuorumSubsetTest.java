@@ -2,10 +2,12 @@ package bftsmart.runtime.quorum;
 
 import bftsmart.usecase.PartitionedObject;
 
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+
 
 public class QuorumSubsetTest {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
         PartitionedObject object = new PartitionedObject();
 
         for(int i : object.getMethodsH().get("m4"))

@@ -29,6 +29,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import bftsmart.runtime.RMIRuntime;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class SunECKeyLoader implements KeyLoader {
 		this.sigAlgorithm = sigAlgorithm;
 
 		if (configHome.equals("")) {
-			path = "config" + System.getProperty("file.separator") + "keysSunEC" + System.getProperty("file.separator");
+			path = "config" + RMIRuntime.CONFIGURATION + System.getProperty("file.separator") + "keysSunEC" + System.getProperty("file.separator");
 		} else {
 			path = configHome + System.getProperty("file.separator") + "keysSunEC"
 					+ System.getProperty("file.separator");

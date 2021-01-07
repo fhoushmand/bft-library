@@ -15,6 +15,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
@@ -35,6 +37,8 @@ public class RMIRuntime extends Thread{
 
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
+
+    public static String CONFIGURATION = "(A:2;B:2)";
 
     // id of this process (runtime)
     // this id is global to all the clusters participants
@@ -77,16 +81,18 @@ public class RMIRuntime extends Thread{
 
     HashMap<Integer,Long> execs;
 
+    double avgResTime;
 
-//    private ReentrantLock objCallLock = new ReentrantLock();
-//    private Condition objCallBlock = objCallLock.newCondition();
 
-//    public void unblockObjectCall()
-//    {
-//        objCallLock.lock();
-//        objCallBlock.signalAll();
-//        objCallLock.unlock();
-//    }
+    private ReentrantLock objCallLock = new ReentrantLock();
+    private Condition objCallBlock = objCallLock.newCondition();
+
+    public void unblockObjectCall()
+    {
+        objCallLock.lock();
+        objCallBlock.signalAll();
+        objCallLock.unlock();
+    }
 
     /**
      * @param args [0] is the id of the runtime (unique)
@@ -116,7 +122,7 @@ public class RMIRuntime extends Thread{
         {
             LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
             runtime.setInputReader(new CMDReader(inputs));
-            runtime.getInputReader().start();
+//            runtime.getInputReader().start();
         }
     }
 
@@ -128,9 +134,9 @@ public class RMIRuntime extends Thread{
         execs = new HashMap<>();
 
         if(test)
-            viewController = new ServerViewController(id, "testmyconfig", null, 1);
+            viewController = new ServerViewController(id, "testconfig", null, 1);
         else
-            viewController = new ServerViewController(id, "myconfig", null, 1);
+            viewController = new ServerViewController(id, "runtimeconfig"+CONFIGURATION, null, 1);
 
         cs = new ServerCommunicationSystem(viewController, new MessageHandler());
 
@@ -173,28 +179,30 @@ public class RMIRuntime extends Thread{
     public void run() {
         if (obj instanceof OTClient) {
             try {
-                Thread.sleep(7000);
+                Thread.sleep(20000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            inputReader.start();
         }
 
+        int count = 0;
         while (true)
         {
             try {
-                Thread.sleep(100);
+                Thread.sleep(10);
                 if (obj instanceof OTClient) {
-                    String in = inputReader.getInQueue().poll(100, TimeUnit.MILLISECONDS);
+//                    String in = inputReader.getInQueue().poll(1000, TimeUnit.MILLISECONDS);
+                    String in = inputReader.getInQueue().poll();
+
                     if (in != null) {
                         if (in.equals("exit"))
                             break;
                         try {
                             ((OTClient) obj).transfer(Integer.valueOf(in));
-                        }catch (NumberFormatException e)
-                        {
+                        } catch (NumberFormatException e) {
                             System.out.println("invalid input");
                         }
-
                     }
                 }
             } catch (InterruptedException e) {
@@ -207,11 +215,22 @@ public class RMIRuntime extends Thread{
         // calculate statistics
         for(int i : execs.keySet())
             avgResponseTime += execs.get(i);
-        System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResponseTime/execs.keySet().size() + "(ms)");
+        avgResTime = avgResponseTime/execs.keySet().size();
+        System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResTime + "(ms)");
+
+//        cs.send(obj.getAllHosts().toIntArray(), new ShutdownRuntimeMessage(id));
+//        shutdown();
     }
 
     public void shutdown()
     {
+        for (Object o : objectsState.values())
+        {
+            if(o instanceof IntegerRegisterClient)
+                ((IntegerRegisterClient)o).serviceProxy.close();
+            if(o instanceof BooleanRegisterClient)
+                ((BooleanRegisterClient)o).serviceProxy.close();
+        }
         cs.shutdown();
     }
 
@@ -328,6 +347,9 @@ public class RMIRuntime extends Thread{
                     System.out.println("Access Denied. Cannot access object field");
                 }
             }
+            else if(sm instanceof ShutdownRuntimeMessage) {
+                shutdown();
+            }
 
         }
     }
@@ -337,44 +359,48 @@ public class RMIRuntime extends Thread{
     // Q is the quorum of the callingMethod
     public Object invokeObj(String obj, String method, String callingMethod, String callerId, Integer n, Object... args)
     {
-        int argsLength = args == null ? 0 : args.length;
-
-        String objectCall = obj+"-"+method;
-        String mId = callerId + "::" + n;
-        // the extra argument is the id of this object call
-        Object[] objectCallArgs = new Object[argsLength + 1];
-        int i = 0;
-        for (; i < argsLength; i++)
-            objectCallArgs[i] = args[i];
-        objectCallArgs[i] = mId;
-        logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
-        // send object call to the quorum
-        ObjCallMessage msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
-        // block until get Q messages to execute object call
-        while (!objCallReceived.containsKey(msgSent) || !objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod)));
-        logger.trace("unblocking object call {}", mId);
-        // mark it as bot and clear the memory
-        objCallReceived.get(msgSent).setBot();
-
-        // old code for blocking the object call to make it synchronous
-//        objCallLock.lock();
-//        try {
-//            objCallBlock.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//        finally {
-//            objCallLock.unlock();
-//        }
-
-        logger.trace("obj call {} with method id {}", objectCall, mId);
+        ObjCallMessage msgSent = null;
         try {
+            int argsLength = args == null ? 0 : args.length;
+
+            String objectCall = obj+"-"+method;
+            String mId = callerId + "::" + n;
+            // the extra argument is the id of this object call
+            Object[] objectCallArgs = new Object[argsLength + 1];
+            int i = 0;
+            for (; i < argsLength; i++)
+                objectCallArgs[i] = args[i];
+            objectCallArgs[i] = mId;
+            logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
+            // send object call to the quorum
+            msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
+            // block until get Q messages to execute object call
+            while (!objCallReceived.containsKey(msgSent) || !objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod)));
+            logger.trace("unblocking object call {}", mId);
+            // mark it as bot and clear the memory
+            objCallReceived.get(msgSent).setBot();
+            logger.trace("obj call {} with method id {}", objectCall, mId);
             Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
             Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
             return returnValue;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
         }
+        //TODO check for NPE, see why the blocking while instruction might cause it
+        catch (NullPointerException | NoSuchMethodException e)
+        {
+//            e.printStackTrace();
+//            System.out.println("received object call reqs: " + objCallReceived);
+//            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
+//            System.out.println("Calling method: " + callingMethod);
+//            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
+
+        }
+//        try {
+//            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+//            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
+//            return returnValue;
+//        } catch (NoSuchMethodException e) {
+//            e.printStackTrace();
+//        }
         logger.error("must never happen");
         return null;
     }

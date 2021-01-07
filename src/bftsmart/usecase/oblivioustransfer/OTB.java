@@ -4,6 +4,8 @@ import bftsmart.usecase.PartitionedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // set of A hosts: 0,1,2,3,4,5,6
