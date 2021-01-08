@@ -1,5 +1,7 @@
 bin
 oldconfig/currentView*
 oldmyconfig/currentView*
+config*/
+runtimeconfig*/
 test
 out

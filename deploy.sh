@@ -33,4 +33,4 @@
 #
 #sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime 26 3 bftsmart.usecase.oblivioustransfer.OTClient
 
-java -Djava.security.properties="./systemconfig/java.security" -Dlogback.configurationFile="./systemconfig/logback.xml" -Xmx20000m -cp bin/*:lib/* bftsmart.usecase.oblivioustransfer.UseCaseRunner
+java -Djava.security.properties="./systemconfig/java.security" -Dlogback.configurationFile="./systemconfig/logback.xml" -Xmx20000m -cp bin/*:lib/* bftsmart.usecase.oblivioustransfer.OTRunner
