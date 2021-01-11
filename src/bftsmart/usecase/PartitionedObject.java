@@ -64,6 +64,7 @@ public class PartitionedObject {
     }
 
     public PartitionedObject() {
+        new PartitionedObject(new HashMap<>());
     }
 
     public void initializeOT()

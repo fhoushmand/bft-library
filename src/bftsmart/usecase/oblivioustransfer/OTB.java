@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 // set of A hosts: 0,1,2,3,4,5,6
@@ -17,6 +18,10 @@ public class OTB extends PartitionedObject {
 
     public Integer i2 = 5;
     public Boolean a = false;
+
+    public OTB(HashMap<Integer, String> hostipMap) {
+        super(hostipMap);
+    }
 
     public void m4(String callerId, Integer n, Integer x)
     {

@@ -113,7 +113,13 @@ public class RMIRuntime extends Thread{
         //TODO need to make it general for other partitioned objects with multiple object fields
         int clusterId = Integer.parseInt(args[1]);
 
-        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor().newInstance();
+        HashMap<Integer,String> hostIPMap = new HashMap<>();
+        int i = 0;
+        for (String h : args[3].split("\\s+")){
+            hostIPMap.put(i++, h);
+        }
+
+        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class).newInstance(hostIPMap);
 
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         runtime.getObj().setRuntime(runtime);

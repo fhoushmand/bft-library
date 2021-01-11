@@ -4,6 +4,8 @@ import bftsmart.usecase.PartitionedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+
 
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
@@ -24,6 +26,9 @@ public class OTA extends PartitionedObject {
     public Integer i1 = 10;
     public Boolean a = false;
 
+    public OTA(HashMap<Integer, String> hostipMap) {
+        super(hostipMap);
+    }
 
     public void m4(String callerId, Integer n, Integer x)
     {
