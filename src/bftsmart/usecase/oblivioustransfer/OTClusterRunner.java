@@ -47,16 +47,13 @@ public class OTClusterRunner {
 
     public static void main(String[] args) throws Exception {
         OTClusterRunner clusterRunner = new OTClusterRunner("systemconfig/ot.config");
-        //set of host ip addresses in a distributed environment
-        HashMap<Integer,String> hostMap = new HashMap<>();
         int id = 0;
         String hosts = "";
         for(String hostIP : Arrays.copyOfRange(args, 1, args.length)) {
             String h = hostIP + ".ib.hpcc.ucr.edu";
-            hostMap.put(id++, h);
             hosts += h + " ";
         }
-        RMIRuntime.main(new String[]{args[0], clusterRunner.config.get(Integer.parseInt(args[0])).cluster, clusterRunner.config.get(id).className, hosts});
+        RMIRuntime.main(new String[]{args[0], clusterRunner.config.get(Integer.parseInt(args[0])).cluster, clusterRunner.config.get(Integer.parseInt(args[0])).className, hosts});
 //        int clusterId = Integer.parseInt(args[0]);
 //        int i = 0;
 //        if(clusterId < object.getHosts().get(0).size())
