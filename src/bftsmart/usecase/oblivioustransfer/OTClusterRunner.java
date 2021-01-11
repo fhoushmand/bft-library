@@ -23,7 +23,7 @@ public class OTClusterRunner {
         if(clusterId < object.getHosts().get(0).size())
             RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(1), "bftsmart.usecase.oblivioustransfer.OTA"});
 
-        else if(clusterId >= object.getHosts().get(0).size() && clusterId < object.getHosts().get(1).size())
+        else if(clusterId >= object.getHosts().get(0).size() && clusterId < object.getHosts().get(0).size() + object.getHosts().get(1).size())
             RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(2), "bftsmart.usecase.oblivioustransfer.OTB"});
 
         if(clusterId == object.getHosts().get(0).size() + object.getHosts().get(1).size()) {

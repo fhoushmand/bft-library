@@ -36,8 +36,11 @@ echo $hostlist
 
 export HAMRAZ_HOME=/rhome/fhous001/shared/bft-library
 
+echo 'ucr2018' | kinit fhous001@HPCC.UCR.EDU
+
 for i in $( seq 0 $last ); do
-        ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; module load java/11; run.sh $i $hostlist" &
+        printf "ssh ${nodes[$i]}.ib.hpcc.ucr.edu 'cd ${HAMRAZ_HOME};sh run.sh $i $hostlist'\n"
+        ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; sh run.sh $i $hostlist" &
 done
 
 sleep 600
