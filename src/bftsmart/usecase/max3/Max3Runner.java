@@ -3,6 +3,8 @@ package bftsmart.usecase.max3;
 import bftsmart.runtime.RMIRuntime;
 import bftsmart.usecase.PartitionedObject;
 
+import java.util.HashMap;
+
 public class Max3Runner {
     private static final Object lock = new Object();
     private static int counter = 0;
@@ -27,7 +29,11 @@ public class Max3Runner {
 //        }
 //    }
     public static void main(String[] args) throws Exception {
-        PartitionedObject object = new PartitionedObject();
+        HashMap<Integer,String> hostIPMap = new HashMap<>();
+        for (int i = 0; i < 30; i++)
+            hostIPMap.put(i, "127.0.0.1");
+        PartitionedObject object = new PartitionedObject(hostIPMap);
+
         int i = 0;
         for(; i < object.getHosts().get(0).size(); i++) {
             int finalI = i;

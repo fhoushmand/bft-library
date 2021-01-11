@@ -8,7 +8,10 @@ import java.util.HashMap;
 public class OTRunner {
     public static void main(String[] args) throws Exception {
 
-        PartitionedObject object = new PartitionedObject();
+        HashMap<Integer,String> hostIPMap = new HashMap<>();
+        for (int i = 0; i < 30; i++)
+            hostIPMap.put(i, "127.0.0.1");
+        PartitionedObject object = new PartitionedObject(hostIPMap);
 
         int i = 0;
         for(i = 0; i < object.getHosts().get(0).size(); i++) {

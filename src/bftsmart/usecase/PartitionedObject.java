@@ -63,6 +63,9 @@ public class PartitionedObject {
 
     }
 
+    public PartitionedObject() {
+    }
+
     public void initializeOT()
     {
         argsMap = new HashMap<>();
