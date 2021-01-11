@@ -4,6 +4,7 @@ import bftsmart.demo.register.*;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.quorum.*;
 import bftsmart.usecase.oblivioustransfer.OTClient;
+import bftsmart.usecase.max3.Max3Client;
 import bftsmart.usecase.PartitionedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,8 @@ public class RMIRuntime extends Thread{
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
 
-    public static String CONFIGURATION = "(A:2;B:2)";
+    public static String CONFIGURATION = "(A:1;B:1)";
+//    public static String CONFIGURATION = "(A:1;B:1;C:1)";
 
     // id of this process (runtime)
     // this id is global to all the clusters participants
@@ -118,7 +120,7 @@ public class RMIRuntime extends Thread{
         runtime.start();
 
         //read from standard input
-        if (runtime.obj instanceof OTClient)
+        if (runtime.obj instanceof Max3Client || runtime.obj instanceof OTClient)
         {
             LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
             runtime.setInputReader(new CMDReader(inputs));
@@ -150,6 +152,7 @@ public class RMIRuntime extends Thread{
         cs.start();
     }
 
+    //TODO the clusterid is hardcoded for the OT example
     private void initObjectState(int processID, int clusterId)
     {
         try {
@@ -177,7 +180,7 @@ public class RMIRuntime extends Thread{
 
     @Override
     public void run() {
-        if (obj instanceof OTClient) {
+        if (obj instanceof Max3Client || obj instanceof OTClient) {
             try {
                 Thread.sleep(20000);
             } catch (InterruptedException e) {
@@ -191,7 +194,7 @@ public class RMIRuntime extends Thread{
         {
             try {
                 Thread.sleep(10);
-                if (obj instanceof OTClient) {
+                if (obj instanceof Max3Client || obj instanceof OTClient) {
 //                    String in = inputReader.getInQueue().poll(1000, TimeUnit.MILLISECONDS);
                     String in = inputReader.getInQueue().poll();
 
@@ -200,6 +203,7 @@ public class RMIRuntime extends Thread{
                             break;
                         try {
                             ((OTClient) obj).transfer(Integer.valueOf(in));
+//                            ((Max3Client) obj).max();
                         } catch (NumberFormatException e) {
                             System.out.println("invalid input");
                         }

@@ -1,24 +1,46 @@
 #!/bin/bash -l
 
-#SBATCH --nodes=1
-#SBATCH --ntasks=32
-#SBATCH --cpus-per-task=2
+#SBATCH --nodes=9
+#SBATCH --ntasks=9
+#SBATCH --cpus-per-task=4
 #SBATCH --output="ot.log"
-#SBATCH --mem=20G
+#SBATCH --mem=5G
 #SBATCH -p short # This is the default partition, you can use any of the following; intel, batch, highmem, gpu
 
-#module load java/11
-#
-#
-#
-#rm -rf bin/*
+module load java/11
+
+rm -rf bin/*
 #rm config/currentView*
 #rm myconfig/currentView*
 #
-##rm -rf config
-##rm -rf myconfig
+
 ##mv cluster-config/* .
+#java -XshowSettings 2>&1  | grep -i Heap
+#jps -lvm
+#ps -o nlwp,pid -fe
 #~/shared/opt/apache-ant-1.10.9/bin/ant -d main
+
+nodes=($( scontrol show hostnames $SLURM_NODELIST ))
+nnodes=${#nodes[@]}
+last=$(( $nnodes - 1 ))
+
+hostlist=""
+basehostaddress=".ib.hpcc.ucr.edu"
+
+for i in $( seq 0 $last ); do
+        hostlist+="${nodes[$i]} "
+done
+
+echo $hostlist
+
+export HAMRAZ_HOME=/rhome/fhous001/shared/hamraz
+
+for i in $( seq 0 $last ); do
+        ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; module load java/11; run.sh $i $hostlist" &
+done
+
+# Move to directory where job was submitted from
+cd $SLURM_WORKING_DIR
 
 
 #for a in 0 1 2 3 4 5 6 7 8 9 10 11 12
@@ -33,4 +55,4 @@
 #
 #sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime 26 3 bftsmart.usecase.oblivioustransfer.OTClient
 
-java -Djava.security.properties="./systemconfig/java.security" -Dlogback.configurationFile="./systemconfig/logback.xml" -Xmx20000m -cp bin/*:lib/* bftsmart.usecase.oblivioustransfer.OTRunner
+#java -Djava.security.properties="./systemconfig/java.security" -Dlogback.configurationFile="./systemconfig/logback.xml" -Xmx20000m -cp bin/*:lib/* bftsmart.usecase.oblivioustransfer.OTRunner

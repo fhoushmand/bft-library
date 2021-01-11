@@ -89,8 +89,6 @@ public class ObjCallMessage extends RTMessage implements Externalizable, Compara
 		in.readFully(caller);
 	}
 
-
-	 //TODO unchecked
 	 @Override
 	 public int compareTo(Object o) {
 		 final int BEFORE = -1;

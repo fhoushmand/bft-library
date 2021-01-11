@@ -74,7 +74,6 @@ public class MethodCallMessage extends RTMessage implements Externalizable, Comp
 		return toString().hashCode();
 	}
 
-	 //TODO unchecked
 	 @Override
 	 public int compareTo(Object o) {
 		 final int BEFORE = -1;

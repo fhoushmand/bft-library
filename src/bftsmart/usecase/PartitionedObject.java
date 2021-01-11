@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class PartitionedObject {
     protected RMIRuntime runtime;
 
+    private HashMap<Integer,String> hostipMap;
+
     protected int sequenceNumber = 0;
 
     protected ReentrantLock objCallLock = new ReentrantLock();
@@ -53,6 +55,8 @@ public class PartitionedObject {
                 initOT_A4B1("(A:4;B:1)");
             else if(RMIRuntime.CONFIGURATION.equals("(A:4;B:4)"))
                 initOT_A4B4("(A:4;B:4)");
+            else if(RMIRuntime.CONFIGURATION.equals("(A:1;B:1;C:1)"))
+                initMax_A1B1C1("(A:1;B:1;C:1)");
         }
         catch (Exception e)
         {
@@ -93,7 +97,7 @@ public class PartitionedObject {
         writeHostsConfigFile(A, 1, configPath, 11000, 0);
         writeSystemConfigFile(A, 1, configPath);
         // replication of i2
-        writeHostsConfigFile(A, 2, configPath, 12000, A.size());
+        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
         writeSystemConfigFile(B, 2, configPath);
         // replication of a
         writeHostsConfigFile(H.union(A, B), 3, configPath, 13000, 0);
@@ -108,6 +112,102 @@ public class PartitionedObject {
         // create runtime configuration
         writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 13000, 0);
         writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
+    }
+
+    public void initializeMax()
+    {
+        argsMap = new HashMap<>();
+        argsMap.put("m4", new Class[]{String.class,Integer.class});
+        argsMap.put("m3", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m2", new Class[]{String.class,Integer.class,Integer.class});
+
+        // always here
+        argsMap.put("ret", new Class[]{Integer.class});
+
+        //object fields methods
+        argsMap.put("a-read", new Class[]{String.class});
+        argsMap.put("b-read", new Class[]{String.class});
+        argsMap.put("c-read", new Class[]{String.class});
+    }
+
+    public void finilaizeMax(String configuration, H A, H B, H C)
+    {
+        // create and write to hosts.config files
+        String configPath = "config" + configuration;
+        File directory = new File(configPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // replication of a
+        writeHostsConfigFile(A, 1, configPath, 11000, 0);
+        writeSystemConfigFile(A, 1, configPath);
+        // replication of b
+        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
+        writeSystemConfigFile(B, 2, configPath);
+        // replication of c
+        writeHostsConfigFile(C, 3, configPath, 13000, A.size() + B.size());
+        writeSystemConfigFile(C, 3, configPath);
+
+
+        String runtimeConfigPath = "runtime" + configPath;
+        directory = new File(runtimeConfigPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // create runtime configuration
+        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 13000, 0);
+        writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
+    }
+
+    public void initMax_A1B1C1(String configuration) {
+        initializeMax();
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        hosts.add(C);
+        H Client = new H();
+        Client.addHost(12);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+
+        methodsH = new HashMap<>();
+        methodsH.put("m4", A.pickFirst(3).toIntArray());
+        methodsH.put("m3", B.pickFirst(3).toIntArray());
+        methodsH.put("m2", C.pickFirst(3).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m4", new Q(Client, 1));
+        methodsQ.put("m3", new Q(A, 2));
+        methodsQ.put("m2", new Q(B, 2));
+        methodsQ.put("ret", new Q(C, 2));
+
+        finilaizeMax(configuration, A, B, C);
     }
 
     // The number after the host character represents the availability and integrity type
@@ -600,7 +700,7 @@ public class PartitionedObject {
             PrintWriter aWriter = new PrintWriter(configPath + sep + "hosts.config" + clusterID, "UTF-8");
             for(int i = 0; i < h.size(); i++)
             {
-                String hostLine = i+baseHostID + " " + "127.0.0.1 " + String.valueOf(basePort + (10*i)) + " " + String.valueOf(basePort+1 + (10*i)) + " " + String.valueOf(basePort+2 + (10*i)) + "\n";
+                String hostLine = i+baseHostID + " " + hostipMap.get(i+baseHostID) + " " + String.valueOf(basePort + (10*i)) + " " + String.valueOf(basePort+1 + (10*i)) + " " + String.valueOf(basePort+2 + (10*i)) + "\n";
                 aWriter.write(hostLine);
                 aWriter.flush();
             }
@@ -634,6 +734,18 @@ public class PartitionedObject {
 
     public ArrayList<H> getHosts() {
         return hosts;
+    }
+
+    public HashMap<Integer, String> getHostipMap() {
+        if(hostipMap == null || hostipMap.size() == 0)
+        {
+            throw new RuntimeException("hostip map is undefined");
+        }
+        return hostipMap;
+    }
+
+    public void setHostipMap(HashMap<Integer, String> hostipMap) {
+        this.hostipMap = hostipMap;
     }
 
     //    public void initTestOT()
