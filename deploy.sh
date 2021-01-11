@@ -9,6 +9,7 @@
 
 module load java/11
 
+mkdir -p bin
 rm -rf bin/*
 #rm config/currentView*
 #rm myconfig/currentView*
@@ -18,7 +19,7 @@ rm -rf bin/*
 #java -XshowSettings 2>&1  | grep -i Heap
 #jps -lvm
 #ps -o nlwp,pid -fe
-#~/shared/opt/apache-ant-1.10.9/bin/ant -d main
+~/shared/opt/apache-ant-1.10.9/bin/ant -d main
 
 nodes=($( scontrol show hostnames $SLURM_NODELIST ))
 nnodes=${#nodes[@]}
@@ -33,15 +34,11 @@ done
 
 echo $hostlist
 
-export HAMRAZ_HOME=/rhome/fhous001/shared/hamraz
+export HAMRAZ_HOME=/rhome/fhous001/shared/bft-library
 
 for i in $( seq 0 $last ); do
         ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; module load java/11; run.sh $i $hostlist" &
 done
-
-# Move to directory where job was submitted from
-cd $SLURM_WORKING_DIR
-
 
 #for a in 0 1 2 3 4 5 6 7 8 9 10 11 12
 #do
