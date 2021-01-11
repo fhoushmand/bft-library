@@ -12,45 +12,17 @@ import java.util.HashMap;
 
 public class OTClusterRunner {
 
-    public void read()
+    HashMap<Integer,Config> config = new HashMap<>();
+
+    public OTClusterRunner(String configPath) {
+        readUseCaseConfig(configPath);
+    }
+
+    public void readUseCaseConfig(String configpath)
     {
         try
         {
-            FileReader fr = new FileReader("systemconfig/ot.config");
-            BufferedReader rd = new BufferedReader(fr);
-            String line = null;
-            String file = "";
-            while ((line = rd.readLine()) != null) {
-                if (!line.startsWith("#")) {
-                    file += line;
-                    file += "\n";
-                }
-            }
-            fr.close();
-            rd.close();
-        }
-        catch (IOException e)
-        {
-            System.out.println("Cannot read system config template file");
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
-
-
-
-        //set of host ip addresses in a distributed environment
-        HashMap<Integer,String> hostMap = new HashMap<>();
-        int id = 0;
-        String hosts = "";
-        for(String hostIP : Arrays.copyOfRange(args, 1, args.length)) {
-            String h = hostIP + ".ib.hpcc.ucr.edu";
-            hostMap.put(id++, h);
-            hosts += h + " ";
-        }
-        try
-        {
-            FileReader fr = new FileReader("systemconfig/ot.config");
+            FileReader fr = new FileReader(configpath);
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while ((line = rd.readLine()) != null) {
@@ -59,10 +31,8 @@ public class OTClusterRunner {
                     String partitionedClassName = line.split("\\s+")[1];
                     String hostList = line.split("\\s+")[2];
                     String clusterId = line.split("\\s+")[3];
-                    if(hostsSetName.equals("Client"))
-                        Thread.sleep(10000);
                     for(String h : hostList.split(","))
-                        RMIRuntime.main(new String[]{h, clusterId, partitionedClassName, hosts});
+                        config.put(Integer.parseInt(h), new Config(hostsSetName, partitionedClassName, clusterId));
                 }
             }
             fr.close();
@@ -73,7 +43,20 @@ public class OTClusterRunner {
             System.out.println("Cannot read use-case config file");
         }
 
+    }
 
+    public static void main(String[] args) throws Exception {
+        OTClusterRunner clusterRunner = new OTClusterRunner("systemconfig/ot.config");
+        //set of host ip addresses in a distributed environment
+        HashMap<Integer,String> hostMap = new HashMap<>();
+        int id = 0;
+        String hosts = "";
+        for(String hostIP : Arrays.copyOfRange(args, 1, args.length)) {
+            String h = hostIP + ".ib.hpcc.ucr.edu";
+            hostMap.put(id++, h);
+            hosts += h + " ";
+        }
+        RMIRuntime.main(new String[]{args[0], clusterRunner.config.get(Integer.parseInt(args[0])).cluster, clusterRunner.config.get(id).className, hosts});
 //        int clusterId = Integer.parseInt(args[0]);
 //        int i = 0;
 //        if(clusterId < object.getHosts().get(0).size())
@@ -87,5 +70,17 @@ public class OTClusterRunner {
 //            RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(3), "bftsmart.usecase.oblivioustransfer.OTClient", hosts});
 //        }
 
+    }
+}
+
+class Config{
+    String name;
+    String className;
+    String cluster;
+
+    public Config(String name, String className, String clusterId) {
+        this.name = name;
+        this.className = className;
+        this.cluster = clusterId;
     }
 }
