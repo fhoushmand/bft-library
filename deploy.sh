@@ -40,6 +40,8 @@ for i in $( seq 0 $last ); do
         ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; module load java/11; run.sh $i $hostlist" &
 done
 
+sleep 600
+
 #for a in 0 1 2 3 4 5 6 7 8 9 10 11 12
 #do
 #        sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime $a 1 bftsmart.usecase.oblivioustransfer.OTA&

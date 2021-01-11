@@ -14,9 +14,8 @@ public class OTClusterRunner {
         int id = 0;
         for(String hostIP : Arrays.copyOfRange(args, 1, args.length))
             hostMap.put(id++, hostIP+".ib.hpcc.ucr.edu");
-        System.out.println(hostMap);
-        PartitionedObject object = new PartitionedObject();
-        object.setHostipMap(hostMap);
+
+        PartitionedObject object = new PartitionedObject(hostMap);
 
 
         int clusterId = Integer.parseInt(args[0]);

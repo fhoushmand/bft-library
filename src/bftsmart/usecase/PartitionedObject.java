@@ -32,12 +32,10 @@ public class PartitionedObject {
 
     private ArrayList<H> hosts = new ArrayList<>();
 
-    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-        new PartitionedObject();
-    }
 
-//    actual oblivious transfer usecase
-    public PartitionedObject() {
+//  actual oblivious transfer usecase
+    public PartitionedObject(HashMap<Integer,String> hostipMap) {
+        this.hostipMap = hostipMap;
         try {
             if(RMIRuntime.CONFIGURATION.equals("(A:1;B:1)"))
                 initOT_A1B1("(A:1;B:1)");
@@ -734,18 +732,6 @@ public class PartitionedObject {
 
     public ArrayList<H> getHosts() {
         return hosts;
-    }
-
-    public HashMap<Integer, String> getHostipMap() {
-        if(hostipMap == null || hostipMap.size() == 0)
-        {
-            throw new RuntimeException("hostip map is undefined");
-        }
-        return hostipMap;
-    }
-
-    public void setHostipMap(HashMap<Integer, String> hostipMap) {
-        this.hostipMap = hostipMap;
     }
 
     //    public void initTestOT()
