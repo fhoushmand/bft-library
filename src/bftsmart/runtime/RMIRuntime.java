@@ -39,7 +39,7 @@ public class RMIRuntime extends Thread{
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
 
-    public static String CONFIGURATION = "(A:1;B:1)";
+    public static String CONFIGURATION;// = "(A:1;B:1)";
 //    public static String CONFIGURATION = "(A:1;B:1;C:1)";
 
     // id of this process (runtime)
@@ -103,9 +103,12 @@ public class RMIRuntime extends Thread{
         information in the partitioned object. for OTA it is 1
         and for OTB it is 3
      * @param args [2] class name of the PartitionedObject subclass
+     * @param args [3] the list of ip address of the hosts
+     * @param args [4] configuration of the use-case
      */
 
     public static void main(String[] args) throws Exception{
+        CONFIGURATION = args[4];
         int id = Integer.parseInt(args[0]);
         // cluster id responsible for replicating the piece of
         // information in the partitioned object. for OTA it is 1
@@ -119,7 +122,7 @@ public class RMIRuntime extends Thread{
             hostIPMap.put(i++, h);
         }
 
-        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class).newInstance(hostIPMap);
+        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, args[4]);
 
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         runtime.getObj().setRuntime(runtime);
@@ -144,7 +147,7 @@ public class RMIRuntime extends Thread{
         if(test)
             viewController = new ServerViewController(id, "testconfig", null, 1);
         else
-            viewController = new ServerViewController(id, "runtimeconfig"+CONFIGURATION, null, 1);
+            viewController = new ServerViewController(id, "runtimeconfig_"+CONFIGURATION, null, 1);
 
         cs = new ServerCommunicationSystem(viewController, new MessageHandler());
 

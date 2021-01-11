@@ -32,7 +32,7 @@ public class Max3Runner {
         HashMap<Integer,String> hostIPMap = new HashMap<>();
         for (int i = 0; i < 30; i++)
             hostIPMap.put(i, "127.0.0.1");
-        PartitionedObject object = new PartitionedObject(hostIPMap);
+        PartitionedObject object = new PartitionedObject(hostIPMap, "");
 
         int i = 0;
         for(; i < object.getHosts().get(0).size(); i++) {

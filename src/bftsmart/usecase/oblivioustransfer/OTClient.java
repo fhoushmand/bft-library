@@ -13,10 +13,9 @@ public class OTClient extends PartitionedObject {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public OTClient(HashMap<Integer, String> hostipMap) {
-        super(hostipMap);
+    public OTClient(HashMap<Integer, String> hostipMap, String configuration) {
+        super(hostipMap, configuration);
     }
-
     public void transfer(Integer x)
     {
         objCallLock.lock();

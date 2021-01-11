@@ -333,7 +333,7 @@ public class Configuration {
 				if(RMIRuntime.test)
 					configHome = "testconfig";
 				else
-					configHome = "config" + RMIRuntime.CONFIGURATION;
+					configHome = "config_" + RMIRuntime.CONFIGURATION;
 			}
 			String sep = System.getProperty("file.separator");
 			//

@@ -34,27 +34,27 @@ public class PartitionedObject {
 
 
 //  actual oblivious transfer usecase
-    public PartitionedObject(HashMap<Integer,String> hostipMap) {
+    public PartitionedObject(HashMap<Integer,String> hostipMap, String configuration) {
         this.hostipMap = hostipMap;
         try {
-            if(RMIRuntime.CONFIGURATION.equals("(A:1;B:1)"))
-                initOT_A1B1("(A:1;B:1)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:2;B:1)"))
-                initOT_A2B1("(A:2;B:1)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:2;B:2)"))
-                initOT_A2B2("(A:2;B:2)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:3;B:1)"))
-                initOT_A3B1("(A:3;B:1)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:3;B:2)"))
-                initOT_A3B2("(A:3;B:2)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:3;B:3)"))
-                initOT_A3B3("(A:3;B:3)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:4;B:1)"))
-                initOT_A4B1("(A:4;B:1)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:4;B:4)"))
-                initOT_A4B4("(A:4;B:4)");
-            else if(RMIRuntime.CONFIGURATION.equals("(A:1;B:1;C:1)"))
-                initMax_A1B1C1("(A:1;B:1;C:1)");
+            if(configuration.equals("ot(A:1;B:1)"))
+                initOT_A1B1("ot(A:1;B:1)");
+            else if(configuration.equals("ot(A:2;B:1)"))
+                initOT_A2B1("ot(A:2;B:1)");
+            else if(configuration.equals("ot(A:2;B:2)"))
+                initOT_A2B2("ot(A:2;B:2)");
+            else if(configuration.equals("ot(A:3;B:1)"))
+                initOT_A3B1("ot(A:3;B:1)");
+            else if(configuration.equals("ot(A:3;B:2)"))
+                initOT_A3B2("ot(A:3;B:2)");
+            else if(configuration.equals("ot(A:3;B:3)"))
+                initOT_A3B3("ot(A:3;B:3)");
+            else if(configuration.equals("ot(A:4;B:1)"))
+                initOT_A4B1("ot(A:4;B:1)");
+            else if(configuration.equals("ot(A:4;B:4)"))
+                initOT_A4B4("ot(A:4;B:4)");
+            else if(configuration.equals("max3(A:1;B:1;C:1)"))
+                initMax_A1B1C1("max3(A:1;B:1;C:1)");
         }
         catch (Exception e)
         {
@@ -64,7 +64,7 @@ public class PartitionedObject {
     }
 
     public PartitionedObject() {
-        new PartitionedObject(new HashMap<>());
+        new PartitionedObject(new HashMap<>(), "");
     }
 
     public void initializeOT()
@@ -90,7 +90,7 @@ public class PartitionedObject {
     public void finilaizeOT(String configuration, H A, H B)
     {
         // create and write to hosts.config files
-        String configPath = "config" + configuration;
+        String configPath = "config_" + configuration;
         File directory = new File(configPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -106,7 +106,7 @@ public class PartitionedObject {
         writeSystemConfigFile(H.union(A,B), 3, configPath);
 
 
-        String runtimeConfigPath = "runtime" + configPath;
+        String runtimeConfigPath = "runtimeconfig_" + configuration;
         directory = new File(runtimeConfigPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -135,7 +135,7 @@ public class PartitionedObject {
     public void finilaizeMax(String configuration, H A, H B, H C)
     {
         // create and write to hosts.config files
-        String configPath = "config" + configuration;
+        String configPath = "config_" + configuration;
         File directory = new File(configPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -151,7 +151,7 @@ public class PartitionedObject {
         writeSystemConfigFile(C, 3, configPath);
 
 
-        String runtimeConfigPath = "runtime" + configPath;
+        String runtimeConfigPath = "runtimeconfig_" + configuration;
         directory = new File(runtimeConfigPath);
         if (! directory.exists()){
             directory.mkdir();

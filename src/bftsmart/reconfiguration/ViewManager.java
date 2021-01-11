@@ -67,7 +67,7 @@ public class ViewManager {
             String path = "";
             String sep = System.getProperty("file.separator");
             if (configHome == null || configHome.equals("")) {
-                path = "config" + RMIRuntime.CONFIGURATION + sep + "system.config";
+                path = "config_" + RMIRuntime.CONFIGURATION + sep + "system.config";
             } else {
                 path = configHome + sep + "system.config";
             }

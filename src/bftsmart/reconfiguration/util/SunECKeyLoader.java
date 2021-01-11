@@ -79,7 +79,7 @@ public class SunECKeyLoader implements KeyLoader {
 		this.sigAlgorithm = sigAlgorithm;
 
 		if (configHome.equals("")) {
-			path = "config" + RMIRuntime.CONFIGURATION + System.getProperty("file.separator") + "keysSunEC" + System.getProperty("file.separator");
+			path = "config_" + RMIRuntime.CONFIGURATION + System.getProperty("file.separator") + "keysSunEC" + System.getProperty("file.separator");
 		} else {
 			path = configHome + System.getProperty("file.separator") + "keysSunEC"
 					+ System.getProperty("file.separator");

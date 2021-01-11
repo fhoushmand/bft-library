@@ -54,7 +54,7 @@ public class OTRunner {
         // duplicate??
         try
         {
-            FileReader fr = new FileReader("systemconfig/ot.config");
+            FileReader fr = new FileReader("systemconfig/ot(A:1;B:1)");
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while ((line = rd.readLine()) != null) {
@@ -79,7 +79,7 @@ public class OTRunner {
 
         try
         {
-            FileReader fr = new FileReader("systemconfig/ot.config");
+            FileReader fr = new FileReader("systemconfig/ot(A:1;B:1)");
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while ((line = rd.readLine()) != null) {
@@ -94,7 +94,7 @@ public class OTRunner {
                         String finalHosts = hosts;
                         new Thread(() -> {
                             try {
-                                RMIRuntime.main(new String[]{h, clusterId, partitionedClassName, finalHosts});
+                                RMIRuntime.main(new String[]{h, clusterId, partitionedClassName, finalHosts, });
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

@@ -54,9 +54,9 @@ public class HostsConfig {
 
             if(configHome.equals("")){
                 if (fileName.equals(""))
-                    path = "config" + RMIRuntime.CONFIGURATION +sep+"hosts.config"+instanceId;
+                    path = "config_" + RMIRuntime.CONFIGURATION +sep+"hosts.config"+instanceId;
                 else
-                    path = "config" + RMIRuntime.CONFIGURATION +sep+fileName+instanceId;
+                    path = "config_" + RMIRuntime.CONFIGURATION +sep+fileName+instanceId;
             }else{
                 if (fileName.equals(""))
                     path = configHome+sep+"hosts.config"+instanceId;
