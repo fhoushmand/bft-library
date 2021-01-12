@@ -19,10 +19,6 @@ import java.util.HashMap;
  */
 //TODO should be able to move the arguments of the partitioned methods to the runtime -- (how?)
 public class OTA extends PartitionedObject {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-
     public Integer i1 = 10;
     public Boolean a = false;
 
@@ -45,7 +41,6 @@ public class OTA extends PartitionedObject {
     {
         logger.trace("execute m3 with x={}",x);
         runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, true);
-//        logger.trace("a={}",runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, true));
         if(x != 0)
             runtime.invoke("m2", callerId+"::m3", ++n); // send m2() message to the hosts of m2;
         else

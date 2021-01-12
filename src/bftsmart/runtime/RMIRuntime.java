@@ -3,6 +3,7 @@ package bftsmart.runtime;
 import bftsmart.demo.register.*;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.quorum.*;
+import bftsmart.usecase.Client;
 import bftsmart.usecase.oblivioustransfer.OTClient;
 import bftsmart.usecase.max3.Max3Client;
 import bftsmart.usecase.PartitionedObject;
@@ -14,8 +15,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -73,7 +72,9 @@ public class RMIRuntime extends Thread{
     HashMap<String,int[]> methodsHosts;
 
     // The quorum required for the methods to be able to execute
-    HashMap<String,Q> methodsQuorums;
+    HashMap<String, Q> methodsQuorums;
+
+    HashMap<String, Q> objectsQuorums;
 
     // A mapping to store the argument type of all the methods
     HashMap<String,Class[]> methodArgs;
@@ -96,46 +97,46 @@ public class RMIRuntime extends Thread{
         objCallLock.unlock();
     }
 
-    /**
-     * @param args [0] is the id of the runtime (unique)
-     * @param args [1] cluster id for the replication of the object
-        cluster id responsible for replicating the piece of
-        information in the partitioned object. for OTA it is 1
-        and for OTB it is 3
-     * @param args [2] class name of the PartitionedObject subclass
-     * @param args [3] the list of ip address of the hosts
-     * @param args [4] configuration of the use-case
-     */
-
-    public static void main(String[] args) throws Exception{
-        CONFIGURATION = args[4];
-        int id = Integer.parseInt(args[0]);
-        // cluster id responsible for replicating the piece of
-        // information in the partitioned object. for OTA it is 1
-        // and for OTB it is 3
-        //TODO need to make it general for other partitioned objects with multiple object fields
-        int clusterId = Integer.parseInt(args[1]);
-
-        HashMap<Integer,String> hostIPMap = new HashMap<>();
-        int i = 0;
-        for (String h : args[3].split("\\s+")){
-            hostIPMap.put(i++, h);
-        }
-
-        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, args[4]);
-
-        RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
-        runtime.getObj().setRuntime(runtime);
-        runtime.start();
-
-        //read from standard input
-        if (runtime.obj instanceof Max3Client || runtime.obj instanceof OTClient)
-        {
-            LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
-            runtime.setInputReader(new CMDReader(inputs));
-//            runtime.getInputReader().start();
-        }
-    }
+//    /**
+//     * @param args [0] is the id of the runtime (unique)
+//     * @param args [1] cluster id for the replication of the object
+//        cluster id responsible for replicating the piece of
+//        information in the partitioned object. for OTA it is 1
+//        and for OTB it is 3
+//     * @param args [2] class name of the PartitionedObject subclass
+//     * @param args [3] the list of ip address of the hosts
+//     * @param args [4] configuration of the use-case
+//     */
+//
+//    public static void main(String[] args) throws Exception{
+//        CONFIGURATION = args[4];
+//        int id = Integer.parseInt(args[0]);
+//        // cluster id responsible for replicating the piece of
+//        // information in the partitioned object. for OTA it is 1
+//        // and for OTB it is 3
+//        //TODO need to make it general for other partitioned objects with multiple object fields
+//        int clusterId = Integer.parseInt(args[1]);
+//
+//        HashMap<Integer,String> hostIPMap = new HashMap<>();
+//        int i = 0;
+//        for (String h : args[3].split("\\s+")){
+//            hostIPMap.put(i++, h);
+//        }
+//
+//        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, args[4]);
+//
+//        RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
+//        runtime.getObj().setRuntime(runtime);
+//        runtime.start();
+//
+//        //read from standard input
+//        if (runtime.obj instanceof Max3Client || runtime.obj instanceof OTClient)
+//        {
+//            LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
+//            runtime.setInputReader(new CMDReader(inputs));
+////            runtime.getInputReader().start();
+//        }
+//    }
 
     public RMIRuntime(int p, int cID, PartitionedObject object) throws Exception
     {
@@ -157,6 +158,7 @@ public class RMIRuntime extends Thread{
         methodArgs = obj.getArgsMap();
         methodsHosts = obj.getMethodsH();
         methodsQuorums = obj.getMethodsQ();
+        objectsQuorums = obj.getObjectsQ();
 
         cs.start();
     }
@@ -203,16 +205,18 @@ public class RMIRuntime extends Thread{
         {
             try {
                 Thread.sleep(10);
-                if (obj instanceof Max3Client || obj instanceof OTClient) {
-//                    String in = inputReader.getInQueue().poll(1000, TimeUnit.MILLISECONDS);
+                if (obj instanceof Client) {
                     String in = inputReader.getInQueue().poll();
 
                     if (in != null) {
                         if (in.equals("exit"))
                             break;
                         try {
-                            ((OTClient) obj).transfer(Integer.valueOf(in));
-//                            ((Max3Client) obj).max();
+                            //TODO cast arguments to the method
+//                            if(methodArgs.get("request").equals(Integer.class))
+                            ((Client) obj).request(Integer.valueOf(in));
+//                            if(methodArgs.get("request").equals(String.class))
+//                                ((Client) obj).request(in);
                         } catch (NumberFormatException e) {
                             System.out.println("invalid input");
                         }
@@ -230,9 +234,6 @@ public class RMIRuntime extends Thread{
             avgResponseTime += execs.get(i);
         avgResTime = avgResponseTime/execs.keySet().size();
         System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResTime + "(ms)");
-
-//        cs.send(obj.getAllHosts().toIntArray(), new ShutdownRuntimeMessage(id));
-//        shutdown();
     }
 
     public void shutdown()
@@ -297,9 +298,6 @@ public class RMIRuntime extends Thread{
 
     //ThisCallReceive
     class MessageHandler extends MessageHandlerRMI {
-
-        private Logger logger = LoggerFactory.getLogger(this.getClass());
-
         public MessageHandler() {}
 
         protected void processData(RTMessage sm) {
@@ -372,50 +370,42 @@ public class RMIRuntime extends Thread{
     // Q is the quorum of the callingMethod
     public Object invokeObj(String obj, String method, String callingMethod, String callerId, Integer n, Object... args)
     {
-        ObjCallMessage msgSent = null;
-        try {
-            int argsLength = args == null ? 0 : args.length;
+        Object output = null;
+        int argsLength = args == null ? 0 : args.length;
 
-            String objectCall = obj+"-"+method;
-            String mId = callerId + "::" + n;
-            // the extra argument is the id of this object call
-            Object[] objectCallArgs = new Object[argsLength + 1];
-            int i = 0;
-            for (; i < argsLength; i++)
-                objectCallArgs[i] = args[i];
-            objectCallArgs[i] = mId;
-            logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
-            // send object call to the quorum
-            msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
-            // block until get Q messages to execute object call
-            while (!objCallReceived.containsKey(msgSent) || !objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod)));
-            logger.trace("unblocking object call {}", mId);
-            // mark it as bot and clear the memory
-            objCallReceived.get(msgSent).setBot();
-            logger.trace("obj call {} with method id {}", objectCall, mId);
-            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
-            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
-            return returnValue;
-        }
-        //TODO check for NPE, see why the blocking while instruction might cause it
-        catch (NullPointerException | NoSuchMethodException e)
-        {
-//            e.printStackTrace();
-//            System.out.println("received object call reqs: " + objCallReceived);
-//            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
-//            System.out.println("Calling method: " + callingMethod);
-//            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
-
-        }
-//        try {
-//            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
-//            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
-//            return returnValue;
-//        } catch (NoSuchMethodException e) {
-//            e.printStackTrace();
-//        }
-        logger.error("must never happen");
-        return null;
+        String objectCall = obj+"-"+method;
+        String mId = callerId + "::" + n;
+        // the extra argument is the id of this object call
+        Object[] objectCallArgs = new Object[argsLength + 1];
+        int i = 0;
+        for (; i < argsLength; i++)
+            objectCallArgs[i] = args[i];
+        objectCallArgs[i] = mId;
+        ObjCallMessage msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
+        //TODO fix this: NPE happens on while instruction, I have fixed it with the below code that repeates the while if exception happens
+        do {
+            try {
+//             output = waitForMessagesAndExecute(msgSent, obj, method, objectCall, objectCallArgs);
+                while (!objCallReceived.containsKey(msgSent) || !objCallReceived.get(msgSent).isSuperSetEqual(objectsQuorums.get(obj)));
+                logger.trace("unblocking object call {}", mId);
+                // mark it as bot and clear the memory
+                objCallReceived.get(msgSent).setBot();
+                logger.trace("obj call {} with method id {}", objectCall, mId);
+                Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+                output = executeMethod(m, objectsState.get(obj), objectCallArgs);
+                break;
+            }
+            catch (NullPointerException | NoSuchMethodException e) {
+//                System.out.println("received object call reqs: " + objCallReceived);
+//                System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
+//                System.out.println("Calling method: " + callingMethod);
+//                System.out.println("Msg Sent: " + msgSent);
+//                System.out.println("object quorum : " + objectsQuorums.get(obj));
+            }
+        } while(true);
+//        if (output == null)
+//            logger.error("must never happen");
+        return output;
     }
 
     // ThisCallExec

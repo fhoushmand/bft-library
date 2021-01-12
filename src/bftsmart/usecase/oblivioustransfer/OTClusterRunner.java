@@ -1,7 +1,9 @@
 package bftsmart.usecase.oblivioustransfer;
 
+import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 import bftsmart.usecase.PartitionedObject;
+import bftsmart.usecase.max3.Max3Client;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class OTClusterRunner {
 
@@ -51,26 +54,38 @@ public class OTClusterRunner {
     * @param args[2:n] is the host list name
      */
     public static void main(String[] args) throws Exception {
-        OTClusterRunner clusterRunner = new OTClusterRunner("systemconfig/" + args[0]);
-        int id = 0;
-        String hosts = "";
-        for(String hostIP : Arrays.copyOfRange(args, 2, args.length)) {
-            String h = hostIP + ".ib.hpcc.ucr.edu";
-            hosts += h + " ";
+        OTClusterRunner clusterRunner = new OTClusterRunner(args[0]);
+
+//        RMIRuntime.main(new String[]{args[1], clusterRunner.config.get(Integer.parseInt(args[1])).cluster, clusterRunner.config.get(Integer.parseInt(args[1])).className, hosts, args[0]});
+
+
+        RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length-1];
+        int id = Integer.parseInt(args[1]);
+        // cluster id responsible for replicating the piece of
+        // information in the partitioned object. for OTA it is 1
+        // and for OTB it is 3
+        //TODO need to make it general for other partitioned objects with multiple object fields
+        int clusterId = Integer.parseInt(clusterRunner.config.get(Integer.parseInt(args[1])).cluster);
+
+        HashMap<Integer,String> hostIPMap = new HashMap<>();
+        int i = 0;
+        for (String hostName : Arrays.copyOfRange(args, 2, args.length)){
+            String h = hostName + ".ib.hpcc.ucr.edu";
+            hostIPMap.put(i++, h);
         }
-        RMIRuntime.main(new String[]{args[1], clusterRunner.config.get(Integer.parseInt(args[1])).cluster, clusterRunner.config.get(Integer.parseInt(args[1])).className, hosts, args[0]});
-//        int clusterId = Integer.parseInt(args[0]);
-//        int i = 0;
-//        if(clusterId < object.getHosts().get(0).size())
-//            RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(1), "bftsmart.usecase.oblivioustransfer.OTA", hosts});
-//
-//        else if(clusterId >= object.getHosts().get(0).size() && clusterId < object.getHosts().get(0).size() + object.getHosts().get(1).size())
-//            RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(2), "bftsmart.usecase.oblivioustransfer.OTB", hosts});
-//
-//        if(clusterId == object.getHosts().get(0).size() + object.getHosts().get(1).size()) {
-//            Thread.sleep(10000);
-//            RMIRuntime.main(new String[]{String.valueOf(clusterId), String.valueOf(3), "bftsmart.usecase.oblivioustransfer.OTClient", hosts});
-//        }
+
+        PartitionedObject o = (PartitionedObject) Class.forName(clusterRunner.config.get(Integer.parseInt(args[1])).className).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, RMIRuntime.CONFIGURATION);
+
+        RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
+        runtime.getObj().setRuntime(runtime);
+        runtime.start();
+
+        //read from the queue (randomly generating inputs)
+        if (runtime.getObj() instanceof Max3Client || runtime.getObj() instanceof OTClient)
+        {
+            LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
+            runtime.setInputReader(new CMDReader(inputs));
+        }
 
     }
 }

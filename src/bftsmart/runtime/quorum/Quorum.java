@@ -1,6 +1,5 @@
 package bftsmart.runtime.quorum;
 
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Quorum{
@@ -22,9 +21,9 @@ public class Quorum{
     }
 
 
-    public boolean isSuperSetEqual(Q q)
+    public boolean isSuperSetEqual(Q p)
     {
-        return q.isSubset(this);
+        return p.isSubset(this);
     }
 
     public boolean isSuperSetEqual(int[] hosts)

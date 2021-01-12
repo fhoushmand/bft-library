@@ -1,9 +1,10 @@
 package bftsmart.usecase;
 import bftsmart.runtime.RMIRuntime;
-import bftsmart.runtime.quorum.H;
-import bftsmart.runtime.quorum.Q;
-import bftsmart.runtime.quorum.QAnd;
-import bftsmart.runtime.quorum.QOr;
+import bftsmart.runtime.quorum.*;
+import bftsmart.runtime.quorum.P;
+import bftsmart.runtime.quorum.PAnd;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PartitionedObject {
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
     protected RMIRuntime runtime;
 
     private HashMap<Integer,String> hostipMap;
@@ -23,7 +26,9 @@ public class PartitionedObject {
     private HashMap<String,int[]> methodsH;
 
     // The quorum required for the methods to be able to execute
-    private HashMap<String,Q> methodsQ;
+    private HashMap<String, Q> methodsQ;
+
+    private HashMap<String, Q> objectsQ;
 
     // A mapping to store the argument type of the all the methods
     private HashMap<String,Class[]> argsMap;
@@ -41,18 +46,26 @@ public class PartitionedObject {
                 initOT_A1B1("ot(A:1;B:1)");
             else if(configuration.equals("ot(A:2;B:1)"))
                 initOT_A2B1("ot(A:2;B:1)");
-            else if(configuration.equals("ot(A:2;B:2)"))
-                initOT_A2B2("ot(A:2;B:2)");
             else if(configuration.equals("ot(A:3;B:1)"))
                 initOT_A3B1("ot(A:3;B:1)");
+            else if(configuration.equals("ot(A:4;B:1)"))
+                initOT_A4B1("ot(A:4;B:1)");
+            else if(configuration.equals("ot(A:5;B:1)"))
+                initOT_A5B1("ot(A:5;B:1)");
+            else if(configuration.equals("ot(A:6;B:1)"))
+                initOT_A6B1("ot(A:6;B:1)");
+            else if(configuration.equals("ot(A:7;B:1)"))
+                initOT_A7B1("ot(A:7;B:1)");
+
+            else if(configuration.equals("ot(A:2;B:2)"))
+                initOT_A2B2("ot(A:2;B:2)");
             else if(configuration.equals("ot(A:3;B:2)"))
                 initOT_A3B2("ot(A:3;B:2)");
             else if(configuration.equals("ot(A:3;B:3)"))
                 initOT_A3B3("ot(A:3;B:3)");
-            else if(configuration.equals("ot(A:4;B:1)"))
-                initOT_A4B1("ot(A:4;B:1)");
             else if(configuration.equals("ot(A:4;B:4)"))
                 initOT_A4B4("ot(A:4;B:4)");
+
             else if(configuration.equals("max3(A:1;B:1;C:1)"))
                 initMax_A1B1C1("max3(A:1;B:1;C:1)");
         }
@@ -76,6 +89,7 @@ public class PartitionedObject {
         argsMap.put("m1", new Class[]{String.class,Integer.class});
 
         // always here
+        argsMap.put("request", new Class[]{Integer.class});
         argsMap.put("ret", new Class[]{Integer.class});
 
         //object fields methods
@@ -204,10 +218,10 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new Q(A, 2));
-        methodsQ.put("m2", new Q(B, 2));
-        methodsQ.put("ret", new Q(C, 2));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 2));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("ret", new P(C, 2));
 
         finilaizeMax(configuration, A, B, C);
     }
@@ -251,11 +265,16 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 2), new Q(B, 2)));
-        methodsQ.put("m2", new Q(B, 2));
-        methodsQ.put("m1", new Q(A, 2));
-        methodsQ.put("ret", new QOr(new Q(A, 2), new Q(B, 2)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 2), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 2));
+        methodsQ.put("ret", new POr(new P(A, 2), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -303,11 +322,14 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 3), new Q(B, 2)));
-        methodsQ.put("m2", new Q(B, 2));
-        methodsQ.put("m1", new Q(A, 3));
-        methodsQ.put("ret", new QOr(new Q(A, 3), new Q(B, 2)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 3), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 3));
+        methodsQ.put("ret", new POr(new P(A, 3), new P(B, 2)));
+
+//        objectsQ = new HashMap<>();
+//        objectsQ.put("i1", new P())
 
         finilaizeOT(configuration, A, B);
     }
@@ -356,11 +378,11 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 4), new Q(B, 2)));
-        methodsQ.put("m2", new Q(B, 2));
-        methodsQ.put("m1", new Q(A, 4));
-        methodsQ.put("ret", new QOr(new Q(A, 4), new Q(B, 2)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 4), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 4));
+        methodsQ.put("ret", new POr(new P(A, 4), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -411,11 +433,11 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 4), new Q(B, 3)));
-        methodsQ.put("m2", new Q(B, 3));
-        methodsQ.put("m1", new Q(A, 4));
-        methodsQ.put("ret", new QOr(new Q(A, 4), new Q(B, 3)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 4), new P(B, 3)));
+        methodsQ.put("m2", new P(B, 3));
+        methodsQ.put("m1", new P(A, 4));
+        methodsQ.put("ret", new POr(new P(A, 4), new P(B, 3)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -470,11 +492,11 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 4), new Q(B, 4)));
-        methodsQ.put("m2", new Q(B, 4));
-        methodsQ.put("m1", new Q(A, 4));
-        methodsQ.put("ret", new QOr(new Q(A, 4), new Q(B, 4)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 4), new P(B, 4)));
+        methodsQ.put("m2", new P(B, 4));
+        methodsQ.put("m1", new P(A, 4));
+        methodsQ.put("ret", new POr(new P(A, 4), new P(B, 4)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -526,11 +548,197 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 5), new Q(B, 2)));
-        methodsQ.put("m2", new Q(B, 2));
-        methodsQ.put("m1", new Q(A, 5));
-        methodsQ.put("ret", new QOr(new Q(A, 5), new Q(B, 2)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 5), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 5));
+        methodsQ.put("ret", new POr(new P(A, 5), new P(B, 2)));
+
+        finilaizeOT(configuration, A, B);
+    }
+
+    public void initOT_A5B1(String configuration)
+    {
+        initializeOT();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        A.addHost(13);
+        A.addHost(14);
+        A.addHost(15);
+        hosts.add(A);
+        H B = new H();
+        B.addHost(16);
+        B.addHost(17);
+        B.addHost(18);
+        B.addHost(19);
+        hosts.add(B);
+        H Client = new H();
+        Client.addHost(20);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", A.pickFirst(11).toIntArray());
+        methodsH.put("m2", B.pickFirst(3).toIntArray());
+        methodsH.put("m3", H.union(A.pickFirst(11), B.pickFirst(3)).toIntArray());
+        methodsH.put("m4", H.union(A.pickFirst(11), B.pickFirst(3)).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 6), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 6));
+        methodsQ.put("ret", new POr(new P(A, 6), new P(B, 2)));
+
+        finilaizeOT(configuration, A, B);
+    }
+
+    public void initOT_A6B1(String configuration)
+    {
+        initializeOT();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        A.addHost(13);
+        A.addHost(14);
+        A.addHost(15);
+        A.addHost(16);
+        A.addHost(17);
+        A.addHost(18);
+        hosts.add(A);
+        H B = new H();
+        B.addHost(19);
+        B.addHost(20);
+        B.addHost(21);
+        B.addHost(22);
+        hosts.add(B);
+        H Client = new H();
+        Client.addHost(23);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", A.pickFirst(13).toIntArray());
+        methodsH.put("m2", B.pickFirst(3).toIntArray());
+        methodsH.put("m3", H.union(A.pickFirst(13), B.pickFirst(3)).toIntArray());
+        methodsH.put("m4", H.union(A.pickFirst(13), B.pickFirst(3)).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 7), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 7));
+        methodsQ.put("ret", new POr(new P(A, 7), new P(B, 2)));
+
+        finilaizeOT(configuration, A, B);
+    }
+
+    public void initOT_A7B1(String configuration)
+    {
+        initializeOT();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        A.addHost(13);
+        A.addHost(14);
+        A.addHost(15);
+        A.addHost(16);
+        A.addHost(17);
+        A.addHost(18);
+        A.addHost(19);
+        A.addHost(20);
+        A.addHost(21);
+        hosts.add(A);
+        H B = new H();
+        B.addHost(22);
+        B.addHost(23);
+        B.addHost(24);
+        B.addHost(25);
+        hosts.add(B);
+        H Client = new H();
+        Client.addHost(26);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", A.pickFirst(15).toIntArray());
+        methodsH.put("m2", B.pickFirst(3).toIntArray());
+        methodsH.put("m3", H.union(A.pickFirst(15), B.pickFirst(3)).toIntArray());
+        methodsH.put("m4", H.union(A.pickFirst(15), B.pickFirst(3)).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 8), new P(B, 2)));
+        methodsQ.put("m2", new P(B, 2));
+        methodsQ.put("m1", new P(A, 8));
+        methodsQ.put("ret", new POr(new P(A, 8), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -578,11 +786,11 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 3), new Q(B, 3)));
-        methodsQ.put("m2", new Q(B, 3));
-        methodsQ.put("m1", new Q(A, 3));
-        methodsQ.put("ret", new QOr(new Q(A, 3), new Q(B, 3)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 3), new P(B, 3)));
+        methodsQ.put("m2", new P(B, 3));
+        methodsQ.put("m1", new P(A, 3));
+        methodsQ.put("ret", new POr(new P(A, 3), new P(B, 3)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -644,11 +852,11 @@ public class PartitionedObject {
         // 2) And of two Qs
         // 3) Or of two Qs
         methodsQ = new HashMap<>();
-        methodsQ.put("m4", new Q(Client, 1));
-        methodsQ.put("m3", new QAnd(new Q(A, 5), new Q(B, 5)));
-        methodsQ.put("m2", new Q(B, 5));
-        methodsQ.put("m1", new Q(A, 5));
-        methodsQ.put("ret", new QOr(new Q(A, 5), new Q(B, 5)));
+        methodsQ.put("m4", new P(Client, 1));
+        methodsQ.put("m3", new PAnd(new P(A, 5), new P(B, 5)));
+        methodsQ.put("m2", new P(B, 5));
+        methodsQ.put("m1", new P(A, 5));
+        methodsQ.put("ret", new POr(new P(A, 5), new P(B, 5)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -724,6 +932,10 @@ public class PartitionedObject {
 
     public HashMap<String, Q> getMethodsQ() {
         return methodsQ;
+    }
+
+    public HashMap<String, Q> getObjectsQ() {
+        return objectsQ;
     }
 
     public HashMap<String, Class[]> getArgsMap() {

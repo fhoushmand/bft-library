@@ -32,9 +32,8 @@
 			</fileset>
 			<fileset dir="${base.dir}">
 				<include name="systemconfig/*" />
-				<include name="config/*" />
-				<include name="runtimeconfig/*" />
-				<include name="myconfig/*" />
+				<include name="config*/*" />
+				<include name="runtimeconfig*/*" />
 			</fileset>
 		</jar>
 	</target>

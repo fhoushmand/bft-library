@@ -1,15 +1,19 @@
 package bftsmart.usecase.oblivioustransfer;
 
+import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 import bftsmart.usecase.PartitionedObject;
+import bftsmart.usecase.max3.Max3Client;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class OTRunner {
+    HashMap<Integer,Config> config = new HashMap<>();
 //    public static void main(String[] args) throws Exception {
 //        String hosts = "";
 //        HashMap<Integer,String> hostIPMap = new HashMap<>();
@@ -54,7 +58,7 @@ public class OTRunner {
         // duplicate??
         try
         {
-            FileReader fr = new FileReader("systemconfig/ot(A:1;B:1)");
+            FileReader fr = new FileReader(args[0]);
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while ((line = rd.readLine()) != null) {
@@ -71,15 +75,16 @@ public class OTRunner {
         {
             System.out.println("Cannot read use-case config file");
         }
-
+        HashMap<Integer,String> hostIPMap = new HashMap<>();
         String hosts = "";
         for(int i = 0; i < totalNumberOfHosts; i++) {
             hosts += "127.0.0.1 ";
+            hostIPMap.put(i, "127.0.0.1");
         }
 
         try
         {
-            FileReader fr = new FileReader("systemconfig/ot(A:1;B:1)");
+            FileReader fr = new FileReader(args[0]);
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while ((line = rd.readLine()) != null) {
@@ -94,7 +99,22 @@ public class OTRunner {
                         String finalHosts = hosts;
                         new Thread(() -> {
                             try {
-                                RMIRuntime.main(new String[]{h, clusterId, partitionedClassName, finalHosts, });
+//                                RMIRuntime.CONFIGURATION = args[0].substring(args[0].indexOf('('), args[0].indexOf(')')+1);
+                                RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length-1];
+
+                                PartitionedObject o = (PartitionedObject) Class.forName(partitionedClassName).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, RMIRuntime.CONFIGURATION);
+
+                                RMIRuntime runtime = new RMIRuntime(Integer.parseInt(h), Integer.parseInt(clusterId), o);
+                                runtime.getObj().setRuntime(runtime);
+                                runtime.start();
+
+                                //read from the queue (randomly generating inputs)
+                                if (runtime.getObj() instanceof Max3Client || runtime.getObj() instanceof OTClient)
+                                {
+                                    LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
+                                    runtime.setInputReader(new CMDReader(inputs));
+                                }
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
