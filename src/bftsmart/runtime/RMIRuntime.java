@@ -191,7 +191,7 @@ public class RMIRuntime extends Thread{
 
     @Override
     public void run() {
-        if (obj instanceof Max3Client || obj instanceof OTClient) {
+        if (obj instanceof Client) {
             try {
                 Thread.sleep(20000);
             } catch (InterruptedException e) {
@@ -200,7 +200,6 @@ public class RMIRuntime extends Thread{
             inputReader.start();
         }
 
-        int count = 0;
         while (true)
         {
             try {
@@ -396,6 +395,7 @@ public class RMIRuntime extends Thread{
                 break;
             }
             catch (NullPointerException | NoSuchMethodException e) {
+//                e.printStackTrace();
 //                System.out.println("received object call reqs: " + objCallReceived);
 //                System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
 //                System.out.println("Calling method: " + callingMethod);
@@ -428,13 +428,14 @@ public class RMIRuntime extends Thread{
                 // arguments based on the methodArgs map
                 Object[] args = new Object[argumentsTypeArray.length];
                 // setting the callerId and n except if it is "ret"
-                if (!mEntry.getKey().getMethodName().equals("ret")) {
+//                if (!mEntry.getKey().getMethodName().equals("ret")) {
                     args[0] = mEntry.getKey().getOperationId();
                     args[1] = mEntry.getKey().getN();
-                }
+//                }
                 if (mEntry.getKey().getArg() != null) {
                     for (int j = 0; j < ((Object[]) mEntry.getKey().getArg()).length; j++) {
-                        int i = mEntry.getKey().getMethodName().equals("ret") ? 0 : j + 2;
+//                        int i = mEntry.getKey().getMethodName().equals("ret") ? 0 : j + 2;
+                        int i = j+2;
                         args[i] = ((Object[]) mEntry.getKey().getArg())[j];
                     }
                 }

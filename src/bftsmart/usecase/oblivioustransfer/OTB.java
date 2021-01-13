@@ -31,7 +31,7 @@ public class OTB extends PartitionedObject {
     public void m3(String callerId, Integer n, Integer x)
     {
         logger.trace("execute m3 with x={}",x);
-        runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, true);
+        runtime.invokeObj("a", "write", "m3", callerId+"::m3", ++n, false);
         if(x != 0)
             runtime.invoke("m2", callerId+"::m3", ++n); // send m2() message to the hosts of m2;
         else

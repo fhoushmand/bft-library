@@ -23,25 +23,25 @@ public class OTClient extends PartitionedObject implements Client {
 
     public void transfer(Integer x)
     {
-        objCallLock.lock();
+//        objCallLock.lock();
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         logger.info("execute transfer with x={}",x);
-        runtime.invoke("m4", "transfer", sequenceNumber, x); // send m4(x) message to the hosts of m4;
-
+        runtime.invoke("m4", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
     }
 
-    public void ret(Integer x)
+    public void ret(String callerId, Integer n, Integer x)
     {
+        String seqNumber = callerId.split("::")[1];
+        int id = Integer.valueOf(seqNumber);
         // calculate response time
-        runtime.getExecs().put(sequenceNumber, System.currentTimeMillis() - runtime.getExecs().get(sequenceNumber));
-        logger.info("response time for call {}: {}", sequenceNumber, runtime.getExecs().get(sequenceNumber));
-        System.out.println(String.format("response time for call %s: %s", sequenceNumber, runtime.getExecs().get(sequenceNumber)));
+        runtime.getExecs().put(id, System.currentTimeMillis() - runtime.getExecs().get(id));
+        logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
+        System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
         logger.info("return value = {}", x);
         System.out.println(String.format("return value = %s", x));
-        sequenceNumber++;
         // just for oblivious transfer example since it returns zero after the first call
-        runtime.resetObjectStates();
-        objCallLock.unlock();
+//        runtime.resetObjectStates();
+//        objCallLock.unlock();
     }
 
 

@@ -1,18 +1,20 @@
 //package bftsmart.usecase;
 //
-//public class Auction {
+//public class Auction extends PartitionedObject{
 //
 //    Broker broker1;
 //    Broker broker2;
 //
 //    Integer defaultPrice = null;
 //
-//    public int auction()
+//    public int auction(Integer offer)
 //    {
-//        if(defaultPrice == null)
-//        {
-//            broker1.offerPrice(defaultPrice)
-//        }
+//
+//    }
+//
+//    public void m1(Integer offer)
+//    {
+//        int user =
 //    }
 //}
 //

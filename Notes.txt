@@ -47,6 +47,9 @@ No appropriate protocol or cipher suite is disabled and,
 InvalidKeyStoreFormat exception:
     Java version must be greater that 11.0.150 (I use 14 local and java/11 on cluster)
 
+-Note that on the cluster (also on the local) all the nodes are reading/writing from/to one code base.
+This caused problem when writing config files. now it is resolve by checking before writing to a new file
+
 
 
 Results on local PC:

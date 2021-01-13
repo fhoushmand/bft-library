@@ -90,7 +90,7 @@ public class PartitionedObject {
 
         // always here
         argsMap.put("request", new Class[]{Integer.class});
-        argsMap.put("ret", new Class[]{Integer.class});
+        argsMap.put("ret", new Class[]{String.class,Integer.class,Integer.class});
 
         //object fields methods
         argsMap.put("i1-read", new Class[]{String.class});

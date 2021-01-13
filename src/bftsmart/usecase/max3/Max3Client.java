@@ -10,7 +10,7 @@ public class Max3Client extends PartitionedObject {
 
     public void max()
     {
-        objCallLock.lock();
+//        objCallLock.lock();
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         logger.info("execute max()");
         runtime.invoke("m4", "max", sequenceNumber); // send m4(x) message to the hosts of m4;
@@ -26,7 +26,7 @@ public class Max3Client extends PartitionedObject {
         System.out.println(String.format("return value = %s", max));
         sequenceNumber++;
         // just for oblivious transfer example since it returns zero after the first call
-        runtime.resetObjectStates();
-        objCallLock.unlock();
+//        runtime.resetObjectStates();
+//        objCallLock.unlock();
     }
 }
