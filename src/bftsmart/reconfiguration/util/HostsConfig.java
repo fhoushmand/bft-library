@@ -71,11 +71,11 @@ public class HostsConfig {
                 if(!line.startsWith("#")){
                     StringTokenizer str = new StringTokenizer(line," ");
                     if(str.countTokens() == 5){
-                        int id = Integer.valueOf(str.nextToken());
+                        int id = Integer.valueOf(str.nextToken().trim());
                         String host = str.nextToken();
-                        int port = Integer.valueOf(str.nextToken());
-                        int portRR = Integer.valueOf(str.nextToken());
-                        int rmiPort = Integer.valueOf(str.nextToken());
+                        int port = Integer.valueOf(str.nextToken().trim());
+                        int portRR = Integer.valueOf(str.nextToken().trim());
+                        int rmiPort = Integer.valueOf(str.nextToken().trim());
                         this.servers.put(id, new Config(id, host, port, portRR, rmiPort));
                     }
                 }

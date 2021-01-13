@@ -328,8 +328,10 @@ public class PartitionedObject {
         methodsQ.put("m1", new P(A, 3));
         methodsQ.put("ret", new POr(new P(A, 3), new P(B, 2)));
 
-//        objectsQ = new HashMap<>();
-//        objectsQ.put("i1", new P())
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -383,6 +385,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 2));
         methodsQ.put("m1", new P(A, 4));
         methodsQ.put("ret", new POr(new P(A, 4), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -438,6 +445,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 3));
         methodsQ.put("m1", new P(A, 4));
         methodsQ.put("ret", new POr(new P(A, 4), new P(B, 3)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -498,6 +510,11 @@ public class PartitionedObject {
         methodsQ.put("m1", new P(A, 4));
         methodsQ.put("ret", new POr(new P(A, 4), new P(B, 4)));
 
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
+
         finilaizeOT(configuration, A, B);
     }
 
@@ -553,6 +570,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 2));
         methodsQ.put("m1", new P(A, 5));
         methodsQ.put("ret", new POr(new P(A, 5), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -612,6 +634,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 2));
         methodsQ.put("m1", new P(A, 6));
         methodsQ.put("ret", new POr(new P(A, 6), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -674,6 +701,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 2));
         methodsQ.put("m1", new P(A, 7));
         methodsQ.put("ret", new POr(new P(A, 7), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -740,6 +772,11 @@ public class PartitionedObject {
         methodsQ.put("m1", new P(A, 8));
         methodsQ.put("ret", new POr(new P(A, 8), new P(B, 2)));
 
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
+
         finilaizeOT(configuration, A, B);
     }
 
@@ -791,6 +828,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 3));
         methodsQ.put("m1", new P(A, 3));
         methodsQ.put("ret", new POr(new P(A, 3), new P(B, 3)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }
@@ -857,6 +899,11 @@ public class PartitionedObject {
         methodsQ.put("m2", new P(B, 5));
         methodsQ.put("m1", new P(A, 5));
         methodsQ.put("ret", new POr(new P(A, 5), new P(B, 5)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("i1", new P(A, 2));
+        objectsQ.put("i2", new P(B, 2));
+        objectsQ.put("a", new POr(new P(A, 2), new P(B, 2)));
 
         finilaizeOT(configuration, A, B);
     }

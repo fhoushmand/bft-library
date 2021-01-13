@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
-#SBATCH --nodes=9
-#SBATCH --ntasks=9
+#SBATCH --nodes=12
+#SBATCH --ntasks=12
 #SBATCH --cpus-per-task=4
 #SBATCH --output="result.log"
 #SBATCH --mem=2G
@@ -11,14 +11,11 @@ module load java/11
 
 mkdir -p bin
 rm -rf bin/*
+rm -rf config_*
+rm -rf runtimeconfig_*
 #rm config/currentView*
 #rm myconfig/currentView*
-#
 
-##mv cluster-config/* .
-#java -XshowSettings 2>&1  | grep -i Heap
-#jps -lvm
-#ps -o nlwp,pid -fe
 ~/shared/opt/apache-ant-1.10.9/bin/ant -d main
 
 nodes=($( scontrol show hostnames $SLURM_NODELIST ))
@@ -44,17 +41,5 @@ for i in $( seq 0 $last ); do
 done
 
 sleep 600
-
-#for a in 0 1 2 3 4 5 6 7 8 9 10 11 12
-#do
-#        sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime $a 1 bftsmart.usecase.oblivioustransfer.OTA&
-#done
-#
-#for b in 13 14 15 16 17 18 19 20 21 22 23 24 25
-#do
-#        sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime $b 2 bftsmart.usecase.oblivioustransfer.OTB&
-#done
-#
-#sh runscripts/smartrun.sh bftsmart.runtime.RMIRuntime 26 3 bftsmart.usecase.oblivioustransfer.OTClient
 
 #java -Djava.security.properties="./systemconfig/java.security" -Dlogback.configurationFile="./systemconfig/logback.xml" -Xmx20000m -cp bin/*:lib/* bftsmart.usecase.oblivioustransfer.OTRunner
