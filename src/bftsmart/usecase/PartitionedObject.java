@@ -940,9 +940,12 @@ public class PartitionedObject {
              */
             file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView);
             String sep = System.getProperty("file.separator");
-            PrintWriter systemConfigWriter = new PrintWriter(configPath + sep + "system.config" + clusterID, "UTF-8");
-            systemConfigWriter.write(file);
-            systemConfigWriter.flush();
+            String fileName = configPath + sep + "system.config" + clusterID;
+            if(!new File(fileName).exists()) {
+                PrintWriter systemConfigWriter = new PrintWriter(fileName, "UTF-8");
+                systemConfigWriter.write(file);
+                systemConfigWriter.flush();
+            }
         }
         catch (IOException e)
         {
@@ -954,12 +957,14 @@ public class PartitionedObject {
     {
         try {
             String sep = System.getProperty("file.separator");
-            PrintWriter aWriter = new PrintWriter(configPath + sep + "hosts.config" + clusterID, "UTF-8");
-            for(int i = 0; i < h.size(); i++)
-            {
-                String hostLine = i+baseHostID + " " + hostipMap.get(i+baseHostID) + " " + String.valueOf(basePort + (10*i)) + " " + String.valueOf(basePort+1 + (10*i)) + " " + String.valueOf(basePort+2 + (10*i)) + "\n";
-                aWriter.write(hostLine);
-                aWriter.flush();
+            String fileName = configPath + sep + "hosts.config" + clusterID;
+            if(!new File(fileName).exists()) {
+                PrintWriter aWriter = new PrintWriter(configPath + sep + "hosts.config" + clusterID, "UTF-8");
+                for (int i = 0; i < h.size(); i++) {
+                    String hostLine = i + baseHostID + " " + hostipMap.get(i + baseHostID) + " " + String.valueOf(basePort + (10 * i)) + " " + String.valueOf(basePort + 1 + (10 * i)) + " " + String.valueOf(basePort + 2 + (10 * i)) + "\n";
+                    aWriter.write(hostLine);
+                    aWriter.flush();
+                }
             }
         }
         catch (IOException e)
