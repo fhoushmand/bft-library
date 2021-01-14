@@ -13,14 +13,14 @@ public class ClusterRunner {
                 continue;
 
             String configName = f.getName();
-            String conf = configName.substring(configName.indexOf('-')+1, configName.length());
+            String conf = configName.substring(configName.indexOf('-')+1);
 
             int totalNumberOfHosts = 1;
             for(String hostConf : conf.split("-"))
             {
-	    	String val = hostConf.substring(1,hostConf.length());
-		System.out.println(val);
-                Integer fSize = Integer.valueOf(hostConf.substring(1,hostConf.length()));
+                String val = hostConf.substring(1);
+                System.out.println(val);
+                Integer fSize = Integer.valueOf(hostConf.substring(1));
                 totalNumberOfHosts += (3*fSize)+1;
             }
 
@@ -30,8 +30,8 @@ public class ClusterRunner {
                 System.out.println("created deploy script is null for " + f.getName());
                 continue;
             }
-	    String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
-	    System.out.println(command);
+            String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
+            System.out.println(command);
             ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), "systemconfig" + System.getProperty("file.separator") + f.getName());
 //            ProcessBuilder pb = new ProcessBuilder("ls","-lash");
             pb.inheritIO();
@@ -46,11 +46,11 @@ public class ClusterRunner {
 
             Thread.sleep((30+repetition*2)*1000 + 5000);
 
-	    ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts-1+".log");
+            ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts-1+".log");
             pb2.inheritIO();
             Process p2 = pb2.start();
 
-	    InputStreamReader inputStreamReader2 = new InputStreamReader(p2.getInputStream());
+            InputStreamReader inputStreamReader2 = new InputStreamReader(p2.getInputStream());
             BufferedReader bufferedReader2 = new BufferedReader(inputStreamReader2);
             String output2 = null;
             while ((output = bufferedReader2.readLine()) != null) {
@@ -77,8 +77,8 @@ public class ClusterRunner {
             String line = null;
             String file = "";
             while ((line = rd.readLine()) != null) {
-                    file += line;
-                    file += "\n";
+                file += line;
+                file += "\n";
             }
             fr.close();
             rd.close();

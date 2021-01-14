@@ -42,20 +42,20 @@ public class PartitionedObject {
     public PartitionedObject(HashMap<Integer,String> hostipMap, String configuration) {
         this.hostipMap = hostipMap;
         try {
-            if(configuration.equals("ot(A:1;B:1)"))
-                initOT_A1B1("ot(A:1;B:1)");
-            else if(configuration.equals("ot(A:2;B:1)"))
-                initOT_A2B1("ot(A:2;B:1)");
-            else if(configuration.equals("ot(A:3;B:1)"))
-                initOT_A3B1("ot(A:3;B:1)");
-            else if(configuration.equals("ot(A:4;B:1)"))
-                initOT_A4B1("ot(A:4;B:1)");
-            else if(configuration.equals("ot(A:5;B:1)"))
-                initOT_A5B1("ot(A:5;B:1)");
-            else if(configuration.equals("ot(A:6;B:1)"))
-                initOT_A6B1("ot(A:6;B:1)");
-            else if(configuration.equals("ot(A:7;B:1)"))
-                initOT_A7B1("ot(A:7;B:1)");
+            if(configuration.equals("ot-A1-B1"))
+                initOT_A1B1("ot-A1-B1");
+            else if(configuration.equals("ot-A2-B1"))
+                initOT_A2B1("ot-A2-B1");
+            else if(configuration.equals("ot-A3-B1"))
+                initOT_A3B1("ot-A3-B1");
+            else if(configuration.equals("ot-A4-B1"))
+                initOT_A4B1("ot-A4-B1");
+            else if(configuration.equals("ot-A5-B1"))
+                initOT_A5B1("ot-A5-B1");
+            else if(configuration.equals("ot-A6-B1"))
+                initOT_A6B1("ot-A6-B1");
+            else if(configuration.equals("ot-A7-B1"))
+                initOT_A7B1("ot-A7-B1");
 
             else if(configuration.equals("ot(A:2;B:2)"))
                 initOT_A2B2("ot(A:2;B:2)");
