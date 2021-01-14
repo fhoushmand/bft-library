@@ -228,9 +228,12 @@ public class RMIRuntime extends Thread{
         }
 
         double avgResponseTime = 0;
+        int count = 0;
         // calculate statistics
-        for(int i : execs.keySet())
-            avgResponseTime += execs.get(i);
+        for(int i : execs.keySet()) {
+            if(count++ != 0)
+                avgResponseTime += execs.get(i);
+        }
         avgResTime = avgResponseTime/execs.keySet().size();
         System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResTime + "(ms)");
     }

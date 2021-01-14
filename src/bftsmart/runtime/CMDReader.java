@@ -16,6 +16,7 @@ limitations under the License.
 package bftsmart.runtime;
 
 
+import bftsmart.usecase.ClusterRunner;
 import bftsmart.usecase.oblivioustransfer.OTClient;
 
 import java.util.Random;
@@ -46,7 +47,7 @@ public class CMDReader extends Thread {
 
     @Override
     public void run() {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < ClusterRunner.REPITITION; i++) {
             try {
                 inQueue.offer(String.valueOf(new Random().nextInt(2)));
                 Thread.sleep(1000);
