@@ -49,7 +49,7 @@ public class CMDReader extends Thread {
         for (int i = 0; i < 20; i++) {
             try {
                 inQueue.offer(String.valueOf(new Random().nextInt(2)));
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException interruptedException) {
                 interruptedException.printStackTrace();
             }
