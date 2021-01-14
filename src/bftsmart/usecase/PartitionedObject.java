@@ -9,10 +9,13 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PartitionedObject {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public int responseReceived = 0;
 
     protected RMIRuntime runtime;
 
@@ -20,7 +23,8 @@ public class PartitionedObject {
 
     protected int sequenceNumber = 0;
 
-    protected ReentrantLock objCallLock = new ReentrantLock();
+    public ReentrantLock objCallLock = new ReentrantLock();
+    public Condition requestBlock = objCallLock.newCondition();
 
     // The id of the processes that host the methods in the given partitioned class
     private HashMap<String,int[]> methodsH;

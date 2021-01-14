@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -205,21 +206,21 @@ public class RMIRuntime extends Thread{
             try {
                 Thread.sleep(10);
                 if (obj instanceof Client) {
-                    String in = inputReader.getInQueue().poll();
-
-                    if (in != null) {
-                        if (in.equals("exit"))
+//                    String in = inputReader.getInQueue().poll(2, TimeUnit.SECONDS);
+//                    if (in != null) {
+                    if(obj.responseReceived == 50)
+//                        if (in.equals("exit"))
                             break;
-                        try {
-                            //TODO cast arguments to the method
-//                            if(methodArgs.get("request").equals(Integer.class))
-                            ((Client) obj).request(Integer.valueOf(in));
-//                            if(methodArgs.get("request").equals(String.class))
-//                                ((Client) obj).request(in);
-                        } catch (NumberFormatException e) {
-                            System.out.println("invalid input");
-                        }
-                    }
+//                        try {
+//                            //TODO cast arguments to the method
+////                            if(methodArgs.get("request").equals(Integer.class))
+//                            ((Client) obj).request(Integer.valueOf(in));
+////                            if(methodArgs.get("request").equals(String.class))
+////                                ((Client) obj).request(in);
+//                        } catch (NumberFormatException e) {
+//                            System.out.println("invalid input");
+//                        }
+//                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();

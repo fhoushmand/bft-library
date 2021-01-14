@@ -23,7 +23,6 @@ public class OTClient extends PartitionedObject implements Client {
 
     public void transfer(Integer x)
     {
-//        objCallLock.lock();
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         logger.info("execute transfer with x={}",x);
         runtime.invoke("m4", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
@@ -39,9 +38,13 @@ public class OTClient extends PartitionedObject implements Client {
         System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
         logger.info("return value = {}", x);
         System.out.println(String.format("return value = %s", x));
+        responseReceived++;
         // just for oblivious transfer example since it returns zero after the first call
 //        runtime.resetObjectStates();
-//        objCallLock.unlock();
+        objCallLock.lock();
+        requestBlock.signalAll();
+        objCallLock.unlock();
+
     }
 
 

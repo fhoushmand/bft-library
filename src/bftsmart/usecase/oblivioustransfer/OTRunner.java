@@ -111,8 +111,10 @@ public class OTRunner {
                                 //read from the queue (randomly generating inputs)
                                 if (runtime.getObj() instanceof Max3Client || runtime.getObj() instanceof OTClient)
                                 {
-                                    LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
-                                    runtime.setInputReader(new CMDReader(inputs));
+                                    CMDReader reader = new CMDReader();
+                                    runtime.setInputReader(reader);
+                                    reader.runtime = runtime;
+
                                 }
 
                             } catch (Exception e) {
