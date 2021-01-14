@@ -47,7 +47,7 @@ public class CMDReader extends Thread {
 
     @Override
     public void run() {
-        for (int i = 0; i < ClusterRunner.REPITITION; i++) {
+        for (int i = 0; i < 50; i++) {
             try {
                 inQueue.offer(String.valueOf(new Random().nextInt(2)));
                 Thread.sleep(1000);

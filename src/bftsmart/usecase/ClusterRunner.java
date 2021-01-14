@@ -4,7 +4,7 @@ import java.io.*;
 
 public class ClusterRunner {
 
-    public static int REPITITION;
+    public static int REPITITION = 50;
 
     public void executeCommands() throws IOException, InterruptedException {
 
@@ -107,7 +107,6 @@ public class ClusterRunner {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        ClusterRunner.REPITITION = Integer.parseInt(args[0]);
         ClusterRunner runner = new ClusterRunner();
         runner.executeCommands();
     }
