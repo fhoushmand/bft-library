@@ -43,3 +43,5 @@ for i in $( seq 0 $last ); do
         ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; sh run.sh '$1' $i $hostlist" &
 done
 
+sleep 100
+

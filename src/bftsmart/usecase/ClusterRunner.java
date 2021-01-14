@@ -9,16 +9,18 @@ public class ClusterRunner {
     public void executeCommands() throws IOException, InterruptedException {
 
         for(File f : new File("systemconfig").listFiles()) {
-            if(!f.getName().contains("ot"))
+            if(!f.getName().contains("ot-"))
                 continue;
 
             String configName = f.getName();
-            String conf = configName.substring(configName.indexOf('(')+1, configName.indexOf(')'));
+            String conf = configName.substring(configName.indexOf('-')+1, configName.length());
 
             int totalNumberOfHosts = 1;
-            for(String hostConf : conf.split(";"))
+            for(String hostConf : conf.split("-"))
             {
-                Integer fSize = Integer.valueOf(hostConf.split(":")[1]);
+	    	String val = hostConf.substring(1,hostConf.length());
+		System.out.println(val);
+                Integer fSize = Integer.valueOf(hostConf.substring(1,hostConf.length()));
                 totalNumberOfHosts += (3*fSize)+1;
             }
 
@@ -28,6 +30,8 @@ public class ClusterRunner {
                 System.out.println("created deploy script is null for " + f.getName());
                 continue;
             }
+	    String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
+	    System.out.println(command);
             ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), "systemconfig" + System.getProperty("file.separator") + f.getName());
 //            ProcessBuilder pb = new ProcessBuilder("ls","-lash");
             pb.inheritIO();
@@ -42,10 +46,19 @@ public class ClusterRunner {
 
             Thread.sleep((30+repetition*2)*1000 + 5000);
 
-            ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", ">>", totalNumberOfHosts-1+".log");
+	    ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts-1+".log");
             pb2.inheritIO();
             Process p2 = pb2.start();
+
+	    InputStreamReader inputStreamReader2 = new InputStreamReader(p2.getInputStream());
+            BufferedReader bufferedReader2 = new BufferedReader(inputStreamReader2);
+            String output2 = null;
+            while ((output = bufferedReader2.readLine()) != null) {
+                System.out.println(output2);
+            }
+
             p2.waitFor();
+
 
             ProcessBuilder pb3 = new ProcessBuilder("scancel", "-u", "fhous001");
             pb3.inheritIO();
