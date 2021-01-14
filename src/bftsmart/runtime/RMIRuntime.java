@@ -58,7 +58,7 @@ public class RMIRuntime extends Thread{
     ConcurrentHashMap<MethodCallMessage,Quorum> network = new ConcurrentHashMap<>();
 
     //mapping from <methodIdentifier,methodArgument> -> Quorum
-    HashMap<ObjCallMessage,Quorum> objCallReceived = new HashMap<>();
+    ConcurrentHashMap<ObjCallMessage,Quorum> objCallReceived = new ConcurrentHashMap<>();
 
     //sequential objects state
     //mapping from objects(names) to states (objects state)
@@ -369,43 +369,57 @@ public class RMIRuntime extends Thread{
     // Q is the quorum of the callingMethod
     public Object invokeObj(String obj, String method, String callingMethod, String callerId, Integer n, Object... args)
     {
-        Object output = null;
-        int argsLength = args == null ? 0 : args.length;
+        ObjCallMessage msgSent = null;
+        try {
+            int argsLength = args == null ? 0 : args.length;
 
-        String objectCall = obj+"-"+method;
-        String mId = callerId + "::" + n;
-        // the extra argument is the id of this object call
-        Object[] objectCallArgs = new Object[argsLength + 1];
-        int i = 0;
-        for (; i < argsLength; i++)
-            objectCallArgs[i] = args[i];
-        objectCallArgs[i] = mId;
-        ObjCallMessage msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
-        //TODO fix this: NPE happens on while instruction, I have fixed it with the below code that repeates the while if exception happens
-        do {
-            try {
-//             output = waitForMessagesAndExecute(msgSent, obj, method, objectCall, objectCallArgs);
-                while (!objCallReceived.containsKey(msgSent) || !objCallReceived.get(msgSent).isSuperSetEqual(objectsQuorums.get(obj)));
-                logger.trace("unblocking object call {}", mId);
-                // mark it as bot and clear the memory
-                objCallReceived.get(msgSent).setBot();
-                logger.trace("obj call {} with method id {}", objectCall, mId);
-                Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
-                output = executeMethod(m, objectsState.get(obj), objectCallArgs);
-                break;
-            }
-            catch (NullPointerException | NoSuchMethodException e) {
-//                e.printStackTrace();
-//                System.out.println("received object call reqs: " + objCallReceived);
-//                System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
-//                System.out.println("Calling method: " + callingMethod);
-//                System.out.println("Msg Sent: " + msgSent);
-//                System.out.println("object quorum : " + objectsQuorums.get(obj));
-            }
-        } while(true);
-//        if (output == null)
-//            logger.error("must never happen");
-        return output;
+            String objectCall = obj+"-"+method;
+            String mId = callerId + "::" + n;
+            // the extra argument is the id of this object call
+            Object[] objectCallArgs = new Object[argsLength + 1];
+            int i = 0;
+            for (; i < argsLength; i++)
+                objectCallArgs[i] = args[i];
+            objectCallArgs[i] = mId;
+            logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
+            // send object call to the quorum
+            msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
+
+            // block until get Q messages to execute object call
+            do{
+
+            } while (objCallReceived.get(msgSent) == null);
+            do{
+
+            } while (!objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod)));
+
+            logger.trace("unblocking object call {}", mId);
+            // mark it as bot and clear the memory
+            objCallReceived.get(msgSent).setBot();
+            logger.trace("obj call {} with method id {}", objectCall, mId);
+            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
+            return returnValue;
+        }
+        //TODO check for NPE, see why the blocking while instruction might cause it
+        catch (NullPointerException | NoSuchMethodException e)
+        {
+            e.printStackTrace();
+//            System.out.println("received object call reqs: " + objCallReceived);
+//            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
+//            System.out.println("Calling method: " + callingMethod);
+//            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
+
+        }
+//        try {
+//            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));
+//            Object returnValue = executeMethod(m, objectsState.get(obj), objectCallArgs);
+//            return returnValue;
+//        } catch (NoSuchMethodException e) {
+//            e.printStackTrace();
+//        }
+        logger.error("must never happen");
+        return null;
     }
 
     // ThisCallExec

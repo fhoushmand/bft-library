@@ -1,0 +1,93 @@
+package bftsmart.usecase;
+
+import java.io.*;
+
+public class ClusterRunner {
+
+    public int repetition = 20;
+
+    public void executeCommands() throws IOException, InterruptedException {
+
+        for(File f : new File("systemconfig").listFiles()) {
+            if(!f.getName().contains("ot"))
+                continue;
+
+            String configName = f.getName();
+            String conf = configName.substring(configName.indexOf('(')+1, configName.indexOf(')'));
+
+            int totalNumberOfHosts = 1;
+            for(String hostConf : conf.split(";"))
+            {
+                Integer fSize = Integer.valueOf(hostConf.split(":")[1]);
+                totalNumberOfHosts += (3*fSize)+1;
+            }
+
+            File deployScript = createTempScript(f.getName(), totalNumberOfHosts);
+            if(deployScript == null)
+            {
+                System.out.println("created deploy script is null for " + f.getName());
+                continue;
+            }
+            ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), "systemconfig" + System.getProperty("file.separator") + f.getName());
+//            ProcessBuilder pb = new ProcessBuilder("ls","-lash");
+            pb.inheritIO();
+            Process p = pb.start();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(p.getInputStream());
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String output = null;
+            while ((output = bufferedReader.readLine()) != null) {
+                System.out.println(output);
+            }
+
+            Thread.sleep((30+repetition*2)*1000 + 5000);
+
+            ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", ">>", totalNumberOfHosts-1+".log");
+            pb2.inheritIO();
+            pb2.start();
+
+
+        }
+    }
+
+    public File createTempScript(String configFileName, int numberOfHosts){
+        try
+        {
+            FileReader fr = new FileReader("systemconfig/deploy.sh");
+            BufferedReader rd = new BufferedReader(fr);
+            String line = null;
+            String file = "";
+            while ((line = rd.readLine()) != null) {
+                    file += line;
+                    file += "\n";
+            }
+            fr.close();
+            rd.close();
+            /* arguments of the template system.config file:
+            1) total number of nodes
+            2) total number of nodes
+             */
+            file = String.format(file, numberOfHosts, numberOfHosts);
+            String fileName = "deploy-" + configFileName + ".sh";
+            File deployScript = new File(fileName);
+            if(!deployScript.exists()) {
+//                PrintWriter systemConfigWriter = new PrintWriter(fileName, "UTF-8");
+                Writer streamWriter = new OutputStreamWriter(new FileOutputStream(deployScript));
+                PrintWriter printWriter = new PrintWriter(streamWriter);
+                printWriter.write(file);
+                printWriter.flush();
+            }
+            return deployScript;
+        }
+        catch (IOException e)
+        {
+            System.out.println("Cannot read system config template file");
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        ClusterRunner runner = new ClusterRunner();
+        runner.executeCommands();
+    }
+}
