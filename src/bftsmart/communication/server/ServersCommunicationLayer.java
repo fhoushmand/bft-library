@@ -255,7 +255,7 @@ public class ServersCommunicationLayer extends Thread {
 
 
     public final void send(int[] targets, SystemMessage sm, boolean useMAC) {
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream(500);
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream(2048);
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {

@@ -16,7 +16,7 @@ public class UserAgentClient{
 	}
 
 	public Integer read(String id) {
-		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
 
 			objOut.writeObject(UserAgentRequestType.READ);
@@ -43,7 +43,7 @@ public class UserAgentClient{
 	}
 
 	public void updateOffer(OfferInfo offer, String id) {
-		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.UPDATE_OFFER);
@@ -72,7 +72,7 @@ public class UserAgentClient{
 	}
 
 	public OfferInfo declareWinner(Integer offer, String id) {
-		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.DECLARE_WINNER);

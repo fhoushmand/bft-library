@@ -306,7 +306,6 @@ public class RMIRuntime extends Thread{
     public void invoke(String method, String callerId, Integer n, Object... args)
     {
         String mId = callerId + "::" + n;
-
         MethodCallMessage tmm = new MethodCallMessage(id, mId.getBytes(), method.getBytes(), args);
 
         tmm.setN(n);

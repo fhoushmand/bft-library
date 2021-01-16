@@ -68,7 +68,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
 
@@ -129,7 +129,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
             objOut.writeObject(userID);
             return byteOut.toByteArray();

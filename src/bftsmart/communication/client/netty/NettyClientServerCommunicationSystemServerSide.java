@@ -81,7 +81,7 @@ public class NettyClientServerCommunicationSystemServerSide extends SimpleChanne
 	private NettyServerPipelineFactory serverPipelineFactory;
 
 	/* Tulio Ribeiro */
-	private static int tcpSendBufferSize = 8 * 1024 * 1024;
+	private static int tcpSendBufferSize = 8 * 1024 * 1024 * 1024;
 	private static int bossThreads = 8; /* listens and accepts on server socket; workers handle r/w I/O */
 	private static int connectionBacklog = 1024; /* pending connections boss thread will queue to accept */
 	private static int connectionTimeoutMsec = 40000; /* (40 seconds) */

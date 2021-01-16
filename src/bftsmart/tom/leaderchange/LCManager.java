@@ -807,7 +807,7 @@ public class LCManager {
             ConsensusMessage cm = new ConsensusMessage(consMsg.getType(),consMsg.getNumber(),
                     consMsg.getEpoch(), consMsg.getSender(), consMsg.getValue());
 
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream(500);
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream(2048);
             try {
                 new ObjectOutputStream(bOut).writeObject(cm);
             } catch (IOException ex) {

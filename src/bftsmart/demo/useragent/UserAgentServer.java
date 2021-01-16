@@ -47,18 +47,19 @@ public class UserAgentServer extends DefaultSingleRecoverable {
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
         byte[] reply = null;
         boolean hasReply = false;
-
+        int idSize = 0;
+        String id = "";
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
 
             //reading the id of the object call
-            int idSize = objIn.readInt();
+             idSize = objIn.readInt();
             byte[] idBytes = new byte[idSize];
             objIn.read(idBytes);
-            String id = new String(idBytes);
+            id  = new String(idBytes);
 
             // Only do the operation (marked) if the call is not already executed
             switch (reqType) {
@@ -91,8 +92,14 @@ public class UserAgentServer extends DefaultSingleRecoverable {
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            System.out.println("size of id: " + idSize);
+            System.out.println("id: " + id);
             logger.log(Level.SEVERE, "Occurred during useragent operation execution", e);
         }
+//        finally {
+//            System.out.println("size of id: " + idSize);
+//            System.out.println("id: " + id);
+//        }
         return reply;
     }
 
@@ -104,7 +111,7 @@ public class UserAgentServer extends DefaultSingleRecoverable {
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
 
@@ -163,7 +170,7 @@ public class UserAgentServer extends DefaultSingleRecoverable {
 
     @Override
     public byte[] getSnapshot() {
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
             objOut.writeObject(userID);
             return byteOut.toByteArray();

@@ -75,7 +75,9 @@ public class PartitionedObject {
                 initMax_A1B1C1("max3(A:1;B:1;C:1)");
 
             else if(configuration.equals("ac-A2-B1-C0"))
-                initAuction_A2B1("ac-A2-B1-C0");
+                initAuction_A2B1C0("ac-A2-B1-C0");
+            else if(configuration.equals("ac-A4-B2-C0"))
+                initAuction_A4B2C0("ac-A4-B2-C0");
         }
         catch (Exception e)
         {
@@ -967,7 +969,7 @@ public class PartitionedObject {
         finilaizeOT(configuration, A, B);
     }
 
-    public void initAuction_A2B1(String configuration)
+    public void initAuction_A2B1C0(String configuration)
     {
         initializeAuction();
 
@@ -1029,7 +1031,84 @@ public class PartitionedObject {
         objectsQ = new HashMap<>();
         objectsQ.put("agentA", new P(A, 3));
         objectsQ.put("agentB", new P(B, 2));
-        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 2), new P(B, 3))));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 3), new P(B, 2))));
+
+        finilaizeAuction(configuration, A, B, C);
+    }
+
+    public void initAuction_A4B2C0(String configuration)
+    {
+        initializeAuction();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(13);
+        B.addHost(14);
+        B.addHost(15);
+        B.addHost(16);
+        B.addHost(17);
+        B.addHost(18);
+        B.addHost(19);
+
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(20);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(21);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(1).toIntArray());
+        methodsH.put("m2", A.pickFirst(9).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m4", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(5).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+//        methodsQ.put("m1", new PAnd(new P(A, 3), new P(B, 2)));
+        methodsQ.put("m1", new POr(new P(Client, 1), new P(C, 1)));
+        methodsQ.put("m2", new P(C, 1));
+        methodsQ.put("m3", new P(A, 5));
+        methodsQ.put("m4", new P(C, 1));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 3));
+        methodsQ.put("ret", new P(C, 1));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("agentA", new P(A, 5));
+        objectsQ.put("agentB", new P(B, 3));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 5), new P(B, 3))));
 
         finilaizeAuction(configuration, A, B, C);
     }

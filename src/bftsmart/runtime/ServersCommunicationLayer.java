@@ -231,7 +231,7 @@ public class ServersCommunicationLayer extends Thread {
 
     public final void send(int[] targets, RTMessage sm) {
 
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream(500);
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream(2048);
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {
@@ -239,13 +239,6 @@ public class ServersCommunicationLayer extends Thread {
         }
 
         byte[] data2 = bOut.toByteArray();
-
-//        byte[] data2 = null;
-//        if(sm instanceof MethodCallMessage)
-//            data2 = MethodCallMessage.messageToBytes((MethodCallMessage) sm);
-//        else if(sm instanceof ObjCallMessage)
-//            data2 = ObjCallMessage.messageToBytes((ObjCallMessage) sm);
-
         // this shuffling is done to prevent the replica with the lowest ID/index  from being always
         // the last one receiving the messages, which can result in that replica  to become consistently
         // delayed in relation to the others.
