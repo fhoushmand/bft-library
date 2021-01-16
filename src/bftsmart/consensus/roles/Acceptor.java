@@ -368,7 +368,7 @@ public final class Acceptor {
 	 * @param epoch The epoch during in which the consensus message was created
 	 */
 	private void insertProof(ConsensusMessage cm, TOMMessage[] msgs) {
-		ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream(500);
 		try {
 			ObjectOutputStream obj = new ObjectOutputStream(bOut);
 			obj.writeObject(cm);

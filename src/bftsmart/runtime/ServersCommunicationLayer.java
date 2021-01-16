@@ -231,7 +231,7 @@ public class ServersCommunicationLayer extends Thread {
 
     public final void send(int[] targets, RTMessage sm) {
 
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream(248);
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream(500);
         try {
             new ObjectOutputStream(bOut).writeObject(sm);
         } catch (IOException ex) {
