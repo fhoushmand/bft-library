@@ -15,48 +15,24 @@
  */
 package bftsmart.runtime;
 
-
 import bftsmart.usecase.Client;
-import bftsmart.usecase.ClusterRunner;
-import bftsmart.usecase.oblivioustransfer.OTClient;
-
 import java.util.Random;
-import java.util.Scanner;
-import java.util.concurrent.LinkedBlockingQueue;
-
 
 public class CMDReader extends Thread {
 
-//    private LinkedBlockingQueue<String> inQueue = null;
     public RMIRuntime runtime;
 
-    /**
-     * Creates a new instance of ServerCommunicationSystem
-     */
-    public CMDReader(LinkedBlockingQueue<String> inQueue) {
-        super("Reader");
-//        this.inQueue = inQueue;
-    }
     public CMDReader() { }
-
-//    public LinkedBlockingQueue<String> getInQueue() {
-//        return inQueue;
-//    }
-
-//    public void setInQueue(LinkedBlockingQueue<String> inQueue) {
-//        this.inQueue = inQueue;
-//    }
 
     @Override
     public void run() {
         try {
-            Thread.sleep(2000);
-            for (int i = 0; i < 50; i++) {
-                ((Client) runtime.obj).request(Integer.valueOf(new Random().nextInt(2)));
+            Thread.sleep(100);
+            for (int i = 0; i < 1000; i++) {
+                ((Client) runtime.obj).request(300 + Integer.valueOf(new Random().nextInt(50)));
                 runtime.obj.objCallLock.lock();
                 runtime.obj.requestBlock.await();
                 runtime.obj.objCallLock.unlock();
-//                Thread.sleep(1000);
             }
         } catch (InterruptedException interruptedException) {
             interruptedException.printStackTrace();

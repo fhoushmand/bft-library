@@ -6,10 +6,10 @@ public class ClusterRunner {
 
     public static int REPITITION = 50;
 
-    public void executeCommands() throws IOException, InterruptedException {
+    public void executeCommands(String usecaseName, Integer reps) throws IOException, InterruptedException {
 
         for(File f : new File("systemconfig").listFiles()) {
-            if(!f.getName().contains("ot-"))
+            if(!f.getName().contains(usecaseName+"-"))
                 continue;
 
             String configName = f.getName();
@@ -31,22 +31,14 @@ public class ClusterRunner {
             }
             String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
             System.out.println(command);
-            for(int i = 0; i < 2; i++) {
+            for(int i = 0; i < reps; i++) {
                 ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), "systemconfig" + System.getProperty("file.separator") + f.getName());
-//            ProcessBuilder pb = new ProcessBuilder("ls","-lash");
                 pb.inheritIO();
                 Process p = pb.start();
 
-//            InputStreamReader inputStreamReader = new InputStreamReader(p.getInputStream());
-//            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//            String output = null;
-//            while ((output = bufferedReader.readLine()) != null) {
-//                System.out.println(output);
-//            }
+                Thread.sleep((5*60) * 1000 + 30000);
 
-                Thread.sleep((30 + ClusterRunner.REPITITION * 2) * 1000 + 20000);
-
-                ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts - 1 + ".log");
+                ProcessBuilder pb2 = new ProcessBuilder("tail", "-60", totalNumberOfHosts - 1 + ".log");
                 pb2.inheritIO();
                 Process p2 = pb2.start();
 
@@ -106,8 +98,15 @@ public class ClusterRunner {
         return null;
     }
 
+    /**
+     *
+     * @param args [0] is the abbriviate name of the use-case in systemconfig folder
+     * @param args [1] is the number of repetitions
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         ClusterRunner runner = new ClusterRunner();
-        runner.executeCommands();
+        runner.executeCommands(args[0], Integer.parseInt(args[1]));
     }
 }

@@ -3,6 +3,7 @@ import bftsmart.runtime.RMIRuntime;
 import bftsmart.runtime.quorum.*;
 import bftsmart.runtime.quorum.P;
 import bftsmart.runtime.quorum.PAnd;
+import bftsmart.usecase.auction.OfferInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,17 +62,20 @@ public class PartitionedObject {
             else if(configuration.equals("ot-A7-B1"))
                 initOT_A7B1("ot-A7-B1");
 
-            else if(configuration.equals("ot(A:2;B:2)"))
-                initOT_A2B2("ot(A:2;B:2)");
-            else if(configuration.equals("ot(A:3;B:2)"))
-                initOT_A3B2("ot(A:3;B:2)");
-            else if(configuration.equals("ot(A:3;B:3)"))
-                initOT_A3B3("ot(A:3;B:3)");
-            else if(configuration.equals("ot(A:4;B:4)"))
-                initOT_A4B4("ot(A:4;B:4)");
+            else if(configuration.equals("ot-A2-B2"))
+                initOT_A2B2("ot-A-2-B2");
+            else if(configuration.equals("ot-A3-B2"))
+                initOT_A3B2("ot-A3-B2");
+            else if(configuration.equals("ot-A3-B3"))
+                initOT_A3B3("ot-A3-B3");
+            else if(configuration.equals("ot-A4-B4"))
+                initOT_A4B4("ot-A4-B4");
 
             else if(configuration.equals("max3(A:1;B:1;C:1)"))
                 initMax_A1B1C1("max3(A:1;B:1;C:1)");
+
+            else if(configuration.equals("ac-A2-B1-C0"))
+                initAuction_A2B1("ac-A2-B1-C0");
         }
         catch (Exception e)
         {
@@ -130,7 +134,7 @@ public class PartitionedObject {
             directory.mkdir();
         }
         // create runtime configuration
-        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 13000, 0);
+        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 14000, 0);
         writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
     }
 
@@ -176,6 +180,57 @@ public class PartitionedObject {
         }
         // create runtime configuration
         writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 13000, 0);
+        writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
+    }
+
+    public void initializeAuction()
+    {
+        argsMap = new HashMap<>();
+        argsMap.put("m6", new Class[]{String.class,Integer.class,OfferInfo.class,Integer.class});
+        argsMap.put("m5", new Class[]{String.class,Integer.class,Integer.class,Integer.class});
+        argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m3", new Class[]{String.class,Integer.class,Integer.class,Integer.class, OfferInfo.class});
+        argsMap.put("m2", new Class[]{String.class,Integer.class,Integer.class,Integer.class});
+        argsMap.put("m1", new Class[]{String.class,Integer.class,Integer.class});
+
+        // always here
+        argsMap.put("request", new Class[]{Integer.class});
+        argsMap.put("ret", new Class[]{String.class,Integer.class,OfferInfo.class});
+
+        //object fields methods
+        argsMap.put("userAgent-read", new Class[]{String.class});
+        argsMap.put("userAgent-updateOffer", new Class[]{OfferInfo.class,String.class});
+        argsMap.put("userAgent-declareWinner", new Class[]{Integer.class,String.class});
+        argsMap.put("agentA-makeOfferA", new Class[]{Integer.class,Integer.class,String.class});
+        argsMap.put("agentB-makeOfferB", new Class[]{Integer.class,Integer.class,String.class});
+    }
+
+    public void finilaizeAuction(String configuration, H A, H B, H C)
+    {
+        // create and write to hosts.config files
+        String configPath = "config_" + configuration;
+        File directory = new File(configPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // replication of agentA
+        writeHostsConfigFile(A, 1, configPath, 11000, 0);
+        writeSystemConfigFile(A, 1, configPath);
+        // replication of agentB
+        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
+        writeSystemConfigFile(B, 2, configPath);
+        // replication of userAgent
+        writeHostsConfigFile(C, 3, configPath, 13000, A.size()+B.size());
+        writeSystemConfigFile(C, 3, configPath);
+
+
+        String runtimeConfigPath = "runtimeconfig_" + configuration;
+        directory = new File(runtimeConfigPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // create runtime configuration
+        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 14000, 0);
         writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
     }
 
@@ -912,6 +967,73 @@ public class PartitionedObject {
         finilaizeOT(configuration, A, B);
     }
 
+    public void initAuction_A2B1(String configuration)
+    {
+        initializeAuction();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(7);
+        B.addHost(8);
+        B.addHost(9);
+        B.addHost(10);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(11);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(12);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(1).toIntArray());
+        methodsH.put("m2", A.pickFirst(5).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m4", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(3).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+//        methodsQ.put("m1", new PAnd(new P(A, 3), new P(B, 2)));
+        methodsQ.put("m1", new POr(new P(Client, 1), new P(C, 1)));
+        methodsQ.put("m2", new P(C, 1));
+        methodsQ.put("m3", new P(A, 3));
+        methodsQ.put("m4", new P(C, 1));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 2));
+        methodsQ.put("ret", new P(C, 1));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("agentA", new P(A, 3));
+        objectsQ.put("agentB", new P(B, 2));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 2), new P(B, 3))));
+
+        finilaizeAuction(configuration, A, B, C);
+    }
+
     private void writeSystemConfigFile(H h, int clusterID, String configPath)
     {
         try
@@ -1005,52 +1127,4 @@ public class PartitionedObject {
     public ArrayList<H> getHosts() {
         return hosts;
     }
-
-    //    public void initTestOT()
-//    {
-//        //initialize the list host sets
-//        //TODO pass this information as argument
-//        H A = new H();
-//        A.addHost(0);
-//        A.addHost(1);
-//        H B = new H();
-//        B.addHost(3);
-//        H Client = new H();
-//        Client.addHost(4);
-//
-//        argsMap = new HashMap<>();
-//        argsMap.put("m4", new Class[]{Integer.class});
-//        argsMap.put("m3", new Class[]{Integer.class});
-//        argsMap.put("m2", new Class[]{});
-//        argsMap.put("m1", new Class[]{});
-//        argsMap.put("ret", new Class[]{Integer.class});
-//
-//        //object fields methods
-//        argsMap.put("i1_read", new Class[]{});
-//        argsMap.put("i2_read", new Class[]{});
-//        argsMap.put("a_read", new Class[]{});
-//        argsMap.put("i1_write", new Class[]{Integer.class});
-//        argsMap.put("i2_write", new Class[]{Integer.class});
-//        argsMap.put("a_write", new Class[]{Boolean.class});
-//
-//
-//        methodsH = new HashMap<>();
-//        methodsH.put("m1", A.pickFirst(2).toIntArray());
-//        methodsH.put("m2", B.pickFirst(1).toIntArray());
-//        methodsH.put("m3", H.union(A.pickFirst(2), B.pickFirst(1)).toIntArray());
-//        methodsH.put("m4", H.union(A.pickFirst(2), B.pickFirst(1)).toIntArray());
-//        methodsH.put("ret", Client.pickFirst(1).toIntArray());
-//
-//
-//        // initialize methods qs. there are three possibilities:
-//        // 1) Single Q
-//        // 2) And of two Qs
-//        // 3) Or of two Qs
-//        methodsQ = new HashMap<>();
-//        methodsQ.put("m4", new Q(Client, 1));
-//        methodsQ.put("m3", new QAnd(new Q(A, 1), new Q(B, 1)));
-//        methodsQ.put("m2", new Q(B, 1));
-//        methodsQ.put("m1", new Q(A, 1));
-//        methodsQ.put("ret", new QOr(new Q(A, 1), new Q(B, 1)));
-//    }
 }

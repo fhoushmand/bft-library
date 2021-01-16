@@ -1,18 +1,20 @@
-package bftsmart.usecase.oblivioustransfer;
+package bftsmart.usecase.auction;
 
 import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 import bftsmart.usecase.Client;
 import bftsmart.usecase.Config;
 import bftsmart.usecase.PartitionedObject;
+import bftsmart.usecase.max3.Max3Client;
+import bftsmart.usecase.oblivioustransfer.OTClient;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class OTRunner {
+public class AuctionRunner {
     HashMap<Integer, Config> config = new HashMap<>();
-
     public static void main(String[] args) throws Exception {
 
         int totalNumberOfHosts = 0;
@@ -92,23 +94,5 @@ public class OTRunner {
         {
             System.out.println("Cannot read use-case config file");
         }
-    }
-
-    public static int recommendedThreadCount()
-    {
-        int mRtnValue = 0;
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long mTotalMemory = runtime.totalMemory();
-        long freeMemory = runtime.freeMemory();
-        int mAvailableProcessors = runtime.availableProcessors();
-
-        long mTotalFreeMemory = freeMemory + (maxMemory - mTotalMemory);
-        mRtnValue = (int)(mTotalFreeMemory/4200000000l);
-
-        int mNoOfThreads = mAvailableProcessors-1;
-        if(mNoOfThreads < mRtnValue) mRtnValue = mNoOfThreads;
-
-        return mRtnValue;
     }
 }

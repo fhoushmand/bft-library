@@ -1,23 +1,21 @@
-package bftsmart.usecase.oblivioustransfer;
+package bftsmart.usecase;
 
 import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
-import bftsmart.usecase.PartitionedObject;
-import bftsmart.usecase.max3.Max3Client;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
-public class OTClusterRunner {
+public class NodeClusterRunner {
 
-    HashMap<Integer,Config> config = new HashMap<>();
+    HashMap<Integer, Config> config = new HashMap<>();
 
-    public OTClusterRunner(String configPath) {
+    private boolean local = false;
+
+    public NodeClusterRunner(String configPath) {
         readUseCaseConfig(configPath);
     }
 
@@ -54,11 +52,7 @@ public class OTClusterRunner {
     * @param args[2:n] is the host list name
      */
     public static void main(String[] args) throws Exception {
-        OTClusterRunner clusterRunner = new OTClusterRunner(args[0]);
-
-//        RMIRuntime.main(new String[]{args[1], clusterRunner.config.get(Integer.parseInt(args[1])).cluster, clusterRunner.config.get(Integer.parseInt(args[1])).className, hosts, args[0]});
-
-
+        NodeClusterRunner clusterRunner = new NodeClusterRunner(args[0]);
         RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length-1];
         int id = Integer.parseInt(args[1]);
         // cluster id responsible for replicating the piece of
@@ -70,8 +64,13 @@ public class OTClusterRunner {
         HashMap<Integer,String> hostIPMap = new HashMap<>();
         int i = 0;
         for (String hostName : Arrays.copyOfRange(args, 2, args.length)){
-            String h = hostName + ".ib.hpcc.ucr.edu";
-            hostIPMap.put(i++, h);
+            if(!clusterRunner.local) {
+                String h = hostName + ".ib.hpcc.ucr.edu";
+                hostIPMap.put(i++, h);
+            }else
+            {
+                hostIPMap.put(i++, "127.0.0.1");
+            }
         }
 
         PartitionedObject o = (PartitionedObject) Class.forName(clusterRunner.config.get(Integer.parseInt(args[1])).className).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, RMIRuntime.CONFIGURATION);
@@ -81,7 +80,7 @@ public class OTClusterRunner {
         runtime.start();
 
         //read from the queue (randomly generating inputs)
-        if (runtime.getObj() instanceof Max3Client || runtime.getObj() instanceof OTClient)
+        if (runtime.getObj() instanceof Client)
         {
             CMDReader reader = new CMDReader();
             runtime.setInputReader(reader);
@@ -91,14 +90,4 @@ public class OTClusterRunner {
     }
 }
 
-class Config{
-    String name;
-    String className;
-    String cluster;
 
-    public Config(String name, String className, String clusterId) {
-        this.name = name;
-        this.className = className;
-        this.cluster = clusterId;
-    }
-}

@@ -2,10 +2,10 @@ package bftsmart.runtime.quorum;
 
 public class POr extends Q {
 
-    P p1;
-    P p2;
+    Q p1;
+    Q p2;
 
-    public POr(P p1, P p2)
+    public POr(Q p1, Q p2)
     {
         this.p1 = p1;
         this.p2 = p2;
