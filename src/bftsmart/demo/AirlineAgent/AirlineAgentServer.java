@@ -19,7 +19,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
     private int userID = 1;
 
     int ABestOffer = 300;
-    int BBestOffer = 320;
+    int BBestOffer = 350;
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
@@ -71,13 +71,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
-
-            //reading the id of the object call
-            int idSize = objIn.readInt();
-            byte[] idBytes = new byte[idSize];
-            objIn.read(idBytes);
-            String id = new String(idBytes);
-
+            String id = (String) objIn.readObject();
             int u = objIn.readInt();
             int o = objIn.readInt();
 

@@ -220,21 +220,8 @@ public class RMIRuntime extends Thread{
             try {
                 Thread.sleep(10);
                 if (obj instanceof Client) {
-//                    String in = inputReader.getInQueue().poll(2, TimeUnit.SECONDS);
-//                    if (in != null) {
                     if(obj.responseReceived == 1000)
-//                        if (in.equals("exit"))
                             break;
-//                        try {
-//                            //TODO cast arguments to the method
-////                            if(methodArgs.get("request").equals(Integer.class))
-//                            ((Client) obj).request(Integer.valueOf(in));
-////                            if(methodArgs.get("request").equals(String.class))
-////                                ((Client) obj).request(in);
-//                        } catch (NumberFormatException e) {
-//                            System.out.println("invalid input");
-//                        }
-//                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -307,7 +294,6 @@ public class RMIRuntime extends Thread{
     {
         String mId = callerId + "::" + n;
         MethodCallMessage tmm = new MethodCallMessage(id, mId.getBytes(), method.getBytes(), args);
-
         tmm.setN(n);
         cs.send(methodsHosts.get(method), tmm);
     }
@@ -316,9 +302,7 @@ public class RMIRuntime extends Thread{
     public ObjCallMessage sendObjectCall(String method, String callingMethod, String callerId, Integer n, Object... args)
     {
         String mId = callerId + "::" + n;
-
         ObjCallMessage tmm = new ObjCallMessage(id, mId.getBytes(), method.getBytes(), args, callingMethod.getBytes());
-
         tmm.setN(n);
         cs.send(methodsHosts.get(callingMethod), tmm);
         return tmm;

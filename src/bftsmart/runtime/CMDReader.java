@@ -29,7 +29,7 @@ public class CMDReader extends Thread {
         try {
             Thread.sleep(100);
             for (int i = 0; i < 1000; i++) {
-                ((Client) runtime.obj).request(300 + Integer.valueOf(new Random().nextInt(50)));
+                ((Client) runtime.obj).request(300 + Integer.valueOf(new Random().nextInt(101)));
                 runtime.obj.objCallLock.lock();
                 runtime.obj.requestBlock.await();
                 runtime.obj.objCallLock.unlock();

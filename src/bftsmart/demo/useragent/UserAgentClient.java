@@ -20,9 +20,7 @@ public class UserAgentClient{
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
 
 			objOut.writeObject(UserAgentRequestType.READ);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
+			objOut.writeObject(id);
 
 			objOut.flush();
 			byteOut.flush();
@@ -47,10 +45,7 @@ public class UserAgentClient{
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.UPDATE_OFFER);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
+			objOut.writeObject(id);
 			objOut.writeObject(offer);
 
 			objOut.flush();
@@ -76,10 +71,7 @@ public class UserAgentClient{
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.DECLARE_WINNER);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
+			objOut.writeObject(id);
 			objOut.writeInt(offer);
 
 			objOut.flush();

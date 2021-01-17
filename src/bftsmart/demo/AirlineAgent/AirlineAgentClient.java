@@ -15,14 +15,11 @@ public class AirlineAgentClient {
 	}
 
 	public OfferInfo makeOfferA(Integer user, Integer offer, String id) {
-		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_A);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
+			objOut.writeObject(id);
 			objOut.writeInt(user);
 			objOut.writeInt(offer);
 
@@ -49,10 +46,7 @@ public class AirlineAgentClient {
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_B);
-
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
+			objOut.writeObject(id);
 			objOut.writeInt(user);
 			objOut.writeInt(offer);
 

@@ -47,19 +47,12 @@ public class UserAgentServer extends DefaultSingleRecoverable {
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
         byte[] reply = null;
         boolean hasReply = false;
-        int idSize = 0;
-        String id = "";
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
-
-            //reading the id of the object call
-             idSize = objIn.readInt();
-            byte[] idBytes = new byte[idSize];
-            objIn.read(idBytes);
-            id  = new String(idBytes);
+            String id = (String) objIn.readObject();
 
             // Only do the operation (marked) if the call is not already executed
             switch (reqType) {
@@ -92,8 +85,8 @@ public class UserAgentServer extends DefaultSingleRecoverable {
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            System.out.println("size of id: " + idSize);
-            System.out.println("id: " + id);
+//            System.out.println("size of id: " + idSize);
+//            System.out.println("id: " + id);
             logger.log(Level.SEVERE, "Occurred during useragent operation execution", e);
         }
 //        finally {
@@ -114,13 +107,7 @@ public class UserAgentServer extends DefaultSingleRecoverable {
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
             UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
-
-            //reading the id of the object call
-            int idSize = objIn.readInt();
-            byte[] idBytes = new byte[idSize];
-            objIn.read(idBytes);
-            String id = new String(idBytes);
-
+            String id = (String) objIn.readObject();
 
             switch (reqType) {
                 case READ:
