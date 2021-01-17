@@ -42,7 +42,7 @@ public class AirlineAgentClient {
 	}
 
 	public OfferInfo makeOfferB(Integer user, Integer offer, String id) {
-		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_B);
