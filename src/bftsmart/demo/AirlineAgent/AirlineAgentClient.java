@@ -2,6 +2,7 @@ package bftsmart.demo.AirlineAgent;
 
 import bftsmart.tom.ServiceProxy;
 import bftsmart.usecase.auction.OfferInfo;
+import bftsmart.usecase.ticket.TicketInfo;
 
 import java.io.*;
 
@@ -67,4 +68,15 @@ public class AirlineAgentClient {
 		}
 		return null;
 	}
+
+	public TicketInfo getPrice(Integer ticket, String id)
+	{
+		return null;
+	}
+
+	public TicketInfo decSeat(Integer ticket, String id)
+	{
+		return null;
+	}
+
 }

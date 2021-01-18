@@ -39,8 +39,6 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
     public OfferInfo makeOfferA(Integer user, Integer offer)
     {
-//        if(user != userID)
-//            System.out.println("useID not found, this agent is not working with the given user");
         if(offer > ABestOffer )
             return new OfferInfo("airlineA", "seatInfoA", offer-1);
         return new OfferInfo("airlineA", "seatInfoA", ABestOffer);
@@ -48,8 +46,6 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
     public OfferInfo makeOfferB(Integer user, Integer offer)
     {
-//        if(user != userID)
-//            System.out.println("useID not found, this agent is not working with the given user");
         if(offer > BBestOffer)
             return new OfferInfo("airlineB", "seatInfoB", offer-1);
         return new OfferInfo("airlineB", "seatInfoB", BBestOffer);
@@ -58,7 +54,63 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
-        throw new RuntimeException("not supported");
+        System.err.println("ordered call in airline agent. probably due to failed synch.");
+        byte[] reply = null;
+        boolean hasReply = false;
+
+        try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
+             ObjectInput objIn = new ObjectInputStream(byteIn);
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+             ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
+            AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
+            String id = (String) objIn.readObject();
+            int u = objIn.readInt();
+            int o = objIn.readInt();
+
+            switch (reqType) {
+                case MAKE_OFFER_A:
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferA(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_B:
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferB(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                default:
+                    logger.log(Level.WARNING, "airlineAgent: in appExecuteunOrdered only make offer operations are supported");
+            }
+            if (hasReply) {
+                objOut.flush();
+                byteOut.flush();
+                reply = byteOut.toByteArray();
+            } else {
+                reply = new byte[0];
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "Occurred during making offer operation execution", e);
+        }
+        return reply;
     }
 
     @Override
