@@ -27,7 +27,7 @@ public class CMDReader extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(100);
+//            Thread.sleep(100);
             for (int i = 0; i < 1000; i++) {
                 ((Client) runtime.obj).request(300 + Integer.valueOf(new Random().nextInt(101)));
                 runtime.obj.objCallLock.lock();
