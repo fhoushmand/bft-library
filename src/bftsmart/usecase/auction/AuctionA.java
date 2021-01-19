@@ -1,6 +1,6 @@
 package bftsmart.usecase.auction;
 
-import bftsmart.demo.AirlineAgent.AirlineAgentClient;
+import bftsmart.demo.airlineagent.AirlineAgentClient;
 import bftsmart.usecase.PartitionedObject;
 
 import java.util.HashMap;

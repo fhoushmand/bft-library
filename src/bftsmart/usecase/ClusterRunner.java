@@ -8,7 +8,7 @@ public class ClusterRunner {
 
     public void executeCommands(String usecaseName, Integer reps) throws IOException, InterruptedException {
 
-        for(File f : new File("systemconfig").listFiles()) {
+        for(File f : new File("systemconfig/"+usecaseName).listFiles()) {
             if(!f.getName().contains(usecaseName+"-"))
                 continue;
 
@@ -36,9 +36,9 @@ public class ClusterRunner {
                 pb.inheritIO();
                 Process p = pb.start();
 
-                Thread.sleep((5*60) * 1000 + 30000);
+                Thread.sleep((120) * 1000 + 30000);
 
-                ProcessBuilder pb2 = new ProcessBuilder("tail", "-60", totalNumberOfHosts - 1 + ".log");
+                ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts - 1 + ".log");
                 pb2.inheritIO();
                 Process p2 = pb2.start();
 

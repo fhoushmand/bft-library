@@ -56,20 +56,21 @@ public class ServerCommunicationSystem extends Thread {
     public void run() {
         
         long count = 0;
+        RTMessage sm = null;
         while (doWork) {
             try {
                 if (count % 1000 == 0 && count > 0) {
                     logger.debug("After " + count + " messages, inQueue size=" + inQueue.size());
                 }
 
-                RTMessage sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
+                sm = inQueue.poll(MESSAGE_WAIT_TIME, TimeUnit.MILLISECONDS);
 
                 if (sm != null) {
                     logger.debug("<-- receiving, msg:" + sm + " from " + sm.getSender());
                     messageHandlerRMI.processData(sm);
                     count++;
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 
                 logger.error("Error processing message",e);
             }
@@ -88,9 +89,9 @@ public class ServerCommunicationSystem extends Thread {
      */
     public void send(int[] targets, RTMessage sm) {
         if(sm instanceof MethodCallMessage)
-            logger.debug("sending message {} from: {} -> {}",((MethodCallMessage) sm).getOperationId(), sm.getSender(), targets);
+            logger.debug("sending message {} from: {} -> {}", sm.getOperationId(), sm.getSender(), targets);
         else if(sm instanceof ObjCallMessage)
-            logger.debug("sending message {} from: {} -> {}",((ObjCallMessage) sm).getOperationId(), sm.getSender(), targets);
+            logger.debug("sending message {} from: {} -> {}", sm.getOperationId(), sm.getSender(), targets);
         serversConn.send(targets, sm);
     }
     

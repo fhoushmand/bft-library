@@ -1,7 +1,6 @@
-package bftsmart.demo.useragent;
+package bftsmart.demo.airlineagent;
 
 import bftsmart.demo.map.MapServer;
-import bftsmart.runtime.util.IntIntPair;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
@@ -10,28 +9,32 @@ import bftsmart.usecase.ticket.TicketInfo;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.Objects;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class UserAgentServer extends DefaultSingleRecoverable {
+public class AirlineAgentServer extends DefaultSingleRecoverable {
 
     private Logger logger;
 
     private int userID = 1;
-    private int ticketNumber = 10;
 
-    TicketInfo ticket;
-    IntIntPair cashbackBalance;
+    int ABestOffer = 300;
+    int BBestOffer = 350;
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
-    HashMap<String, OfferInfo> airlineOffers = new HashMap<>();
+    HashMap<Integer,TicketInfo> tickets = new HashMap<>();
+
+    int availableSeats = 100;
+    TicketInfo price = new TicketInfo("ticket", 50);
 
 
-    public UserAgentServer(int init, int id, int clusterId) {
-        logger = Logger.getLogger(MapServer.class.getName());
+    public AirlineAgentServer(int init, int id, int clusterId) {
+        logger = Logger.getLogger(AirlineAgentServer.class.getName());
+        for (int i = 0; i < 100; i++)
+            tickets.put(i, new TicketInfo("ticket", new Random().nextInt(500)));
         new ServiceReplica(id, this, this, clusterId);
     }
 
@@ -40,72 +43,87 @@ public class UserAgentServer extends DefaultSingleRecoverable {
             System.out.println("Usage: demo.useragent.UserAgentServer <server id> <cluster id>");
             System.exit(-1);
         }
-        new UserAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+        new AirlineAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
-    public int updateOffer(OfferInfo offerInfo)
+    public OfferInfo makeOfferA(Integer user, Integer offer)
     {
-        airlineOffers.put(offerInfo.airlineName, offerInfo);
-        return 1;
+        if(offer > ABestOffer )
+            return new OfferInfo("airlineA", "seatInfoA", offer-1);
+        return new OfferInfo("airlineA", "seatInfoA", ABestOffer);
     }
+
+    public OfferInfo makeOfferB(Integer user, Integer offer)
+    {
+        if(offer > BBestOffer)
+            return new OfferInfo("airlineB", "seatInfoB", offer-1);
+        return new OfferInfo("airlineB", "seatInfoB", BBestOffer);
+    }
+
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
+//        System.err.println("ordered call in airline agent. probably due to failed synch.");
         byte[] reply = null;
         boolean hasReply = false;
+
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
+            AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
             String id = (String) objIn.readObject();
 
-            // Only do the operation (marked) if the call is not already executed
+
             switch (reqType) {
-                case UPDATE_OFFER:
-                    OfferInfo o = (OfferInfo) objIn.readObject();
+                case MAKE_OFFER_A:
+                    int u = objIn.readInt();
+                    int o = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        int out = updateOffer(o);
-//                        objOut.writeObject(out);
+                        OfferInfo out = makeOfferA(u, o);
+                        objOut.writeObject(out);
                         cachedCalls.put(id, out);
                     }
                     else
                     {
 //                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-//                        objOut.writeObject(cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
                     break;
-                case UPDATE_INFO:
-                    TicketInfo ticketInfo = (TicketInfo) objIn.readObject();
+                case MAKE_OFFER_B:
+                    u = objIn.readInt();
+                    o = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        cachedCalls.put(id, ticket);
-                        ticket = ticketInfo;
+                        OfferInfo out = makeOfferB(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
                     }
                     else
                     {
 //                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-//                        objOut.writeObject(cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
                     break;
-                case UPDATE_PAYEMENT:
-                    IntIntPair cashbackBalance = (IntIntPair) objIn.readObject();
+                case DEC_SEAT:
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        cachedCalls.put(id, cashbackBalance);
-                        this.cashbackBalance = cashbackBalance;
+                        objOut.writeObject(availableSeats);
+                        cachedCalls.put(id, availableSeats);
+                        availableSeats--;
                     }
                     else
                     {
 //                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
                     break;
                 default:
-                    logger.log(Level.WARNING, "in appExecuteOrdered is supported");
+                    logger.log(Level.WARNING, "airlineAgent: in appExecuteOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -114,24 +132,15 @@ public class UserAgentServer extends DefaultSingleRecoverable {
             } else {
                 reply = new byte[0];
             }
-
-
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-//            System.out.println("size of id: " + idSize);
-//            System.out.println("id: " + id);
-            logger.log(Level.SEVERE, "Occurred during useragent operation execution", e);
+            logger.log(Level.SEVERE, "Occurred during ordered execution", e);
         }
-//        finally {
-//            System.out.println("size of id: " + idSize);
-//            System.out.println("id: " + id);
-//        }
         return reply;
     }
 
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-//        System.out.println("cache: " + cachedCalls);
         byte[] reply = null;
         boolean hasReply = false;
 
@@ -139,54 +148,59 @@ public class UserAgentServer extends DefaultSingleRecoverable {
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            UserAgentRequestType reqType = (UserAgentRequestType)objIn.readObject();
+            AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
             String id = (String) objIn.readObject();
 
-            switch (reqType) {
-                case READ:
-                    if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        objOut.writeObject(userID);
-                        cachedCalls.put(id, userID);
-                    }
-                    else
-                    {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
-                    }
-                    hasReply = true;
-                    break;
-                case DECLARE_WINNER:
-                    int winningOffer = objIn.readInt();
-                    if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo winnigOfferInfo = (airlineOffers.get("airlineA").offer == winningOffer) ? airlineOffers.get("airlineA") : airlineOffers.get("airlineB");
-                        objOut.writeObject(winnigOfferInfo);
-                        cachedCalls.put(id, userID);
-                    }
-                    else
-                    {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
-                    }
-                    hasReply = true;
-                    break;
-                case TICKET_NUM:
-                    if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        objOut.writeObject(ticketNumber);
-                        cachedCalls.put(id, ticketNumber);
-                    }
-                    else
-                    {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
-                    }
-                    hasReply = true;
-                    break;
 
+            switch (reqType) {
+                case MAKE_OFFER_A:
+                    int u = objIn.readInt();
+                    int o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferA(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_B:
+                    u = objIn.readInt();
+                    o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferB(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case GET_PRICE:
+                    int ticketNum = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        objOut.writeObject(price);
+                        cachedCalls.put(id, price);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
                 default:
-                    logger.log(Level.WARNING, "in appExecuteOrdered only read operations are supported");
+                    logger.log(Level.WARNING, "airlineAgent: in appExecuteununOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -197,7 +211,7 @@ public class UserAgentServer extends DefaultSingleRecoverable {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            logger.log(Level.SEVERE, "Occurred during register operation execution", e);
+            logger.log(Level.SEVERE, "Occurred during unordered execution", e);
         }
         return reply;
     }

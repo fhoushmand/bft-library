@@ -1,7 +1,9 @@
 package bftsmart.runtime;
 
-import bftsmart.demo.AirlineAgent.AirlineAgentClient;
-import bftsmart.demo.AirlineAgent.AirlineAgentServer;
+import bftsmart.demo.airlineagent.AirlineAgentClient;
+import bftsmart.demo.airlineagent.AirlineAgentServer;
+import bftsmart.demo.bankagent.BankAgentClient;
+import bftsmart.demo.bankagent.BankAgentServer;
 import bftsmart.demo.register.*;
 import bftsmart.demo.useragent.UserAgentClient;
 import bftsmart.demo.useragent.UserAgentServer;
@@ -9,8 +11,6 @@ import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.quorum.*;
 import bftsmart.usecase.Client;
 import bftsmart.usecase.auction.AuctionClient;
-import bftsmart.usecase.oblivioustransfer.OTClient;
-import bftsmart.usecase.max3.Max3Client;
 import bftsmart.usecase.PartitionedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -193,6 +192,10 @@ public class RMIRuntime extends Thread{
                     new AirlineAgentServer(0, processID, clusterId); //replication of a
                     objectsState.put(field.getName(), new AirlineAgentClient(id, clusterId));
                 }
+                else if(field.getType().equals(BankAgentClient.class)) {
+                    new BankAgentServer(0, processID, clusterId); //replication of a
+                    objectsState.put(field.getName(), new BankAgentClient(id, clusterId));
+                }
 
             }
         }
@@ -237,15 +240,18 @@ public class RMIRuntime extends Thread{
                 avgResponseTime += execs.get(i);
         }
         avgResTime = avgResponseTime/execs.keySet().size();
-        for(long l : ((AuctionClient)obj).responseTimes)
-            System.out.print(l+",");
-        System.out.println("##########");
-        for(Map.Entry<Integer,ArrayList<Long>> entry : ((AuctionClient)obj).requestresponseTimes.entrySet()) {
-            System.out.print(entry.getKey() + ":");
-            long avg = 0;
-            for(long l : entry.getValue())
-                avg += l;
-            System.out.println(avg/entry.getValue().size());
+
+        if(obj instanceof AuctionClient) {
+            for (long l : ((AuctionClient) obj).responseTimes)
+                System.out.print(l + ",");
+            System.out.println("##########");
+            for (Map.Entry<Integer, ArrayList<Long>> entry : ((AuctionClient) obj).requestresponseTimes.entrySet()) {
+                System.out.print(entry.getKey() + ":");
+                long avg = 0;
+                for (long l : entry.getValue())
+                    avg += l;
+                System.out.println(avg / entry.getValue().size());
+            }
         }
 
         System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResTime + "(ms)");

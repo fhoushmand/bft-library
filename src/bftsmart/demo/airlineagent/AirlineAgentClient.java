@@ -1,4 +1,4 @@
-package bftsmart.demo.AirlineAgent;
+package bftsmart.demo.airlineagent;
 
 import bftsmart.tom.ServiceProxy;
 import bftsmart.usecase.auction.OfferInfo;
@@ -71,12 +71,56 @@ public class AirlineAgentClient {
 
 	public TicketInfo getPrice(Integer ticket, String id)
 	{
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.GET_PRICE);
+			objOut.writeObject(id);
+			objOut.writeInt(ticket);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return (TicketInfo) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception getting the price of the ticket in airlineAgentClient: " + e.getMessage());
+		}
 		return null;
 	}
 
-	public TicketInfo decSeat(Integer ticket, String id)
+
+	public void decSeat(String id)
 	{
-		return null;
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.DEC_SEAT);
+			objOut.writeObject(id);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return;
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Exception dec seat in airlineAgentClient: " + e.getMessage());
+		}
+		return;
 	}
 
 }

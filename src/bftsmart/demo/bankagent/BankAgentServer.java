@@ -1,6 +1,7 @@
-package bftsmart.demo.AirlineAgent;
+package bftsmart.demo.bankagent;
 
 import bftsmart.demo.map.MapServer;
+import bftsmart.runtime.util.IntIntPair;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
@@ -8,53 +9,38 @@ import bftsmart.usecase.auction.OfferInfo;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class AirlineAgentServer extends DefaultSingleRecoverable {
+public class BankAgentServer extends DefaultSingleRecoverable {
 
     private Logger logger;
 
     private int userID = 1;
 
-    int ABestOffer = 300;
-    int BBestOffer = 350;
+    IntIntPair userAccount = new IntIntPair(40,25000);
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
 
-    public AirlineAgentServer(int init, int id, int clusterId) {
-        logger = Logger.getLogger(MapServer.class.getName());
+    public BankAgentServer(int init, int id, int clusterId) {
+        logger = Logger.getLogger(BankAgentServer.class.getName());
         new ServiceReplica(id, this, this, clusterId);
     }
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: demo.useragent.UserAgentServer <server id> <cluster id>");
+            System.out.println("Usage: demo.useragent.BankAgentServer <server id> <cluster id>");
             System.exit(-1);
         }
-        new AirlineAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-    }
-
-    public OfferInfo makeOfferA(Integer user, Integer offer)
-    {
-        if(offer > ABestOffer )
-            return new OfferInfo("airlineA", "seatInfoA", offer-1);
-        return new OfferInfo("airlineA", "seatInfoA", ABestOffer);
-    }
-
-    public OfferInfo makeOfferB(Integer user, Integer offer)
-    {
-        if(offer > BBestOffer)
-            return new OfferInfo("airlineB", "seatInfoB", offer-1);
-        return new OfferInfo("airlineB", "seatInfoB", BBestOffer);
+        new BankAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
-        System.err.println("ordered call in airline agent. probably due to failed synch.");
         byte[] reply = null;
         boolean hasReply = false;
 
@@ -62,42 +48,29 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
+            BankAgentRequestType reqType = (BankAgentRequestType)objIn.readObject();
             String id = (String) objIn.readObject();
-            int u = objIn.readInt();
-            int o = objIn.readInt();
 
             switch (reqType) {
-                case MAKE_OFFER_A:
+                case DEC_BALANCE:
+                    int price = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferA(u, o);
-                        objOut.writeObject(out);
-                        cachedCalls.put(id, out);
+//                        IntIntPair bal = getBalance();
+//                        objOut.writeObject(bal.getSecond());
+                        userAccount.setSecond(userAccount.getSecond()-price);
+                        cachedCalls.put(id, price);
+//                        userBalance.setSecond(bal.getSecond()-price);
                     }
                     else
                     {
 //                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
-                    }
-                    hasReply = true;
-                    break;
-                case MAKE_OFFER_B:
-                    if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferB(u, o);
-                        objOut.writeObject(out);
-                        cachedCalls.put(id, out);
-                    }
-                    else
-                    {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
+//                        objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
                     break;
                 default:
-                    logger.log(Level.WARNING, "airlineAgent: in appExecuteunOrdered only make offer operations are supported");
+                    logger.log(Level.WARNING, "bankagent: in appExecuteOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -108,7 +81,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            logger.log(Level.SEVERE, "Occurred during making offer operation execution", e);
+            logger.log(Level.SEVERE, "Occurred ordered operation execution", e);
         }
         return reply;
     }
@@ -122,42 +95,31 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
              ObjectInput objIn = new ObjectInputStream(byteIn);
              ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
+            BankAgentRequestType reqType = (BankAgentRequestType)objIn.readObject();
             String id = (String) objIn.readObject();
-            int u = objIn.readInt();
-            int o = objIn.readInt();
 
             switch (reqType) {
-                case MAKE_OFFER_A:
+                case GET_BALANCE:
                     if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferA(u, o);
-                        objOut.writeObject(out);
-                        cachedCalls.put(id, out);
+//                        IntIntPair bal = getBalance();
+                        objOut.writeObject(userAccount);
+//                        objOut.flush();
+//                        byteOut.flush();
+//                        reply = byteOut.toByteArray();
+//
+                        cachedCalls.put(id, userAccount);
+//                        logger.log(Level.INFO, "putting id " + id + " call " + bal +  " read in cache");
+
                     }
                     else
                     {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
-                        objOut.writeObject(cachedCalls.get(id));
-                    }
-                    hasReply = true;
-                    break;
-                case MAKE_OFFER_B:
-                    if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferB(u, o);
-                        objOut.writeObject(out);
-                        cachedCalls.put(id, out);
-                    }
-                    else
-                    {
-//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
                         objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
                     break;
                 default:
-                    logger.log(Level.WARNING, "airlineAgent: in appExecuteunOrdered only make offer operations are supported");
+                    logger.log(Level.WARNING, "bankagent: in appExecuteunOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -168,8 +130,13 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            logger.log(Level.SEVERE, "Occurred during making offer operation execution", e);
+            logger.log(Level.SEVERE, "Occurred unordered operation execution", e);
         }
+//        try (ByteArrayInputStream byteIn1 = new ByteArrayInputStream(reply);
+//                             ObjectInput objIn1 = new ObjectInputStream(byteIn1)) {
+//                            System.out.println(serverID + ":" +(IntIntPair)objIn1.readObject());
+//        }
+//        catch (Exception e){e.printStackTrace();}
         return reply;
     }
 

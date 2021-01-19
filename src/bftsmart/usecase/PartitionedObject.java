@@ -3,7 +3,10 @@ import bftsmart.runtime.RMIRuntime;
 import bftsmart.runtime.quorum.*;
 import bftsmart.runtime.quorum.P;
 import bftsmart.runtime.quorum.PAnd;
+import bftsmart.runtime.util.IntIntPair;
 import bftsmart.usecase.auction.OfferInfo;
+import bftsmart.usecase.ticket.TicketInfo;
+import bftsmart.usecase.ticket.TicketRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +83,22 @@ public class PartitionedObject {
                 initAuction_A4B2C0("ac-A4-B2-C0");
             else if(configuration.equals("ac-A8-B4-C0"))
                 initAuction_A8B4C0("ac-A8-B4-C0");
+
+            else if(configuration.equals("tc-A1-B1-C0"))
+                initTicket_A1B1C0("tc-A1-B1-C0");
+            else if(configuration.equals("tc-A2-B2-C0"))
+                initTicket_A2B2C0("tc-A2-B2-C0");
+            else if(configuration.equals("tc-A3-B3-C0"))
+                initTicket_A3B3C0("tc-A3-B3-C0");
+            else if(configuration.equals("tc-A4-B4-C0"))
+                initTicket_A4B4C0("tc-A4-B4-C0");
+            else if(configuration.equals("tc-A5-B5-C0"))
+                initTicket_A5B5C0("tc-A5-B5-C0");
+            else if(configuration.equals("tc-A6-B6-C0"))
+                initTicket_A6B6C0("tc-A6-B6-C0");
+
+            else if(configuration.equals("tc-A2-B3-C0"))
+                initTicket_A2B3C0("tc-A2-B3-C0");
         }
         catch (Exception e)
         {
@@ -237,6 +256,65 @@ public class PartitionedObject {
         writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 14000, 0);
         writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
     }
+
+    public void initializeTicket()
+    {
+        argsMap = new HashMap<>();
+        argsMap.put("m8", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m7", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m6", new Class[]{String.class,Integer.class, IntIntPair.class,Integer.class});
+        argsMap.put("m5", new Class[]{String.class,Integer.class,Integer.class});
+//        argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
+        argsMap.put("m3", new Class[]{String.class,Integer.class,TicketInfo.class});
+        argsMap.put("m2", new Class[]{String.class,Integer.class,Integer.class});
+//        argsMap.put("m1", new Class[]{String.class,Integer.class});
+
+        // always here
+        argsMap.put("request", new Class[]{});
+        argsMap.put("ret", new Class[]{String.class,Integer.class,Boolean.class});
+
+        //object fields methods
+//        argsMap.put("userAgent-read", new Class[]{String.class});
+//        argsMap.put("userAgent-ticketNum", new Class[]{String.class});
+        argsMap.put("userAgent-updateInfo", new Class[]{TicketInfo.class,String.class});
+        argsMap.put("userAgent-updatePayment", new Class[]{IntIntPair.class,String.class});
+
+        argsMap.put("bankAgent-getBalance", new Class[]{String.class});
+        argsMap.put("bankAgent-decBalance", new Class[]{Integer.class,String.class});
+
+        argsMap.put("airlineAgent-getPrice", new Class[]{Integer.class,String.class});
+        argsMap.put("airlineAgent-decSeat", new Class[]{String.class});
+    }
+
+    public void finilaizeTicket(String configuration, H A, H B, H C)
+    {
+        // create and write to hosts.config files
+        String configPath = "config_" + configuration;
+        File directory = new File(configPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // replication of airline
+        writeHostsConfigFile(A, 1, configPath, 11000, 0);
+        writeSystemConfigFile(A, 1, configPath);
+        // replication of bank
+        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
+        writeSystemConfigFile(B, 2, configPath);
+        // replication of userAgent
+        writeHostsConfigFile(C, 3, configPath, 13000, A.size()+B.size());
+        writeSystemConfigFile(C, 3, configPath);
+
+
+        String runtimeConfigPath = "runtimeconfig_" + configuration;
+        directory = new File(runtimeConfigPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // create runtime configuration
+        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 14000, 0);
+        writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
+    }
+
 
     public void initMax_A1B1C1(String configuration) {
         initializeMax();
@@ -1206,6 +1284,566 @@ public class PartitionedObject {
         objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 9), new P(B, 5))));
 
         finilaizeAuction(configuration, A, B, C);
+    }
+
+    public void initTicket_A1B1C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(9);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(3).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(3).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(3).toIntArray());
+        methodsH.put("m8", B.pickFirst(3).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 2));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 2));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 2));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 2)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 2));
+        objectsQ.put("bankAgent", new P(B, 2));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 2), new P(B, 2))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A2B2C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(7);
+        B.addHost(8);
+        B.addHost(9);
+        B.addHost(10);
+        B.addHost(11);
+        B.addHost(12);
+        B.addHost(13);
+
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(14);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(15);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(5).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(5).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(5).toIntArray());
+        methodsH.put("m8", B.pickFirst(5).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 3));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 3));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 3));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 3)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 3));
+        objectsQ.put("bankAgent", new P(B, 3));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 3), new P(B, 3))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A3B3C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(10);
+        B.addHost(11);
+        B.addHost(12);
+        B.addHost(13);
+        B.addHost(14);
+        B.addHost(15);
+        B.addHost(16);
+        B.addHost(17);
+        B.addHost(18);
+        B.addHost(19);
+
+
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(20);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(21);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(7).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(7).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(7).toIntArray());
+        methodsH.put("m8", B.pickFirst(7).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 4));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 4));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 4));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 4)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 4));
+        objectsQ.put("bankAgent", new P(B, 4));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 4), new P(B, 4))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A4B4C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(13);
+        B.addHost(14);
+        B.addHost(15);
+        B.addHost(16);
+        B.addHost(17);
+        B.addHost(18);
+        B.addHost(19);
+        B.addHost(20);
+        B.addHost(21);
+        B.addHost(22);
+        B.addHost(23);
+        B.addHost(24);
+        B.addHost(25);
+
+
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(26);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(27);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(9).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(9).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(9).toIntArray());
+        methodsH.put("m8", B.pickFirst(9).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 5));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 5));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 5));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 5)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 5));
+        objectsQ.put("bankAgent", new P(B, 5));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 5), new P(B, 5))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A5B5C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        A.addHost(13);
+        A.addHost(14);
+        A.addHost(15);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(16);
+        B.addHost(17);
+        B.addHost(18);
+        B.addHost(19);
+        B.addHost(20);
+        B.addHost(21);
+        B.addHost(22);
+        B.addHost(23);
+        B.addHost(24);
+        B.addHost(25);
+        B.addHost(26);
+        B.addHost(27);
+        B.addHost(28);
+        B.addHost(29);
+        B.addHost(30);
+        B.addHost(31);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(32);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(33);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(11).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(11).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(11).toIntArray());
+        methodsH.put("m8", B.pickFirst(11).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 6));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 6));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 6));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 6)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 6));
+        objectsQ.put("bankAgent", new P(B, 6));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 6), new P(B, 6))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A6B6C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+        A.addHost(7);
+        A.addHost(8);
+        A.addHost(9);
+        A.addHost(10);
+        A.addHost(11);
+        A.addHost(12);
+        A.addHost(13);
+        A.addHost(14);
+        A.addHost(15);
+        A.addHost(16);
+        A.addHost(17);
+        A.addHost(18);
+
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(19);
+        B.addHost(20);
+        B.addHost(21);
+        B.addHost(22);
+        B.addHost(23);
+        B.addHost(24);
+        B.addHost(25);
+        B.addHost(26);
+        B.addHost(27);
+        B.addHost(28);
+        B.addHost(29);
+        B.addHost(30);
+        B.addHost(31);
+        B.addHost(32);
+        B.addHost(33);
+        B.addHost(34);
+        B.addHost(35);
+        B.addHost(36);
+        B.addHost(37);
+
+
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(38);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(39);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(13).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(13).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(13).toIntArray());
+        methodsH.put("m8", B.pickFirst(13).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 7));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 7));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 7));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 7)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 7));
+        objectsQ.put("bankAgent", new P(B, 7));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 7), new P(B, 7))));
+
+        finilaizeTicket(configuration, A, B, C);
+    }
+
+    public void initTicket_A2B3C0(String configuration)
+    {
+        initializeTicket();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        A.addHost(4);
+        A.addHost(5);
+        A.addHost(6);
+
+
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(7);
+        B.addHost(8);
+        B.addHost(9);
+        B.addHost(10);
+        B.addHost(11);
+        B.addHost(12);
+        B.addHost(13);
+        B.addHost(14);
+        B.addHost(15);
+        B.addHost(16);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(17);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(18);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m2", A.pickFirst(5).toIntArray());
+        methodsH.put("m3", C.pickFirst(1).toIntArray());
+        methodsH.put("m5", B.pickFirst(7).toIntArray());
+        methodsH.put("m6", C.pickFirst(1).toIntArray());
+        methodsH.put("m7", A.pickFirst(5).toIntArray());
+        methodsH.put("m8", B.pickFirst(7).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m2", new P(Client, 1));
+        methodsQ.put("m3", new P(A, 3));
+        methodsQ.put("m5", new P(C, 1));
+        methodsQ.put("m6", new P(B, 4));
+        methodsQ.put("m7", new P(C, 1));
+        methodsQ.put("m8", new P(A, 3));
+        methodsQ.put("ret", new POr(new P(C, 1), new P(B, 4)));
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("airlineAgent", new P(A, 3));
+        objectsQ.put("bankAgent", new P(B, 4));
+        objectsQ.put("userAgent", new POr(new P(C, 1), new POr(new P(A, 3), new P(B, 4))));
+
+        finilaizeTicket(configuration, A, B, C);
     }
 
     private void writeSystemConfigFile(H h, int clusterID, String configPath)

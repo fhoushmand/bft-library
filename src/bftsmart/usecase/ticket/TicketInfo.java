@@ -1,59 +1,53 @@
 package bftsmart.usecase.ticket;
 
+import bftsmart.usecase.auction.OfferInfo;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
 
-public class TicketInfo implements Externalizable {
-    public String airlineName;
-    public String seatInfo;
-    public Integer offer;
+public class TicketInfo implements Externalizable { ;
+    public String scheduleInfo;
+    public Integer price;
 
     public TicketInfo() {
     }
 
-    public TicketInfo(String airlineName, String seatInfo, Integer offer) {
-        this.airlineName = airlineName;
-        this.seatInfo = seatInfo;
-        this.offer = offer;
+    public TicketInfo(String sched, Integer p)
+    {
+        scheduleInfo = sched;
+        price = p;
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(airlineName);
-        out.writeObject(seatInfo);
-        out.writeInt(offer);
+        out.writeObject(scheduleInfo);
+        out.writeInt(price);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        airlineName = (String) in.readObject();
-        seatInfo = (String) in.readObject();
-        offer = in.readInt();
+        scheduleInfo = (String) in.readObject();
+        price = in.readInt();
     }
 
     @Override
     public String toString() {
-        return airlineName;
+        return "[" + scheduleInfo + ":" + price + "]";
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TicketInfo)) return false;
-        TicketInfo offerInfo = (TicketInfo) o;
-        return airlineName.equals(offerInfo.airlineName);
+        TicketInfo ticketInfo = (TicketInfo) o;
+        return toString().equals(ticketInfo.toString());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(airlineName);
-    }
-
-    public String getAsString()
-    {
-        return airlineName + "<" + seatInfo + ":" + offer + ">";
+        return toString().hashCode();
     }
 }

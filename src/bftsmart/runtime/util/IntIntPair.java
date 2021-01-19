@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 public class IntIntPair implements Externalizable {
     Integer first;
@@ -46,6 +47,19 @@ public class IntIntPair implements Externalizable {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         first = in.readInt();
         second = in.readInt();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof IntIntPair)) return false;
+        IntIntPair that = (IntIntPair) o;
+        return Objects.equals(getFirst(), that.getFirst());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFirst());
     }
 
     @Override
