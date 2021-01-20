@@ -1,5 +1,7 @@
 package bftsmart.usecase;
 
+import bftsmart.demo.register.BooleanRegisterServer;
+import bftsmart.demo.register.IntegerRegisterServer;
 import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 
@@ -8,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public class NodeClusterRunner {
 
@@ -74,6 +77,36 @@ public class NodeClusterRunner {
         }
 
         PartitionedObject o = (PartitionedObject) Class.forName(clusterRunner.config.get(Integer.parseInt(args[1])).className).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, RMIRuntime.CONFIGURATION);
+
+        for(Map.Entry<String,int[]> objPlacement : o.getObjectsH().entrySet()) {
+            // the boolean is accessed
+            if (objPlacement.getKey().equals("r")) {
+                for (int ho : objPlacement.getValue()) {
+                    if (ho == id) {
+                        Boolean initValue = Boolean.FALSE;
+                        new BooleanRegisterServer(initValue, id, 3);
+                    }
+                }
+            }
+            // for r1 in A
+            else if (objPlacement.getKey().equals("r1")) {
+                for (int ho : objPlacement.getValue()) {
+                    if (ho == id) {
+                        Integer initValue = 10;
+                        new IntegerRegisterServer(initValue, id, 1);
+                    }
+                }
+            }
+            // for r2 in B
+            else {
+                for (int ho : objPlacement.getValue()) {
+                    if (ho == id) {
+                        Integer initValue = 5;
+                        new IntegerRegisterServer(initValue, id, 2);
+                    }
+                }
+            }
+        }
 
         RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
         runtime.getObj().setRuntime(runtime);
