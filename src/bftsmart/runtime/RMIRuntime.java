@@ -159,7 +159,6 @@ public class RMIRuntime extends Thread{
 
         initObjectState(id, clusterId);
 
-
         methodArgs = obj.getArgsMap();
         methodsHosts = obj.getMethodsH();
         methodsQuorums = obj.getMethodsQ();
@@ -171,39 +170,58 @@ public class RMIRuntime extends Thread{
     //TODO the clusterid is hardcoded for the OT example
     private void initObjectState(int processID, int clusterId)
     {
-        try {
-            for (Field field : obj.getClass().getFields())
-            {
-                if(field.getType().equals(Integer.class)) {
-                    Integer initValue = (Integer) field.get(obj);
-                    new IntegerRegisterServer(initValue, processID, clusterId); //replication of i1 and i2
-                    objectsState.put(field.getName(), new IntegerRegisterClient(id, clusterId));
-                }
-                else if(field.getType().equals(Boolean.class)) {
-                    Boolean initValue = (Boolean) field.get(obj);
-                    new BooleanRegisterServer(initValue, processID, 3); //replication of a
-                    objectsState.put(field.getName(), new BooleanRegisterClient(id, 3));
-                }
-                else if(field.getType().equals(UserAgentClient.class)) {
-                    new UserAgentServer(0, processID, clusterId); //replication of a
-                    objectsState.put(field.getName(), new UserAgentClient(id, clusterId));
-                }
-                else if(field.getType().equals(AirlineAgentClient.class)) {
-                    new AirlineAgentServer(0, processID, clusterId); //replication of a
-                    objectsState.put(field.getName(), new AirlineAgentClient(id, clusterId));
-                }
-                else if(field.getType().equals(BankAgentClient.class)) {
-                    new BankAgentServer(0, processID, clusterId); //replication of a
-                    objectsState.put(field.getName(), new BankAgentClient(id, clusterId));
-                }
-
-            }
-        }
-        catch (IllegalAccessException e)
+        for(Map.Entry<String,int[]> objPlacement : obj.getObjectsH().entrySet())
         {
-            e.printStackTrace();
-            System.out.println("Access Denied. Cannot access object field");
+            // the boolean is accessed
+            if(objPlacement.getKey().equals("r"))
+            {
+                objectsState.put(objPlacement.getKey(), new BooleanRegisterClient(processID, 3));
+            }
+            // for r1 in A
+            else if(objPlacement.getKey().equals("r1"))
+            {
+                objectsState.put("r1", new IntegerRegisterClient(processID, 1));
+            }
+            // for r2 in B
+            else
+            {
+                objectsState.put("r2", new IntegerRegisterClient(processID, 2));
+            }
+
         }
+//        try {
+//            for (Field field : obj.getClass().getFields())
+//            {
+//                if(field.getType().equals(Integer.class)) {
+//                    Integer initValue = (Integer) field.get(obj);
+//                    new IntegerRegisterServer(initValue, processID, clusterId);
+//                    objectsState.put(field.getName(), new IntegerRegisterClient(id, clusterId));
+//                }
+//                else if(field.getType().equals(Boolean.class)) {
+//                    Boolean initValue = (Boolean) field.get(obj);
+//                    new BooleanRegisterServer(initValue, processID, 3);
+//                    objectsState.put(field.getName(), new BooleanRegisterClient(id, 3));
+//                }
+//                else if(field.getType().equals(UserAgentClient.class)) {
+//                    new UserAgentServer(0, processID, clusterId);
+//                    objectsState.put(field.getName(), new UserAgentClient(id, clusterId));
+//                }
+//                else if(field.getType().equals(AirlineAgentClient.class)) {
+//                    new AirlineAgentServer(0, processID, clusterId);
+//                    objectsState.put(field.getName(), new AirlineAgentClient(id, clusterId));
+//                }
+//                else if(field.getType().equals(BankAgentClient.class)) {
+//                    new BankAgentServer(0, processID, clusterId);
+//                    objectsState.put(field.getName(), new BankAgentClient(id, clusterId));
+//                }
+//
+//            }
+//        }
+//        catch (IllegalAccessException e)
+//        {
+//            e.printStackTrace();
+//            System.out.println("Access Denied. Cannot access object field");
+//        }
 
     }
 

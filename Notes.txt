@@ -27,6 +27,12 @@ To create a replicated register, follow the steps below:
 
 -ObjReCall rule which is implemented in register server and client by adding ids to client methods and a cache (map) from id to return value to the sever code
 
+-Check why the ticket system use-case cannot get random user balance and ticket price?
+(It return null when balance is returned randomly, but it works fine when it is a fixed number)
+
+FIX OBLIVIOUS TRANSFER USE-CASE: THE OBJECT HOSTS ARE HARDCODED IN THE OBLTRANSFERRUNNER
+NEED TO CHANGE OBJECT HOSTS TO SOMETHING LIKE OBLTRANSFER: RUN SERVERS FOR HOSTS OF THE CORRESPONDING OBJECTS (before running runtime),
+THEN RUN CLIENT ON ALL THE HOSTS IN RUNTIME
 
 
 

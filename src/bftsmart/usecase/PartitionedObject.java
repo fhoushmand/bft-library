@@ -38,6 +38,8 @@ public class PartitionedObject {
 
     private HashMap<String, Q> objectsQ;
 
+    private HashMap<String, int[]> objectsH;
+
     // A mapping to store the argument type of the all the methods
     private HashMap<String,Class[]> argsMap;
 
@@ -99,6 +101,21 @@ public class PartitionedObject {
 
             else if(configuration.equals("tc-A2-B3-C0"))
                 initTicket_A2B3C0("tc-A2-B3-C0");
+
+            else if(configuration.equals("ot-A1-B1-C1"))
+                initOblTransfer_A1B1C1("ot-A1-B1-C1");
+            else if(configuration.equals("ot-A1-B1-C2"))
+                initOblTransfer_A1B1C2("ot-A1-B1-C2");
+            else if(configuration.equals("ot-A1-B1-C3"))
+                initOblTransfer_A1B1C3("ot-A1-B1-C3");
+            else if(configuration.equals("ot-A1-B1-C4"))
+                initOblTransfer_A1B1C4("ot-A1-B1-C4");
+            else if(configuration.equals("ot-A1-B1-C5"))
+                initOblTransfer_A1B1C5("ot-A1-B1-C5");
+            else if(configuration.equals("ot-A1-B1-C6"))
+                initOblTransfer_A1B1C6("ot-A1-B1-C6");
+            else if(configuration.equals("ot-A1-B1-C7"))
+                initOblTransfer_A1B1C7("ot-A1-B1-C7");
         }
         catch (Exception e)
         {
@@ -245,6 +262,51 @@ public class PartitionedObject {
         // replication of userAgent
         writeHostsConfigFile(C, 3, configPath, 13000, A.size()+B.size());
         writeSystemConfigFile(C, 3, configPath);
+
+
+        String runtimeConfigPath = "runtimeconfig_" + configuration;
+        directory = new File(runtimeConfigPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // create runtime configuration
+        writeHostsConfigFile(allHosts, 1, runtimeConfigPath, 14000, 0);
+        writeSystemConfigFile(allHosts, 1, runtimeConfigPath);
+    }
+
+    public void initializeOblTransfer()
+    {
+        argsMap = new HashMap<>();
+        argsMap.put("m1", new Class[]{String.class,Integer.class,Integer.class});
+
+        // always here
+        argsMap.put("request", new Class[]{Integer.class});
+        argsMap.put("ret", new Class[]{String.class,Integer.class,Integer.class});
+
+        //object fields methods
+        argsMap.put("r1-read", new Class[]{String.class});
+        argsMap.put("r2-read", new Class[]{String.class});
+        argsMap.put("r-read", new Class[]{String.class});
+        argsMap.put("r-write", new Class[]{Boolean.class,String.class});
+    }
+
+    public void finilaizeOblTransfer(String configuration, H A, H B, H C)
+    {
+        // create and write to hosts.config files
+        String configPath = "config_" + configuration;
+        File directory = new File(configPath);
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+        // replication of r1
+        writeHostsConfigFile(A, 1, configPath, 11000, 0);
+        writeSystemConfigFile(A, 1, configPath);
+        // replication of r2
+        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
+        writeSystemConfigFile(B, 2, configPath);
+        // replication of r
+        writeHostsConfigFile(H.union(A,B), 3, configPath, 13000, 0);
+        writeSystemConfigFile(H.union(A,B), 3, configPath);
 
 
         String runtimeConfigPath = "runtimeconfig_" + configuration;
@@ -1846,6 +1908,504 @@ public class PartitionedObject {
         finilaizeTicket(configuration, A, B, C);
     }
 
+    public void initOblTransfer_A1B1C1(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(12);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(3).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 2));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(A, 2));
+        objectsQ.put("r2", new P(B, 2));
+        objectsQ.put("r", new P(C, 2));
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C2(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(15);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(5).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 3));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(A, 3));
+        objectsQ.put("r2", new P(B, 3));
+        objectsQ.put("r", new P(C, 3));
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C3(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        C.addHost(15);
+        C.addHost(16);
+        C.addHost(17);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(18);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(7).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 4));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(A, 4));
+        objectsQ.put("r2", new P(B, 4));
+        objectsQ.put("r", new P(C, 4));
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C4(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        C.addHost(15);
+        C.addHost(16);
+        C.addHost(17);
+        C.addHost(18);
+        C.addHost(19);
+        C.addHost(20);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(21);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(9).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 5));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(A, 5));
+        objectsQ.put("r2", new P(B, 5));
+        objectsQ.put("r", new P(C, 5));
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C5(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        C.addHost(15);
+        C.addHost(16);
+        C.addHost(17);
+        C.addHost(18);
+        C.addHost(19);
+        C.addHost(20);
+        C.addHost(21);
+        C.addHost(22);
+        C.addHost(23);
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(24);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(11).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 6));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(A, 6));
+        objectsQ.put("r2", new P(B, 6));
+        objectsQ.put("r", new P(C, 6));
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C6(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        C.addHost(15);
+        C.addHost(16);
+        C.addHost(17);
+        C.addHost(18);
+        C.addHost(19);
+        C.addHost(20);
+        C.addHost(21);
+        C.addHost(22);
+        C.addHost(23);
+        C.addHost(24);
+        C.addHost(25);
+        C.addHost(26);
+
+
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(27);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(13).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 7));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(C, 7));
+        objectsQ.put("r2", new P(C, 7));
+        objectsQ.put("r", new P(C, 7));
+//        objectsQ.put("r", new POr(new P(C, 7), new POr(new P(A, 2), new P(B, 2))));
+
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
+    public void initOblTransfer_A1B1C7(String configuration)
+    {
+        initializeOblTransfer();
+
+        //initialize the list host sets
+        //TODO pass this information as argument
+        H A = new H();
+        A.addHost(0);
+        A.addHost(1);
+        A.addHost(2);
+        A.addHost(3);
+        hosts.add(A);
+
+        H B = new H();
+        B.addHost(4);
+        B.addHost(5);
+        B.addHost(6);
+        B.addHost(7);
+        hosts.add(B);
+
+        H C = new H();
+        C.addHost(8);
+        C.addHost(9);
+        C.addHost(10);
+        C.addHost(11);
+        C.addHost(12);
+        C.addHost(13);
+        C.addHost(14);
+        C.addHost(15);
+        C.addHost(16);
+        C.addHost(17);
+        C.addHost(18);
+        C.addHost(19);
+        C.addHost(20);
+        C.addHost(21);
+        C.addHost(22);
+        C.addHost(23);
+        C.addHost(24);
+        C.addHost(25);
+        C.addHost(26);
+        C.addHost(27);
+        C.addHost(28);
+        C.addHost(29);
+
+
+        hosts.add(C);
+
+        H Client = new H();
+        Client.addHost(30);
+
+        allHosts = new H();
+        allHosts = H.union(allHosts, A);
+        allHosts = H.union(allHosts, B);
+        allHosts = H.union(allHosts, C);
+        allHosts = H.union(allHosts, Client);
+
+        methodsH = new HashMap<>();
+        methodsH.put("m1", C.pickFirst(15).toIntArray());
+        methodsH.put("ret", Client.pickFirst(1).toIntArray());
+
+        // initialize methods qs. there are three possibilities:
+        // 1) Single Q
+        // 2) And of two Qs
+        // 3) Or of two Qs
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(Client, 1));
+        methodsQ.put("ret", new P(C, 8));
+
+
+        objectsH = new HashMap<>();
+        objectsH.put("r1", A.toIntArray());
+        objectsH.put("r2", B.toIntArray());
+        objectsH.put("r", H.union(A,B).toIntArray());
+
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(C, 8));
+        objectsQ.put("r2", new P(C, 8));
+        objectsQ.put("r", new P(C, 8));
+//        objectsQ.put("r", new POr(new P(C, 7), new POr(new P(A, 2), new P(B, 2))));
+
+        finilaizeOblTransfer(configuration, A, B, C);
+    }
+
     private void writeSystemConfigFile(H h, int clusterID, String configPath)
     {
         try
@@ -1938,5 +2498,9 @@ public class PartitionedObject {
 
     public ArrayList<H> getHosts() {
         return hosts;
+    }
+
+    public HashMap<String, int[]> getObjectsH() {
+        return objectsH;
     }
 }
