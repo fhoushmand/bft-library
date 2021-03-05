@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 
 public class AuctionClient extends PartitionedObject implements Client {
 
-    public AuctionClient(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public AuctionClient(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     public TreeSet<Long> responseTimes = new TreeSet<>();
     TreeMap<Integer,Integer> requests = new TreeMap<>();

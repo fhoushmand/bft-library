@@ -2,12 +2,20 @@ package bftsmart.runtime.quorum;
 
 import bftsmart.reconfiguration.util.HostsConfig;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 public class H {
 
+
     LinkedHashSet<Integer> hosts = new LinkedHashSet<>();
+    String name;
+
+    public H() {}
+
+    public H(String n)
+    {
+        this.name = n;
+    }
 
     public void addHost(Integer h)
     {
@@ -39,6 +47,16 @@ public class H {
         return output;
     }
 
+    public static H union(int[] hosts1, int[] hosts2)
+    {
+        H output = new H();
+        for(int h1 : hosts1)
+            output.hosts.add(h1);
+        for(int h2 : hosts2)
+            output.hosts.add(h2);
+        return output;
+    }
+
     public static H fromIntArray(int[] arr)
     {
         H host = new H();
@@ -47,6 +65,11 @@ public class H {
         }
         return host;
     }
+//    public H getHostsByName(String name)
+//    {
+//        H h = new H();
+//
+//    }
 
     // checks if this object is subset of the given quorum q.
     public boolean isSubset(Quorum q){
@@ -67,5 +90,9 @@ public class H {
     @Override
     public String toString() {
         return hosts.toString();
+    }
+
+    public String getName() {
+        return name;
     }
 }

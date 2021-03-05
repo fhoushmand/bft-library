@@ -11,9 +11,9 @@ import java.util.TreeSet;
 
 public class TicketSystemClient extends PartitionedObject implements Client {
 
-    public TicketSystemClient(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public TicketSystemClient(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     public TreeMap<Integer,ArrayList<Long>> requestresponseTimes = new TreeMap<>();
 

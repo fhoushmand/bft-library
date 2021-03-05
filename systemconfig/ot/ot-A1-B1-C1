@@ -1,4 +1,4 @@
 A bftsmart.usecase.obltransfer.OblTransferA 0,1,2,3 1
 B bftsmart.usecase.obltransfer.OblTransferB 4,5,6,7 2
-Client bftsmart.usecase.obltransfer.OblTransferC 8,9,10,11 3
+C bftsmart.usecase.obltransfer.OblTransferC 8,9,10,11 3
 Client bftsmart.usecase.obltransfer.OblTransferClient 12 1

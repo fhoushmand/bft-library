@@ -15,9 +15,9 @@ public class TicketSystemC extends PartitionedObject {
 
     public UserAgentClient userAgent;
 
-    public TicketSystemC(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public TicketSystemC(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
 //    public void m1(String callerId, Integer n)
 //    {

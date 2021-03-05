@@ -7,9 +7,9 @@ import java.util.HashMap;
 
 public class OblTransferClient extends PartitionedObject implements Client {
 
-    public OblTransferClient(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public OblTransferClient(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     @Override
     public void request(Object... args) {

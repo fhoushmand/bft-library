@@ -64,7 +64,7 @@ InvalidKeyStoreFormat exception:
 This caused problem when writing config files. now it is resolve by checking before writing to a new file
 
 
-Possible buggs:
+Possible bugs:
     1) resetting the object state after each call (remove for now and write false in OT use-case)
     2) blocking wait (busy while in invokeObj function). this throws NPE which causes problem. catching NPE in another while(true) results in wrong execution (why??) removed for now
     3) if at the begining of the execution bft library instances are not created, maybe it is because fields in the partitioned object are not accessible

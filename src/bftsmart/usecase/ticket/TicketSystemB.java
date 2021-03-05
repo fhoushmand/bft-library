@@ -10,9 +10,9 @@ public class TicketSystemB extends PartitionedObject {
 
     public BankAgentClient bankAgent;
 
-    public TicketSystemB(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public TicketSystemB(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     public void m5(String callerId, Integer n, Integer price)
     {

@@ -10,6 +10,7 @@ import bftsmart.demo.useragent.UserAgentServer;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.quorum.*;
 import bftsmart.usecase.Client;
+import bftsmart.usecase.Spec;
 import bftsmart.usecase.auction.AuctionClient;
 import bftsmart.usecase.PartitionedObject;
 import org.slf4j.Logger;
@@ -46,14 +47,13 @@ public class RMIRuntime extends Thread{
     public static String CONFIGURATION;// = "(A:1;B:1)";
 //    public static String CONFIGURATION = "(A:1;B:1;C:1)";
 
+    public Spec spec;
+
     // id of this process (runtime)
     // this id is global to all the clusters participants
     int id;
 
     int clusterId;
-
-    // sequence number for issuing reset operation on object fields
-    int sequence = 0;
 
     // to handle server-to-server communications
     ServerCommunicationSystem cs;
@@ -84,6 +84,8 @@ public class RMIRuntime extends Thread{
     // A mapping to store the argument type of all the methods
     HashMap<String,Class[]> methodArgs;
 
+    private HashMap<String, int[]> objectsH;
+
     // reading from command line thread
     CMDReader inputReader;
 
@@ -91,63 +93,11 @@ public class RMIRuntime extends Thread{
 
     double avgResTime;
 
-
-    private ReentrantLock objCallLock = new ReentrantLock();
-    private Condition objCallBlock = objCallLock.newCondition();
-
-    public void unblockObjectCall()
-    {
-        objCallLock.lock();
-        objCallBlock.signalAll();
-        objCallLock.unlock();
-    }
-
-//    /**
-//     * @param args [0] is the id of the runtime (unique)
-//     * @param args [1] cluster id for the replication of the object
-//        cluster id responsible for replicating the piece of
-//        information in the partitioned object. for OTA it is 1
-//        and for OTB it is 3
-//     * @param args [2] class name of the PartitionedObject subclass
-//     * @param args [3] the list of ip address of the hosts
-//     * @param args [4] configuration of the use-case
-//     */
-//
-//    public static void main(String[] args) throws Exception{
-//        CONFIGURATION = args[4];
-//        int id = Integer.parseInt(args[0]);
-//        // cluster id responsible for replicating the piece of
-//        // information in the partitioned object. for OTA it is 1
-//        // and for OTB it is 3
-//        //TODO need to make it general for other partitioned objects with multiple object fields
-//        int clusterId = Integer.parseInt(args[1]);
-//
-//        HashMap<Integer,String> hostIPMap = new HashMap<>();
-//        int i = 0;
-//        for (String h : args[3].split("\\s+")){
-//            hostIPMap.put(i++, h);
-//        }
-//
-//        PartitionedObject o = (PartitionedObject) Class.forName(args[2]).getConstructor(HashMap.class, String.class).newInstance(hostIPMap, args[4]);
-//
-//        RMIRuntime runtime = new RMIRuntime(id, clusterId, o);
-//        runtime.getObj().setRuntime(runtime);
-//        runtime.start();
-//
-//        //read from standard input
-//        if (runtime.obj instanceof Max3Client || runtime.obj instanceof OTClient)
-//        {
-//            LinkedBlockingQueue<String> inputs = new LinkedBlockingQueue<>(100);
-//            runtime.setInputReader(new CMDReader(inputs));
-////            runtime.getInputReader().start();
-//        }
-//    }
-
-    public RMIRuntime(int p, int cID, PartitionedObject object) throws Exception
+    public RMIRuntime(int p, int cID, Spec spec, PartitionedObject o) throws Exception
     {
         this.id = p;
         this.clusterId = cID;
-        this.obj = object;
+        this.obj = o;
         execs = new HashMap<>();
 
         if(test)
@@ -159,18 +109,21 @@ public class RMIRuntime extends Thread{
 
         initObjectState(id, clusterId);
 
-        methodArgs = obj.getArgsMap();
-        methodsHosts = obj.getMethodsH();
-        methodsQuorums = obj.getMethodsQ();
-        objectsQuorums = obj.getObjectsQ();
+        methodArgs = spec.getArgsMap();
+        methodsHosts = spec.getMethodsH();
+        methodsQuorums = spec.getMethodsQ();
+        objectsQuorums = spec.getObjectsQ();
+        objectsH = spec.getObjectsH();
 
         cs.start();
+
+        obj.setRuntime(this);
     }
 
     //TODO the clusterid is hardcoded for the OT example
     private void initObjectState(int processID, int clusterId)
     {
-        for(Map.Entry<String,int[]> objPlacement : obj.getObjectsH().entrySet())
+        for(Map.Entry<String,int[]> objPlacement : objectsH.entrySet())
         {
             // the boolean is accessed
             if(objPlacement.getKey().equals("r"))
@@ -366,26 +319,26 @@ public class RMIRuntime extends Thread{
                 }
             }
             //TODO this is only for OT use-case
-            else if(sm instanceof ResetObjectStateMessage) {
-                try {
-                    for (Field field : obj.getClass().getFields())
-                    {
-                        if(field.getType().equals(Integer.class)) {
-                            Integer initValue = (Integer) field.get(obj);
-                            ((IntegerRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
-                        }
-                        else if(field.getType().equals(Boolean.class)) {
-                            Boolean initValue = (Boolean) field.get(obj);
-                            ((BooleanRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
-                        }
-                    }
-                }
-                catch (IllegalAccessException e)
-                {
-                    e.printStackTrace();
-                    System.out.println("Access Denied. Cannot access object field");
-                }
-            }
+//            else if(sm instanceof ResetObjectStateMessage) {
+//                try {
+//                    for (Field field : obj.getClass().getFields())
+//                    {
+//                        if(field.getType().equals(Integer.class)) {
+//                            Integer initValue = (Integer) field.get(obj);
+//                            ((IntegerRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
+//                        }
+//                        else if(field.getType().equals(Boolean.class)) {
+//                            Boolean initValue = (Boolean) field.get(obj);
+//                            ((BooleanRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
+//                        }
+//                    }
+//                }
+//                catch (IllegalAccessException e)
+//                {
+//                    e.printStackTrace();
+//                    System.out.println("Access Denied. Cannot access object field");
+//                }
+//            }
             else if(sm instanceof ShutdownRuntimeMessage) {
                 shutdown();
             }
@@ -510,11 +463,5 @@ public class RMIRuntime extends Thread{
         }
         logger.error("must never happen!");
         return null;
-    }
-
-    public void resetObjectStates()
-    {
-        ResetObjectStateMessage msg = new ResetObjectStateMessage(id);
-        cs.send(obj.getAllHosts().toIntArray(), msg);
     }
 }

@@ -9,9 +9,9 @@ public class AuctionB extends PartitionedObject {
 
     public AirlineAgentClient agentB;
 
-    public AuctionB(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public AuctionB(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     public void m5(String callerId, Integer n, Integer user, Integer offerA)
     {

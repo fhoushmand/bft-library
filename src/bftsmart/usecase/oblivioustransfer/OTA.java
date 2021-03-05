@@ -22,9 +22,9 @@ public class OTA extends PartitionedObject {
     public Integer i1 = 10;
     public Boolean a = false;
 
-    public OTA(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public OTA(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     public void m4(String callerId, Integer n, Integer x)
     {

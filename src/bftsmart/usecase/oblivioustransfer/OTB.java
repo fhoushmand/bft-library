@@ -16,9 +16,9 @@ public class OTB extends PartitionedObject {
     public Integer i2 = 5;
     public Boolean a = false;
 
-    public OTB(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public OTB(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
     public void m4(String callerId, Integer n, Integer x)
     {
         logger.trace("execute m4 with x={}",x);

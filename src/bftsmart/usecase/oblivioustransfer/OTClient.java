@@ -12,9 +12,9 @@ import java.util.HashMap;
 // client host: 11
 public class OTClient extends PartitionedObject implements Client {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-    public OTClient(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public OTClient(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 
     @Override
     public void request(Object... args) {

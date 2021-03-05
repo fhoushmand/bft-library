@@ -8,7 +8,7 @@ public class OblTransferA extends PartitionedObject {
 
     public Integer r1 = 10;
 
-    public OblTransferA(HashMap<Integer, String> hostipMap, String configuration) {
-        super(hostipMap, configuration);
-    }
+//    public OblTransferA(HashMap<Integer, String> hostipMap, String configuration) {
+//        super(hostipMap, configuration);
+//    }
 }

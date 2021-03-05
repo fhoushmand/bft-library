@@ -4,8 +4,6 @@ import java.io.*;
 
 public class ClusterRunner {
 
-    public static int REPITITION = 50;
-
     public void executeCommands(String usecaseName, Integer reps) throws IOException, InterruptedException {
 
         for(File f : new File("systemconfig" + System.getProperty("file.separator") + usecaseName).listFiles()) {
@@ -23,7 +21,7 @@ public class ClusterRunner {
                 totalNumberOfHosts += (3*fSize)+1;
             }
 
-            File deployScript = createTempScript(f.getName(), totalNumberOfHosts);
+            File deployScript = createDeployScript(f.getName(), totalNumberOfHosts);
             if(deployScript == null)
             {
                 System.out.println("created deploy script is null for " + f.getName());
@@ -62,7 +60,7 @@ public class ClusterRunner {
         }
     }
 
-    public File createTempScript(String configFileName, int numberOfHosts){
+    public File createDeployScript(String configFileName, int numberOfHosts){
         try
         {
             FileReader fr = new FileReader("systemconfig/deploy.sh");
