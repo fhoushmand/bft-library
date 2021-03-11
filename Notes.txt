@@ -30,19 +30,6 @@ To create a replicated register, follow the steps below:
 -Check why the ticket system use-case cannot get random user balance and ticket price?
 (It return null when balance is returned randomly, but it works fine when it is a fixed number)
 
-FIX OBLIVIOUS TRANSFER USE-CASE: THE OBJECT HOSTS ARE HARDCODED IN THE OBLTRANSFERRUNNER
-NEED TO CHANGE OBJECT HOSTS TO SOMETHING LIKE OBLTRANSFER: RUN SERVERS FOR HOSTS OF THE CORRESPONDING OBJECTS (before running runtime),
-THEN RUN CLIENT ON ALL THE HOSTS IN RUNTIME
-
-
-
-
-
-
-
--To run on cluster:
-  make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
-  make sure to set defaultkeys to false and usesignature to 1. also, in config*/keys there should exists a privatekey{#id} file
 
 -To kill all the process running :
     kill $(lsof -t -i:13000-14000 -sTCP:LISTEN)
@@ -56,9 +43,7 @@ if faced error while issuing command over ssh without password (and not in the c
         do initialization of the $PATH, in this case:
         source /etc/profile.d/modules.sh
 
-No appropriate protocol or cipher suite is disabled and,
-InvalidKeyStoreFormat exception:
-    Java version must be greater that 11.0.150 (I use 14 local and java/11 on cluster)
+
 
 -Note that on the cluster (also on the local) all the nodes are reading/writing from/to one code base.
 This caused problem when writing config files. now it is resolve by checking before writing to a new file
@@ -68,29 +53,17 @@ Possible bugs:
     1) resetting the object state after each call (remove for now and write false in OT use-case)
     2) blocking wait (busy while in invokeObj function). this throws NPE which causes problem. catching NPE in another while(true) results in wrong execution (why??) removed for now
     3) if at the begining of the execution bft library instances are not created, maybe it is because fields in the partitioned object are not accessible
+    4) if getting connection refused or bind exception, check whether ports are already in use or not
+    5) No appropriate protocol or cipher suite is disabled and,
+        InvalidKeyStoreFormat exception:
+            Java version must be greater that 11.0.150 (I use 14 local and java/11 on cluster)
+    6) disabled cipher:
+         add -Djdk.sunec.disableNative=false to the vm options
 
 
-
-
-Results on local PC:
-*)A:1;B:1
-    20 calls = 114ms - 114ms - 114ms
-*)A:2;B:1
-    20 calls = 145ms - 140ms - 145ms
-*)A:2;B:2
-    20 calls = 175ms - 175ms - 176ms
-*)A:3;B:1
-    20 calls = 168ms - 157ms - 173ms
-*)A:3;B:2
-    20 calls = 205ms - 185ms - 205ms
-*)A:4;B:1
-    20 calls = 199ms - 198ms - 194ms
-*)A:3;B:3
-    20 calls = 220ms - 226ms - 223ms
-*)A:4;B:4
-    20 calls = 297ms - 307ms - 301ms
-
-
+-To run on cluster:
+  make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
+  make sure to set defaultkeys to false and usesignature to 1. also, in config*/keys there should exists a privatekey{#id} file
 
 To run oblivious transfer:
     make sure configurations are present in systemconfig folder (ot-A#-B#)

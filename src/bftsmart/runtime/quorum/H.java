@@ -65,11 +65,6 @@ public class H {
         }
         return host;
     }
-//    public H getHostsByName(String name)
-//    {
-//        H h = new H();
-//
-//    }
 
     // checks if this object is subset of the given quorum q.
     public boolean isSubset(Quorum q){

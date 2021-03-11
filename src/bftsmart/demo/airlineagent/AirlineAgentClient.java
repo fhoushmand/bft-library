@@ -10,7 +10,7 @@ public class AirlineAgentClient {
 
 	public ServiceProxy serviceProxy;
 
-	public AirlineAgentClient(int clientId, int clusterId)
+	public AirlineAgentClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

@@ -165,7 +165,7 @@ public class ServersCommunicationLayer extends Thread {
 
 		serverSocketFactory = context.getServerSocketFactory();
 		this.serverSocketSSLTLS = (SSLServerSocket) serverSocketFactory.createServerSocket(myPort, 100,
-				InetAddress.getByName(myAddress));
+                    InetAddress.getByName(myAddress));
 
 		serverSocketSSLTLS.setEnabledCipherSuites(this.controller.getStaticConf().getEnabledCiphers());
 

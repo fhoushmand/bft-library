@@ -27,7 +27,7 @@ public class IntegerRegisterClient{
 	}
 
 
-	public IntegerRegisterClient(int clientId, int clusterId)
+	public IntegerRegisterClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

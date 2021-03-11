@@ -27,7 +27,7 @@ public class BooleanRegisterClient{
 	}
 
 
-	public BooleanRegisterClient(int clientId, int clusterId)
+	public BooleanRegisterClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

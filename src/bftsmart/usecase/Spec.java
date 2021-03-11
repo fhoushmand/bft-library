@@ -1,116 +1,164 @@
 package bftsmart.usecase;
 
 import bftsmart.runtime.quorum.H;
+import bftsmart.runtime.quorum.P;
 import bftsmart.runtime.quorum.Q;
+import bftsmart.runtime.util.IntIntPair;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Spec {
-    private boolean local = false;
-
-    private String configurationName;
-
+    private boolean isLocal;
+    private ResiliencyConfiguration resiliencyConfiguration;
     private HashMap<String, Configuration> configurations;
     private int hostsSize;
 
-    private HashMap<String,int[]> methodsH = new HashMap<>();
+    // A mapping to store the argument type of the all the methods
+    private HashMap<String,Class[]> argsMap;
+    // A mapping from object fields to its cluster id
+    private HashMap<String, Map.Entry<Class,Integer>> objectFields;
+
+    private HashMap<String, H> objectsH;
+    private HashMap<String,H> methodsH;
 
     // The quorum required for the methods to be able to execute
-    private HashMap<String, Q> methodsQ = new HashMap<>();
+    private HashMap<String, Q> methodsQ;
 
-    private HashMap<String, Q> objectsQ = new HashMap<>();
+    private HashMap<String, Q> objectsQ;
 
-    private HashMap<String, int[]> objectsH = new HashMap<>();
+    private HashMap<Integer,String> hostsIpMap = new HashMap<>();
 
-    // A mapping to store the argument type of the all the methods
-    private HashMap<String,Class[]> argsMap = new HashMap<>();
+    int clusterIDSequence = 0;
 
-    private HashMap<Integer,String> hostsIpMap;
 
-    private HashMap<String,H> principalSets = new HashMap<>();
-
-    public Spec(String configPath, HashMap<Integer,String> hostsMapping) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Spec(boolean local, String configPath, String[] hostsList) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        isLocal = local;
         configurations = readSpecificationFromFile(configPath);
-//        hostsSize = configurations.values().stream().reduce(0, (conf1, conf2) -> conf1.getHostSet().length + conf2.getHostSet().length);
-        hostsIpMap = hostsMapping;
-        configurationName = configPath.split("/")[configPath.split("/").length-1];
+        hostsSize = configurations.values().stream().reduce(0, (size, config) -> size += config.getHostSet().size(), Integer::sum);
+        if(isLocal) {
+            for (int i = 0; i < hostsSize; i++) {
+                hostsIpMap.put(i, "127.0.0.1");
+            }
+        }
+        else
+        {
+            int i = 0;
+            for (String hostName : hostsList){
+                String h = hostName + ".ib.hpcc.ucr.edu";
+                hostsIpMap.put(i++, h);
+            }
+        }
+        resiliencyConfiguration = new ResiliencyConfiguration(configPath.split("/")[configPath.split("/").length-1]);
+        methodsQ = getMethodsQ();
+        objectsQ = getObjectsQ();
 
         //initialize
-//        initializeAuction();
         initialize(configurations.values());
-        // do stuff
+        // specify object and method communication quorums
         //finalize
-//        finilaizeAuction(configurationName, );
         writeConfigsAndFinalize();
-
-
-        principalSets = createPrincipalSets();
-        methodsH = getAllMethodsHosts();
-        methodsQ = getMethodsQ();
-        objectsH = getObjectsH();
-        objectsQ = getObjectsQ();
     }
 
-    public void initialize(Collection<Configuration> configurations) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void initialize(Collection<Configuration> configurations)
+            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         argsMap = new HashMap<>();
+        objectFields = new HashMap<>();
+        objectsH = new HashMap<>();
+        methodsH = new HashMap<>();
         for(Configuration conf : configurations) {
             PartitionedObject object = (PartitionedObject) Class.forName(conf.getClassName()).getConstructor().newInstance();
-            argsMap.putAll(extractSplittedMethods(object));
-            argsMap.putAll(extractObjectFieldMethods(object));
+            extractSplitMethodsArgs(object);
+            extractObjectFieldMethods(object);
+            extractObjectPlacements(object);
+            extractMethodHosts(object);
+        }
+        getMethodCommunicationQuorum();
+        getObjectCommunicationQuorum();
+    }
+
+    private void extractObjectFieldMethods(PartitionedObject object)
+    {
+        for(Field objField : object.getClass().getDeclaredFields())
+            for(Method method : objField.getType().getDeclaredMethods())
+                argsMap.put(objField.getName() + "-" + method.getName(), method.getParameterTypes());
+    }
+    private void extractSplitMethodsArgs(PartitionedObject object)
+    {
+        for(Method method : object.getClass().getDeclaredMethods())
+            argsMap.put(method.getName(), method.getParameterTypes());
+    }
+
+    private void extractObjectPlacements(PartitionedObject object)
+    {
+        for(Field objField : object.getClass().getDeclaredFields()) {
+            objectFields.put(objField.getName(), Map.entry(objField.getType(), clusterIDSequence++));
+            H hosts = getHostByPartitionedClass(object);
+            if(objectsH.containsKey(objField.getName()))
+                objectsH.put(objField.getName(), H.union(objectsH.get(objField.getName()), hosts));
+            else
+                objectsH.put(objField.getName(), hosts);
         }
     }
 
-    private HashMap<String,Class[]> extractObjectFieldMethods(PartitionedObject object)
+    private void extractMethodHosts(PartitionedObject object)
     {
-        HashMap<String,Class[]> methodArgs = new HashMap<>();
-        for(Field objField : object.getClass().getDeclaredFields())
-            for(Method method : objField.getType().getDeclaredMethods())
-                methodArgs.put(objField.getName() + "-" + method.getName(), method.getParameterTypes());
-
-        return methodArgs;
+        for(Method m : object.getClass().getDeclaredMethods()) {
+            H allHosts = getHostByPartitionedClass(object);
+            H requiredHosts = allHosts.pickFirst(2 * resiliencyConfiguration.getPrincipalResiliency(getPrincipalNameByPartitionedClass(object)) + 1);
+            if(methodsH.containsKey(m.getName()))
+                methodsH.put(m.getName(), H.union(methodsH.get(m.getName()), requiredHosts));
+            else
+                methodsH.put(m.getName(), requiredHosts);
+        }
     }
-    private HashMap<String,Class[]> extractSplittedMethods(PartitionedObject object)
-    {
-        HashMap<String,Class[]> methodArgs = new HashMap<>();
-        for(Method method : object.getClass().getDeclaredMethods())
-            methodArgs.put(method.getName(), method.getParameterTypes());
 
-        return methodArgs;
+    private void getMethodCommunicationQuorum()
+    {
+        methodsQ = new HashMap<>();
+        methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
+        methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+    }
+
+    private void getObjectCommunicationQuorum()
+    {
+        objectsQ = new HashMap<>();
+        objectsQ.put("r1", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+        objectsQ.put("r2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+        objectsQ.put("r", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
     }
 
     public void writeConfigsAndFinalize()
     {
-        String configPath = "config_" + configurationName;
+        String configPath = "config_" + resiliencyConfiguration;
         File directory = new File(configPath);
         if (! directory.exists()){
             directory.mkdir();
         }
-
-        // replication of agentA
-//        writeHostsConfigFile(A, 1, configPath, 11000, 0);
-//        writeSystemConfigFile(A, 1, configPath);
-//        // replication of agentB
-//        writeHostsConfigFile(B, 2, configPath, 12000, A.size());
-//        writeSystemConfigFile(B, 2, configPath);
-//        // replication of userAgent
-//        writeHostsConfigFile(C, 3, configPath, 13000, A.size()+B.size());
-//        writeSystemConfigFile(C, 3, configPath);
+        int basePort = 15000;
+        for(Map.Entry<String,H> placement : objectsH.entrySet())
+        {
+            int clusterID = getClusterIDByObjectField(placement.getKey());
+            writeHostsConfigFile(placement.getValue(), clusterID, configPath, basePort);
+            writeSystemConfigFile(placement.getValue(), clusterID, configPath);
+            basePort+=1000;
+        }
 
 
-        String runtimeConfigPath = "runtimeconfig_" + configurationName;
+        String runtimeConfigPath = "runtimeconfig_" + resiliencyConfiguration;
         directory = new File(runtimeConfigPath);
         if (! directory.exists()){
             directory.mkdir();
         }
         // create runtime configuration
-        writeHostsConfigFile(getAllHosts(), 1, runtimeConfigPath, 14000, 0);
+        writeHostsConfigFile(getAllHosts(), 1, runtimeConfigPath, basePort);
         writeSystemConfigFile(getAllHosts(), 1, runtimeConfigPath);
     }
 
@@ -142,49 +190,6 @@ public class Spec {
         return configs;
 
     }
-
-    private HashMap<String,H> createPrincipalSets()
-    {
-        HashMap<String,H> hosts = new HashMap<>();
-        for(Map.Entry<String,Configuration> sets : configurations.entrySet())
-        {
-            H h = new H(sets.getKey());
-            for (int p : sets.getValue().getHostSet())
-                h.addHost(p);
-            hosts.put(sets.getKey(),h);
-        }
-        return hosts;
-    }
-
-    //TODO this needs to change later (don't have access to class code of the other hosts)
-    private HashMap<String,int[]> getAllMethodsHosts()
-    {
-        HashMap<String,int[]> methodsHosts = new HashMap<>();
-        try{
-
-            for(Configuration c : configurations.values())
-            {
-                PartitionedObject object = (PartitionedObject) Class.forName(c.getClassName()).getConstructor().newInstance();
-                Method[] methods = object.getClass().getMethods();
-                for(Method m : methods) {
-                        methodsHosts.put(m.getName(), H.union(methodsHosts.get(m.getName()), c.getHostSet()).toIntArray());
-                }
-            }
-            return methodsHosts;
-        }
-        catch (SecurityException | ClassNotFoundException | NoSuchMethodException e)
-        {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 
     private void writeSystemConfigFile(H h, int clusterID, String configPath)
     {
@@ -231,8 +236,9 @@ public class Spec {
         }
     }
 
-    private void writeHostsConfigFile(H h, int clusterID, String configPath, int basePort, int baseHostID)
+    private void writeHostsConfigFile(H h, int clusterID, String configPath, int basePort)
     {
+        int baseHostID = h.toIntArray()[0];
         try {
             String sep = System.getProperty("file.separator");
             String fileName = configPath + sep + "hosts.config" + clusterID;
@@ -252,7 +258,7 @@ public class Spec {
     }
 
 
-    public HashMap<String, int[]> getMethodsH() {
+    public HashMap<String, H> getMethodsH() {
         return methodsH;
     }
 
@@ -268,7 +274,7 @@ public class Spec {
         return argsMap;
     }
 
-    public HashMap<String, int[]> getObjectsH() {
+    public HashMap<String, H> getObjectsH() {
         return objectsH;
     }
 
@@ -276,12 +282,59 @@ public class Spec {
         return configurations;
     }
 
+    public HashMap<String, Map.Entry<Class, Integer>> getObjectFields() {
+        return objectFields;
+    }
+
     public H getAllHosts()
     {
         H hs = new H("all");
-        for (H h : principalSets.values())
-            hs = H.union(hs, h);
+        for (Map.Entry<String,Configuration> config : configurations.entrySet())
+            hs = H.union(hs, config.getValue().getHostSet());
         return hs;
+    }
+
+    public String getPrincipalNameByPartitionedClass(PartitionedObject object)
+    {
+        for (Map.Entry<String,Configuration> config : configurations.entrySet())
+        {
+            if(config.getValue().getClassName().equals(object.getClass().getName()))
+                return config.getValue().getPrincipalName();
+        }
+        return null;
+    }
+
+    public Class getObjectFieldTypeByName(String name)
+    {
+        return objectFields.get(name).getKey();
+    }
+
+    public H getHostByPartitionedClass(PartitionedObject object)
+    {
+        for (Map.Entry<String,Configuration> config : configurations.entrySet())
+        {
+            if(config.getValue().getClassName().equals(object.getClass().getName()))
+                return config.getValue().getHostSet();
+        }
+        return null;
+    }
+
+    public String getPartitionedClassByHostID(Integer id)
+    {
+        for (Map.Entry<String,Configuration> config : configurations.entrySet())
+        {
+            for(int h : config.getValue().getHostSet().toIntArray())
+            {
+                if(h == id)
+                    return config.getValue().getClassName();
+            }
+        }
+        return null;
+    }
+
+    public Integer getClusterIDByObjectField(String name)
+    {
+        return objectFields.get(name).getValue();
     }
 }
 

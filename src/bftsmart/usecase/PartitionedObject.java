@@ -18,30 +18,16 @@ public class PartitionedObject {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public int responseReceived = 0;
-
-    protected RMIRuntime runtime;
-
-    private HashMap<Integer,String> hostipMap;
-
-    protected int sequenceNumber = 0;
-
     public ReentrantLock objCallLock = new ReentrantLock();
     public Condition requestBlock = objCallLock.newCondition();
 
-    // The id of the processes that host the methods in the given partitioned class
-    private HashMap<String,int[]> methodsH;
+    protected RMIRuntime runtime;
+    protected int sequenceNumber = 0;
 
-    // The quorum required for the methods to be able to execute
-    private HashMap<String, Q> methodsQ;
+    public void setRuntime(RMIRuntime runtime) {
+        this.runtime = runtime;
+    }
 
-    private HashMap<String, Q> objectsQ;
-
-    private HashMap<String, int[]> objectsH;
-
-    // A mapping to store the argument type of the all the methods
-    private HashMap<String,Class[]> argsMap;
-
-    private HashMap<String,H> hosts;
 
 //    public PartitionedObject(HashMap<Integer,String> hostipMap, String configuration, HashMap<String,H> hosts) {
 //        this.hostipMap = hostipMap;
@@ -241,34 +227,34 @@ public class PartitionedObject {
 //        writeSystemConfigFile(getAllHosts(), 1, runtimeConfigPath);
 //    }
 //
-    public void initializeTicket()
-    {
-        argsMap = new HashMap<>();
-        argsMap.put("m8", new Class[]{String.class,Integer.class,Integer.class});
-        argsMap.put("m7", new Class[]{String.class,Integer.class,Integer.class});
-        argsMap.put("m6", new Class[]{String.class,Integer.class, IntIntPair.class,Integer.class});
-        argsMap.put("m5", new Class[]{String.class,Integer.class,Integer.class});
-//        argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
-        argsMap.put("m3", new Class[]{String.class,Integer.class,TicketInfo.class});
-        argsMap.put("m2", new Class[]{String.class,Integer.class,Integer.class});
-//        argsMap.put("m1", new Class[]{String.class,Integer.class});
-
-        // always here
-        argsMap.put("request", new Class[]{});
-        argsMap.put("ret", new Class[]{String.class,Integer.class,Boolean.class});
-
-        //object fields methods
-//        argsMap.put("userAgent-read", new Class[]{String.class});
-//        argsMap.put("userAgent-ticketNum", new Class[]{String.class});
-        argsMap.put("userAgent-updateInfo", new Class[]{TicketInfo.class,String.class});
-        argsMap.put("userAgent-updatePayment", new Class[]{IntIntPair.class,String.class});
-
-        argsMap.put("bankAgent-getBalance", new Class[]{String.class});
-        argsMap.put("bankAgent-decBalance", new Class[]{Integer.class,String.class});
-
-        argsMap.put("airlineAgent-getPrice", new Class[]{Integer.class,String.class});
-        argsMap.put("airlineAgent-decSeat", new Class[]{String.class});
-    }
+//    public void initializeTicket()
+//    {
+//        argsMap = new HashMap<>();
+//        argsMap.put("m8", new Class[]{String.class,Integer.class,Integer.class});
+//        argsMap.put("m7", new Class[]{String.class,Integer.class,Integer.class});
+//        argsMap.put("m6", new Class[]{String.class,Integer.class, IntIntPair.class,Integer.class});
+//        argsMap.put("m5", new Class[]{String.class,Integer.class,Integer.class});
+////        argsMap.put("m4", new Class[]{String.class,Integer.class,Integer.class});
+//        argsMap.put("m3", new Class[]{String.class,Integer.class,TicketInfo.class});
+//        argsMap.put("m2", new Class[]{String.class,Integer.class,Integer.class});
+////        argsMap.put("m1", new Class[]{String.class,Integer.class});
+//
+//        // always here
+//        argsMap.put("request", new Class[]{});
+//        argsMap.put("ret", new Class[]{String.class,Integer.class,Boolean.class});
+//
+//        //object fields methods
+////        argsMap.put("userAgent-read", new Class[]{String.class});
+////        argsMap.put("userAgent-ticketNum", new Class[]{String.class});
+//        argsMap.put("userAgent-updateInfo", new Class[]{TicketInfo.class,String.class});
+//        argsMap.put("userAgent-updatePayment", new Class[]{IntIntPair.class,String.class});
+//
+//        argsMap.put("bankAgent-getBalance", new Class[]{String.class});
+//        argsMap.put("bankAgent-decBalance", new Class[]{Integer.class,String.class});
+//
+//        argsMap.put("airlineAgent-getPrice", new Class[]{Integer.class,String.class});
+//        argsMap.put("airlineAgent-decSeat", new Class[]{String.class});
+//    }
 //
 //    public void finilaizeTicket(String configuration, H A, H B, H C)
 //    {
@@ -518,8 +504,8 @@ public class PartitionedObject {
 //        objectsH.put("r", H.union(A,B).toIntArray());
 //
 //        objectsQ = new HashMap<>();
-//        objectsQ.put("r1", new P(A, 3));
-//        objectsQ.put("r2", new P(B, 3));
+//        objectsQ.put("r1", new P(C, 3));
+//        objectsQ.put("r2", new P(C, 3));
 //        objectsQ.put("r", new P(C, 3));
 //        finilaizeOblTransfer(configuration, A, B, C);
 //    }
@@ -588,11 +574,6 @@ public class PartitionedObject {
 //            System.out.println("Cannot create hosts.config" + clusterID + " file");
 //        }
 //    }
-
-
-    public void setRuntime(RMIRuntime runtime) {
-        this.runtime = runtime;
-    }
 
 //    public HashMap<String, int[]> getMethodsH() {
 //        return methodsH;

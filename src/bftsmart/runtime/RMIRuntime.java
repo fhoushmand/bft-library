@@ -53,8 +53,6 @@ public class RMIRuntime extends Thread{
     // this id is global to all the clusters participants
     int id;
 
-    int clusterId;
-
     // to handle server-to-server communications
     ServerCommunicationSystem cs;
     ServerViewController viewController;
@@ -74,7 +72,7 @@ public class RMIRuntime extends Thread{
     PartitionedObject obj;
 
     // The id of the processes that host the methods in the given partitioned class
-    HashMap<String,int[]> methodsHosts;
+    HashMap<String,H> methodsHosts;
 
     // The quorum required for the methods to be able to execute
     HashMap<String, Q> methodsQuorums;
@@ -84,7 +82,7 @@ public class RMIRuntime extends Thread{
     // A mapping to store the argument type of all the methods
     HashMap<String,Class[]> methodArgs;
 
-    private HashMap<String, int[]> objectsH;
+    private HashMap<String, H> objectsH;
 
     // reading from command line thread
     CMDReader inputReader;
@@ -93,11 +91,11 @@ public class RMIRuntime extends Thread{
 
     double avgResTime;
 
-    public RMIRuntime(int p, int cID, Spec spec, PartitionedObject o) throws Exception
+    public RMIRuntime(int p, Spec spec, PartitionedObject o) throws Exception
     {
         this.id = p;
-        this.clusterId = cID;
         this.obj = o;
+        this.spec = spec;
         execs = new HashMap<>();
 
         if(test)
@@ -107,13 +105,14 @@ public class RMIRuntime extends Thread{
 
         cs = new ServerCommunicationSystem(viewController, new MessageHandler());
 
-        initObjectState(id, clusterId);
+        objectsH = spec.getObjectsH();
+        initObjectState();
 
         methodArgs = spec.getArgsMap();
         methodsHosts = spec.getMethodsH();
         methodsQuorums = spec.getMethodsQ();
         objectsQuorums = spec.getObjectsQ();
-        objectsH = spec.getObjectsH();
+
 
         cs.start();
 
@@ -121,68 +120,20 @@ public class RMIRuntime extends Thread{
     }
 
     //TODO the clusterid is hardcoded for the OT example
-    private void initObjectState(int processID, int clusterId)
-    {
-        for(Map.Entry<String,int[]> objPlacement : objectsH.entrySet())
-        {
-            // the boolean is accessed
-            if(objPlacement.getKey().equals("r"))
-            {
-                objectsState.put(objPlacement.getKey(), new BooleanRegisterClient(processID, 3));
-            }
-            // for r1 in A
-            else if(objPlacement.getKey().equals("r1"))
-            {
-                objectsState.put("r1", new IntegerRegisterClient(processID, 1));
-            }
-            // for r2 in B
-            else
-            {
-                objectsState.put("r2", new IntegerRegisterClient(processID, 2));
-            }
-
-        }
-//        try {
-//            for (Field field : obj.getClass().getFields())
-//            {
-//                if(field.getType().equals(Integer.class)) {
-//                    Integer initValue = (Integer) field.get(obj);
-//                    new IntegerRegisterServer(initValue, processID, clusterId);
-//                    objectsState.put(field.getName(), new IntegerRegisterClient(id, clusterId));
-//                }
-//                else if(field.getType().equals(Boolean.class)) {
-//                    Boolean initValue = (Boolean) field.get(obj);
-//                    new BooleanRegisterServer(initValue, processID, 3);
-//                    objectsState.put(field.getName(), new BooleanRegisterClient(id, 3));
-//                }
-//                else if(field.getType().equals(UserAgentClient.class)) {
-//                    new UserAgentServer(0, processID, clusterId);
-//                    objectsState.put(field.getName(), new UserAgentClient(id, clusterId));
-//                }
-//                else if(field.getType().equals(AirlineAgentClient.class)) {
-//                    new AirlineAgentServer(0, processID, clusterId);
-//                    objectsState.put(field.getName(), new AirlineAgentClient(id, clusterId));
-//                }
-//                else if(field.getType().equals(BankAgentClient.class)) {
-//                    new BankAgentServer(0, processID, clusterId);
-//                    objectsState.put(field.getName(), new BankAgentClient(id, clusterId));
-//                }
-//
-//            }
-//        }
-//        catch (IllegalAccessException e)
-//        {
-//            e.printStackTrace();
-//            System.out.println("Access Denied. Cannot access object field");
-//        }
-
+    private void initObjectState() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        for (Map.Entry<String,H> placement : objectsH.entrySet())
+            objectsState.put(
+                    placement.getKey(),
+                    spec.getObjectFieldTypeByName(placement.getKey()).getConstructor(Integer.class, Integer.class)
+                            .newInstance(id, spec.getClusterIDByObjectField(placement.getKey()))
+            );
     }
 
     @Override
     public void run() {
         if (obj instanceof Client) {
             try {
-                Thread.sleep(20000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -242,37 +193,13 @@ public class RMIRuntime extends Thread{
     }
 
 
-    public CMDReader getInputReader() {
-        return inputReader;
-    }
-
-    public void setInputReader(CMDReader inputReader) {
-        this.inputReader = inputReader;
-    }
-
-    public PartitionedObject getObj() {
-        return obj;
-    }
-
-    public void setObj(PartitionedObject obj) {
-        this.obj = obj;
-    }
-
-    public ConcurrentHashMap<MethodCallMessage, Quorum> getNetwork() {
-        return network;
-    }
-
-    public HashMap<Integer, Long> getExecs() {
-        return execs;
-    }
-
     //ThisCallSend
     public void invoke(String method, String callerId, Integer n, Object... args)
     {
         String mId = callerId + "::" + n;
         MethodCallMessage tmm = new MethodCallMessage(id, mId.getBytes(), method.getBytes(), args);
         tmm.setN(n);
-        cs.send(methodsHosts.get(method), tmm);
+        cs.send(methodsHosts.get(method).toIntArray(), tmm);
     }
 
     //ThisCallSend
@@ -281,7 +208,7 @@ public class RMIRuntime extends Thread{
         String mId = callerId + "::" + n;
         ObjCallMessage tmm = new ObjCallMessage(id, mId.getBytes(), method.getBytes(), args, callingMethod.getBytes());
         tmm.setN(n);
-        cs.send(methodsHosts.get(callingMethod), tmm);
+        cs.send(methodsHosts.get(callingMethod).toIntArray(), tmm);
         return tmm;
     }
 
@@ -318,27 +245,6 @@ public class RMIRuntime extends Thread{
                         network.get(sm).addNode(sm.getSender());
                 }
             }
-            //TODO this is only for OT use-case
-//            else if(sm instanceof ResetObjectStateMessage) {
-//                try {
-//                    for (Field field : obj.getClass().getFields())
-//                    {
-//                        if(field.getType().equals(Integer.class)) {
-//                            Integer initValue = (Integer) field.get(obj);
-//                            ((IntegerRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
-//                        }
-//                        else if(field.getType().equals(Boolean.class)) {
-//                            Boolean initValue = (Boolean) field.get(obj);
-//                            ((BooleanRegisterClient)objectsState.get(field.getName())).write(initValue, id + ":" + sequence++);
-//                        }
-//                    }
-//                }
-//                catch (IllegalAccessException e)
-//                {
-//                    e.printStackTrace();
-//                    System.out.println("Access Denied. Cannot access object field");
-//                }
-//            }
             else if(sm instanceof ShutdownRuntimeMessage) {
                 shutdown();
             }
@@ -373,7 +279,7 @@ public class RMIRuntime extends Thread{
             } while (objCallReceived.get(msgSent) == null);
             do{
 
-            } while (!objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod)));
+            } while (!objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod).toIntArray()));
 
             logger.trace("unblocking object call {}", mId);
             // mark it as bot and clear the memory
@@ -463,5 +369,30 @@ public class RMIRuntime extends Thread{
         }
         logger.error("must never happen!");
         return null;
+    }
+
+
+    public CMDReader getInputReader() {
+        return inputReader;
+    }
+
+    public void setInputReader(CMDReader inputReader) {
+        this.inputReader = inputReader;
+    }
+
+    public PartitionedObject getObj() {
+        return obj;
+    }
+
+    public void setObj(PartitionedObject obj) {
+        this.obj = obj;
+    }
+
+    public ConcurrentHashMap<MethodCallMessage, Quorum> getNetwork() {
+        return network;
+    }
+
+    public HashMap<Integer, Long> getExecs() {
+        return execs;
     }
 }

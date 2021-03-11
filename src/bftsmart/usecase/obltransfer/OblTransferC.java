@@ -5,13 +5,6 @@ import bftsmart.usecase.PartitionedObject;
 import java.util.HashMap;
 
 public class OblTransferC extends PartitionedObject {
-
-    public Boolean r = false;
-
-//    public OblTransferC(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
-
     public void m1(String callerId, Integer n, Integer x)
     {
         Boolean x1 = (Boolean) runtime.invokeObj("r", "read", "m1", callerId+"::m1", ++n);

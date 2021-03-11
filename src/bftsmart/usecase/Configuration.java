@@ -1,19 +1,18 @@
 package bftsmart.usecase;
 
+import bftsmart.runtime.quorum.H;
+
 public class Configuration{
     private String principalName;
     private String className;
-    private int[] hostSet;
-    private String cluster;
+    private H hostSet;
 
     public Configuration(String name, String className, String hosts, String clusterId) {
         this.principalName = name;
         this.className = className;
-        hostSet = new int[hosts.split(",").length];
-        int count = 0;
+        hostSet = new H(name);
         for (String h : hosts.split(","))
-            hostSet[count++] = Integer.valueOf(h);
-        this.cluster = clusterId;
+            hostSet.addHost(Integer.valueOf(h));
     }
 
     public String getPrincipalName() {
@@ -24,11 +23,7 @@ public class Configuration{
         return className;
     }
 
-    public int[] getHostSet() {
+    public H getHostSet() {
         return hostSet;
-    }
-
-    public String getCluster() {
-        return cluster;
     }
 }
