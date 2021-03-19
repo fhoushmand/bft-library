@@ -13,6 +13,9 @@ import bftsmart.usecase.Client;
 import bftsmart.usecase.Spec;
 import bftsmart.usecase.auction.AuctionClient;
 import bftsmart.usecase.PartitionedObject;
+import bftsmart.usecase.obltransfer.OblTransferClient;
+import bftsmart.usecase.onetimetransfer.OTClient;
+import bftsmart.usecase.ticket.TicketSystemClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +136,7 @@ public class RMIRuntime extends Thread{
     public void run() {
         if (obj instanceof Client) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(20000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -145,8 +148,20 @@ public class RMIRuntime extends Thread{
             try {
                 Thread.sleep(10);
                 if (obj instanceof Client) {
-                    if(obj.responseReceived == 1000)
+                    if(obj instanceof OblTransferClient || obj instanceof OTClient) {
+                        if (obj.responseReceived == CMDReader.TRANSFER_USECASES_REP)
                             break;
+                    }
+                    else if(obj instanceof TicketSystemClient)
+                    {
+                        if (obj.responseReceived == CMDReader.TICKET_USECASE_REP)
+                            break;
+                    }
+                    else if(obj instanceof AuctionClient)
+                    {
+                        if (obj.responseReceived == CMDReader.AUCTION_USECASE_REP)
+                            break;
+                    }
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -163,18 +178,18 @@ public class RMIRuntime extends Thread{
         }
         avgResTime = avgResponseTime/execs.keySet().size();
 
-        if(obj instanceof AuctionClient) {
-            for (long l : ((AuctionClient) obj).responseTimes)
-                System.out.print(l + ",");
-            System.out.println("##########");
-            for (Map.Entry<Integer, ArrayList<Long>> entry : ((AuctionClient) obj).requestresponseTimes.entrySet()) {
-                System.out.print(entry.getKey() + ":");
-                long avg = 0;
-                for (long l : entry.getValue())
-                    avg += l;
-                System.out.println(avg / entry.getValue().size());
-            }
-        }
+//        if(obj instanceof AuctionClient) {
+//            for (long l : ((AuctionClient) obj).responseTimes)
+//                System.out.print(l + ",");
+//            System.out.println("##########");
+//            for (Map.Entry<Integer, ArrayList<Long>> entry : ((AuctionClient) obj).requestresponseTimes.entrySet()) {
+//                System.out.print(entry.getKey() + ":");
+//                long avg = 0;
+//                for (long l : entry.getValue())
+//                    avg += l;
+//                System.out.println(avg / entry.getValue().size());
+//            }
+//        }
 
         System.out.println("Average Response Time for " + execs.keySet().size() + " calls = " + avgResTime + "(ms)");
 
@@ -245,9 +260,9 @@ public class RMIRuntime extends Thread{
                         network.get(sm).addNode(sm.getSender());
                 }
             }
-            else if(sm instanceof ShutdownRuntimeMessage) {
-                shutdown();
-            }
+//            else if(sm instanceof ShutdownRuntimeMessage) {
+//                shutdown();
+//            }
 
         }
     }

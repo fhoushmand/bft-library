@@ -60,6 +60,9 @@ Possible bugs:
     6) disabled cipher:
          add -Djdk.sunec.disableNative=false to the vm options
 
+For building with aspectj with ant:
+https://app.cs.amherst.edu/~jerager/cs23/doc/examples/build.xml
+
 
 -To run on cluster:
   make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown

@@ -338,7 +338,7 @@ public class Configuration {
 			String sep = System.getProperty("file.separator");
 			//
 			String path = configHome + sep + "system.config"+clusterId;
-			;
+			System.out.println(path);
 			FileReader fr = new FileReader(path);
 			BufferedReader rd = new BufferedReader(fr);
 			String line = null;

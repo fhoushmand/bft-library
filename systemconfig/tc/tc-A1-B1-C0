@@ -1,4 +1,0 @@
-A bftsmart.usecase.ticket.TicketSystemA 0,1,2,3 1
-B bftsmart.usecase.ticket.TicketSystemB 4,5,6,7 2
-C bftsmart.usecase.ticket.TicketSystemC 8 3
-Client bftsmart.usecase.ticket.TicketSystemClient 9 1

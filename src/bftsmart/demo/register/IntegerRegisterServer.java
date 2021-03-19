@@ -4,6 +4,7 @@ import bftsmart.demo.map.MapServer;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import hermes.runtime.HermesRuntime;
 
 import java.io.*;
 import java.util.HashMap;
@@ -22,6 +23,13 @@ public class IntegerRegisterServer extends DefaultSingleRecoverable {
     public IntegerRegisterServer(int init, int id, int clusterId) {
         memory = init;
         logger = Logger.getLogger(MapServer.class.getName());
+        HermesRuntime.getInstance().setID(String.valueOf(id));
+        try {
+            HermesRuntime.getInstance().open();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         new ServiceReplica(id, this, this, clusterId);
     }
 

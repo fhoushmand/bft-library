@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.ServiceProxy;
 
 /**
@@ -31,6 +32,7 @@ import bftsmart.tom.ServiceProxy;
 public class CounterClient {
 
     public static void main(String[] args) throws IOException {
+        RMIRuntime.CONFIGURATION = "simple";
         if (args.length < 3) {
             System.out.println("Usage: java ... CounterClient <process id> <increment> [<number of operations>] <cluster id>");
             System.out.println("       if <increment> equals 0 the request will be read-only");

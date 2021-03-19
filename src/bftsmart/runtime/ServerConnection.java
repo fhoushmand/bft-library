@@ -15,7 +15,6 @@ limitations under the License.
 */
 package bftsmart.runtime;
 
-import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
@@ -38,11 +37,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * This class represents a connection with other server.
+ * This class represents a connection with other server in runtime
  *
  * ServerConnections are created by ServerCommunicationLayer.
  *
- * @author alysson
+ * @author Farzin
  */
 public class ServerConnection {
     
@@ -66,10 +65,7 @@ public class ServerConnection {
     
     private SecretKey secretKey = null;
 
-    /**
-     * Tulio A. Ribeiro
-     * TLS vars. 
-     */
+
     private KeyManagerFactory kmf;
 	private KeyStore ks = null;
 	private FileInputStream fis = null;
@@ -231,33 +227,6 @@ public class ServerConnection {
              if (this.controller.getStaticConf().getProcessId() > remoteId) {
                  ret = true;
              }
-                
-            /** JCS: I commented the code below to fix a bug, but I am not sure
-             whether its completely useless or not. The 'if' above was taken
-             from that same code (its the only part I understand why is necessary)
-             I keep the code commented just to be on the safe side*/
-            
-            /**
-            
-            boolean me = this.controller.isInLastJoinSet(this.controller.getStaticConf().getProcessId());
-            boolean remote = this.controller.isInLastJoinSet(remoteId);
-
-            //either both endpoints are old in the system (entered the system in a previous view),
-            //or both entered during the last reconfiguration
-            if ((me && remote) || (!me && !remote)) {
-                //in this case, the node with higher ID starts the connection
-                if (this.controller.getStaticConf().getProcessId() > remoteId) {
-                    ret = true;
-                }
-            //this process is the older one, and the other one entered in the last reconfiguration
-            } else if (!me && remote) {
-                ret = true;
-
-            } //else if (me && !remote) { //this process entered in the last reconfig and the other one is old
-                //ret=false; //not necessary, as ret already is false
-            //}
-              
-            */
         }
         return ret;
     }

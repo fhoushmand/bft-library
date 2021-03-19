@@ -6,12 +6,7 @@ import bftsmart.usecase.PartitionedObject;
 import java.util.HashMap;
 
 public class AuctionA extends PartitionedObject {
-
     public AirlineAgentClient agentA;
-
-//    public AuctionA(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
 
     public void m2(String callerId, Integer n, Integer user, Integer offer)
     {

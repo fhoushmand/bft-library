@@ -7,12 +7,7 @@ import bftsmart.usecase.PartitionedObject;
 import java.util.HashMap;
 
 public class AuctionC extends PartitionedObject {
-
     public UserAgentClient userAgent;
-
-//    public AuctionC(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
 
     public void m1(String callerId, Integer n, Integer offer)
     {

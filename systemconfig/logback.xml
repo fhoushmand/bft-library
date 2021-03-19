@@ -39,13 +39,13 @@
   <!-- SPECIFIC CLASS LOGS -->
 
 <!--  <logger name="bftsmart.runtime.RMIRuntime" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.oblivioustransfer.PartitionedObject" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.oblivioustransfer.OTClient" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.PartitionedObject" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTClient" level="TRACE"></logger>-->
 <!--  <logger name="bftsmart.runtime.ServerCommunicationSystem" level="DEBUG"></logger>-->
 <!--  <logger name="bftsmart.runtime.ServersCommunicationLayer" level="DEBUG"></logger>-->
-<!--  <logger name="bftsmart.usecase.oblivioustransfer.OTA" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.oblivioustransfer.OTB" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.oblivioustransfer.OTClient" level="INFO"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTA" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTB" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTClient" level="INFO"></logger>-->
 
 
   <!--   <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>-->

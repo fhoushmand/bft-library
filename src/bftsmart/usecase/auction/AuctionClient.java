@@ -10,15 +10,9 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 public class AuctionClient extends PartitionedObject implements Client {
-
-//    public AuctionClient(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
-
-    public TreeSet<Long> responseTimes = new TreeSet<>();
-    TreeMap<Integer,Integer> requests = new TreeMap<>();
-    public TreeMap<Integer,ArrayList<Long>> requestresponseTimes = new TreeMap<>();
-
+//    public TreeSet<Long> responseTimes = new TreeSet<>();
+//    TreeMap<Integer,Integer> requests = new TreeMap<>();
+//    public TreeMap<Integer,ArrayList<Long>> requestresponseTimes = new TreeMap<>();
 
     @Override
     public void request(Object... args) {
@@ -28,7 +22,7 @@ public class AuctionClient extends PartitionedObject implements Client {
     public void auction(Integer offer)
     {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
-        requests.put(sequenceNumber, offer);
+//        requests.put(sequenceNumber, offer);
         logger.info("execute auction with x={}",offer);
         runtime.invoke("m1", "auction", sequenceNumber++, offer);
     }
@@ -40,10 +34,10 @@ public class AuctionClient extends PartitionedObject implements Client {
         // calculate response time
         long resTime = System.currentTimeMillis() - runtime.getExecs().get(id);
         runtime.getExecs().put(id, resTime);
-        responseTimes.add(resTime);
-        ArrayList<Long> resTimes = requestresponseTimes.getOrDefault(requests.get(id), new ArrayList<>());
-        resTimes.add(resTime);
-        requestresponseTimes.put(requests.get(id), resTimes);
+//        responseTimes.add(resTime);
+//        ArrayList<Long> resTimes = requestresponseTimes.getOrDefault(requests.get(id), new ArrayList<>());
+//        resTimes.add(resTime);
+//        requestresponseTimes.put(requests.get(id), resTimes);
         logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
 //        System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
         logger.info("return value = {}", offer.getAsString());

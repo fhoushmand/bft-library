@@ -45,6 +45,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import bftsmart.communication.SystemMessage;
+import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
 import bftsmart.runtime.RMIRuntime;
@@ -55,7 +56,12 @@ import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
 
+import hermes.runtime.HermesFault;
+import hermes.runtime.HermesRuntime;
+import hermes.runtime.bft.BFTNode;
+import hermes.serialization.HermesSerializableHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +75,6 @@ import org.slf4j.LoggerFactory;
 public class ServerConnection {
     
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
 
     private static final long POOL_TIME = 5000;
     private ServerViewController controller;
@@ -567,6 +572,7 @@ public class ServerConnection {
 					logger.info("SSL/TLS handshake complete!, Id:{}" + "  ## CipherSuite: {}.", remoteId,
 							event.getCipherSuite());
 				}
+
 			});
 
 			this.socket.startHandshake();
@@ -584,5 +590,85 @@ public class ServerConnection {
 			e.printStackTrace();
 		}
 
+	}
+
+	public final void aspectSendBytes(Integer a, byte[] messageData) {
+		int i = 0;
+		boolean abort = false;
+		do {
+			if (abort) {
+				return; // if there is a need to reconnect, abort this method
+			}
+			if (socket != null && socketOutStream != null) {
+				try {
+					//do an extra copy of the data to be sent, but on a single out stream write
+					byte[] data = new byte[5 + messageData.length];
+					int value = messageData.length;
+					boolean attack9 = false;
+					int duplicationPerInvocation = 100;
+					//Integer a = (Integer) HermesRuntime.getInstance().getContext().getObject("attack");
+					//if(this.remoteId !=0 && remoteId!=1){
+					if (a != null) {
+						String[] m = (String[]) HermesRuntime.getInstance().getContext().getObject("f");
+						if (!HermesSerializableHelper.isMalicious(remoteId, m)) {
+							switch (a) {
+								case 4: {
+									System.out.println("attack Corrupt " + a + ":" + HermesRuntime.getInstance().getRuntimeID());
+									value = 1024 * 1024 * 1250; //deploys memory
+									break;
+								}
+								case 5: {
+									System.out.println("attack Corrupt " + a + ":" + HermesRuntime.getInstance().getRuntimeID());
+									value = -1;
+									break;
+								}
+								case 6:
+								case 7:
+								case 8: { //and 7
+									System.out.println("attack Corrupt " + a + ":" + HermesRuntime.getInstance().getRuntimeID());
+									for (int ii = 0; ii < messageData.length; ii++) {
+										messageData[ii] = 0;
+									}
+
+									break;
+								}
+
+								case 9: { //and 7
+									System.out.println("attack Corrupt 9:" + HermesRuntime.getInstance().getRuntimeID());
+									attack9 = true;
+									break;
+								}
+								default:
+									break;
+							}
+						}
+					}
+
+					System.arraycopy(new byte[]{(byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8),
+							(byte) value}, 0, data, 0, 4);
+
+					System.arraycopy(messageData, 0, data, 4, messageData.length);
+					System.arraycopy(new byte[]{(byte) 0}, 0, data, 4 + messageData.length, 1);
+
+					socketOutStream.write(data);
+					if (attack9) {
+						System.out.println("attack Corrupt 9 100 packets per invocation:" + HermesRuntime.getInstance().getRuntimeID());
+						for (int attacki = 0; attacki < duplicationPerInvocation - 1; attacki++) {
+							socketOutStream.write(data);
+						}
+					}
+
+					return;
+				} catch (IOException ex) {
+					closeSocket();
+					waitAndConnect();
+					abort = true;
+				}
+			} else {
+				waitAndConnect();
+				abort = true;
+			}
+			i++;
+		} while (doWork);
 	}
 }

@@ -16,9 +16,18 @@
 package bftsmart.runtime;
 
 import bftsmart.usecase.Client;
+import bftsmart.usecase.auction.AuctionClient;
+import bftsmart.usecase.obltransfer.OblTransferClient;
+import bftsmart.usecase.onetimetransfer.OTClient;
+
 import java.util.Random;
 
 public class CMDReader extends Thread {
+
+    public static int TRANSFER_USECASES_REP = 500;
+    public static int TICKET_USECASE_REP = 1000;
+    public static int AUCTION_USECASE_REP = 1000;
+
 
     public RMIRuntime runtime;
 
@@ -27,12 +36,31 @@ public class CMDReader extends Thread {
     @Override
     public void run() {
         try {
-//            Thread.sleep(100);
-            for (int i = 0; i < 1000; i++) {
-                ((Client) runtime.obj).request(Integer.valueOf(new Random().nextInt(2)));
-                runtime.obj.objCallLock.lock();
-                runtime.obj.requestBlock.await();
-                runtime.obj.objCallLock.unlock();
+            if(runtime.obj instanceof AuctionClient) {
+                for (int i = 0; i < AUCTION_USECASE_REP; i++) {
+                    ((Client) runtime.obj).request(301 + Integer.valueOf(new Random().nextInt(100)));
+                    runtime.obj.objCallLock.lock();
+                    runtime.obj.requestBlock.await();
+                    runtime.obj.objCallLock.unlock();
+                }
+            }
+            else if(runtime.obj instanceof OTClient || runtime.obj instanceof OblTransferClient)
+            {
+                for (int i = 0; i < TRANSFER_USECASES_REP; i++) {
+                    ((Client) runtime.obj).request(2);
+                    runtime.obj.objCallLock.lock();
+                    runtime.obj.requestBlock.await();
+                    runtime.obj.objCallLock.unlock();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < TICKET_USECASE_REP; i++) {
+                    ((Client) runtime.obj).request(2);
+                    runtime.obj.objCallLock.lock();
+                    runtime.obj.requestBlock.await();
+                    runtime.obj.objCallLock.unlock();
+                }
             }
         } catch (InterruptedException interruptedException) {
             interruptedException.printStackTrace();

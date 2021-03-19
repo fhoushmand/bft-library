@@ -1,8 +1,6 @@
 package bftsmart.usecase;
 
-import bftsmart.runtime.quorum.H;
-import bftsmart.runtime.quorum.P;
-import bftsmart.runtime.quorum.Q;
+import bftsmart.runtime.quorum.*;
 import bftsmart.runtime.util.IntIntPair;
 
 import java.io.*;
@@ -20,6 +18,8 @@ public class Spec {
     private ResiliencyConfiguration resiliencyConfiguration;
     private HashMap<String, Configuration> configurations;
     private int hostsSize;
+
+    private String useCaseName;
 
     // A mapping to store the argument type of the all the methods
     private HashMap<String,Class[]> argsMap;
@@ -57,9 +57,7 @@ public class Spec {
             }
         }
         resiliencyConfiguration = new ResiliencyConfiguration(configPath.split("/")[configPath.split("/").length-1]);
-        methodsQ = getMethodsQ();
-        objectsQ = getObjectsQ();
-
+        useCaseName = configPath.split("/")[configPath.split("/").length-2];
         //initialize
         initialize(configurations.values());
         // specify object and method communication quorums
@@ -123,21 +121,94 @@ public class Spec {
     private void getMethodCommunicationQuorum()
     {
         methodsQ = new HashMap<>();
-        methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
-        methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+        switch (useCaseName)
+        {
+            case "ot":
+                methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
+                methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                break;
+            case "ott":
+                methodsQ.put("m4", new P(configurations.get("Client").getHostSet(), 1));
+                methodsQ.put("m3", new PAnd(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
+                methodsQ.put("m2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("ret", new POr(
+                        new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                        new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                    )
+                );
+                break;
+            case "tc":
+                methodsQ.put("m2", new P(configurations.get("Client").getHostSet(), 1));
+                methodsQ.put("m3", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m5", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                methodsQ.put("m6", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m7", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                methodsQ.put("m8", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("ret", new POr(
+                            new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
+                            new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                        )
+                );
+                break;
+            case "ac":
+                methodsQ.put("m1", new POr(new P(configurations.get("Client").getHostSet(), 1), new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1)));
+                methodsQ.put("m2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                methodsQ.put("m3", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m4", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                methodsQ.put("m5", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                methodsQ.put("m6", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                break;
+        }
+
     }
 
     private void getObjectCommunicationQuorum()
     {
         objectsQ = new HashMap<>();
-        objectsQ.put("r1", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
-        objectsQ.put("r2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
-        objectsQ.put("r", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+        switch (useCaseName) {
+            case "ot":
+                objectsQ.put("r1", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                objectsQ.put("r2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                objectsQ.put("r", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                break;
+            case "ott":
+                objectsQ = new HashMap<>();
+                objectsQ.put("i1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                objectsQ.put("i2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                objectsQ.put("a", new POr(new P(configurations.get("A").getHostSet(), 3), new P(configurations.get("B").getHostSet(), 2)));
+                break;
+            case "tc":
+                objectsQ.put("airlineAgent", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                objectsQ.put("bankAgent", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                objectsQ.put("userAgent", new POr(
+                            new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
+                            new POr(
+                                    new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                    new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                            )
+                        )
+                );
+                break;
+            case "ac":
+                objectsQ.put("agentA", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                objectsQ.put("agentB", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                objectsQ.put("userAgent", new POr(
+                                new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
+                                new POr(
+                                        new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                        new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                                )
+                        )
+                );
+                break;
+        }
     }
 
     public void writeConfigsAndFinalize()
     {
-        String configPath = "config_" + resiliencyConfiguration;
+        String configPath = "config" + "_" + resiliencyConfiguration;
         File directory = new File(configPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -152,7 +223,7 @@ public class Spec {
         }
 
 
-        String runtimeConfigPath = "runtimeconfig_" + resiliencyConfiguration;
+        String runtimeConfigPath = "runtimeconfig" + "_"+ resiliencyConfiguration;
         directory = new File(runtimeConfigPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -284,6 +355,10 @@ public class Spec {
 
     public HashMap<String, Map.Entry<Class, Integer>> getObjectFields() {
         return objectFields;
+    }
+
+    public ResiliencyConfiguration getResiliencyConfiguration() {
+        return resiliencyConfiguration;
     }
 
     public H getAllHosts()

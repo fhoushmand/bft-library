@@ -4,6 +4,7 @@
 	<property name="src.dir" location="src" />
 	<property name="test.dir" location="src" />
 	<property name="build.dir" location="bin" />
+<!--	<property name="build.compiler" location="org.aspectj.tools.ant.taskdefs.Ajc11CompilerAdapter" />-->
 	<property name="dist.dir" location="bin" />
 	<property name="lib.dir" location="lib" />
 	<property name="lib" location="lib" />
@@ -12,19 +13,31 @@
             Building the .jar file.
         </echo>
 	</target>
+
+	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
+		<classpath>
+			<pathelement location="${lib}/aspectjtools-1.9.6.jar"/>
+		</classpath>
+	</taskdef>
+
+
 	<path id="libs">
 		<fileset dir="${lib}" includes="*.jar" />
 	</path>
 	<path id="classpath.test">
 			<fileset dir="${lib.dir}" includes="*.jar" />
 		    <pathelement location="${dist.dir}" />
-  </path>
-	<target name="compile" description="Compilation target">
-		<javac classpathref="libs" source="1.8" target="1.8" destdir="${build.dir}" nowarn="on" debug="true">
-			<src path="${src.dir}" />
-			<src path="${test.dir}" />
-		</javac>
+  	</path>
+
+	<property name="ajc"
+			  value="org.aspectj.tools.ant.taskdefs.AjcTask"/>
+
+
+	<target name="compile" description="Compilation target" >
+		<iajc sourceroots="${src.dir}" source="11" destdir="${build.dir}"
+			  classpathref="libs"/>
 	</target>
+
 	<target name="jar" description="Compression target">
 		<jar jarfile="${dist.dir}/BFT-SMaRt.jar">
 			<fileset dir="${build.dir}">
@@ -37,11 +50,4 @@
 			</fileset>
 		</jar>
 	</target>
-	<target name="test" depends="compile, jar">
-	    <junit>
-	      <classpath refid="classpath.test" />
-	      <formatter type="brief" usefile="false" />
-	      <test name="bftsmart.demo.keyvalue.KVClientTest" />
-	    </junit>
-	  </target>
 </project>

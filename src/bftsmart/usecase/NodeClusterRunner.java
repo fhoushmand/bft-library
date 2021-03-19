@@ -2,10 +2,14 @@ package bftsmart.usecase;
 
 import bftsmart.demo.airlineagent.AirlineAgentClient;
 import bftsmart.demo.airlineagent.AirlineAgentServer;
+import bftsmart.demo.bankagent.BankAgentClient;
+import bftsmart.demo.bankagent.BankAgentServer;
 import bftsmart.demo.register.BooleanRegisterClient;
 import bftsmart.demo.register.BooleanRegisterServer;
 import bftsmart.demo.register.IntegerRegisterClient;
 import bftsmart.demo.register.IntegerRegisterServer;
+import bftsmart.demo.useragent.UserAgentClient;
+import bftsmart.demo.useragent.UserAgentServer;
 import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 
@@ -20,7 +24,7 @@ public class NodeClusterRunner {
     /*
      * @param args[0] is the config file in systemconfig
      * @param args[1] is the id of the current runtime
-     * @param args[2:n] is the host list name
+     * @param args[2:n] is the host list name if running on the cluster otherwise it can be null
      */
     public static boolean local = true;
     public static void main(String[] args) throws Exception {
@@ -45,6 +49,12 @@ public class NodeClusterRunner {
                     }
                     else if (object.getValue().getKey().equals(AirlineAgentClient.class)) {
                         new AirlineAgentServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if (object.getValue().getKey().equals(BankAgentClient.class)) {
+                        new BankAgentServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if (object.getValue().getKey().equals(UserAgentClient.class)) {
+                        new UserAgentServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
                     }
                 }
             }

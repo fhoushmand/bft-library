@@ -12,18 +12,7 @@ import java.util.HashMap;
  * is it a fixed number?
  */
 public class TicketSystemC extends PartitionedObject {
-
     public UserAgentClient userAgent;
-
-//    public TicketSystemC(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
-
-//    public void m1(String callerId, Integer n)
-//    {
-//        Integer ticketNum = (Integer) runtime.invokeObj("userAgent", "ticketNum", "m1", callerId+"::m1", ++n);
-//        runtime.invoke("m2", callerId+"::m1", ++n, ticketNum);
-//    }
 
     public void m3(String callerId, Integer n, TicketInfo info)
     {

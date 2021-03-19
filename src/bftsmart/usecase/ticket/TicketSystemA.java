@@ -6,12 +6,7 @@ import bftsmart.usecase.PartitionedObject;
 import java.util.HashMap;
 
 public class TicketSystemA extends PartitionedObject {
-
     public AirlineAgentClient airlineAgent;
-
-//    public TicketSystemA(HashMap<Integer, String> hostipMap, String configuration) {
-//        super(hostipMap, configuration);
-//    }
 
     public void m2(String callerId, Integer n, Integer ticketNum)
     {

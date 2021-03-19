@@ -12,7 +12,7 @@ public class UserAgentClient{
 
 	public ServiceProxy serviceProxy;
 
-	public UserAgentClient(int clientId, int clusterId)
+	public UserAgentClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

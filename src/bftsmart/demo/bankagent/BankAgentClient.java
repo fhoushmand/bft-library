@@ -9,7 +9,7 @@ public class BankAgentClient {
 
 	public ServiceProxy serviceProxy;
 
-	public BankAgentClient(int clientId, int clusterId)
+	public BankAgentClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}

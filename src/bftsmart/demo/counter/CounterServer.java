@@ -15,9 +15,15 @@ limitations under the License.
 */
 package bftsmart.demo.counter;
 
+import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import hermes.HermesConfig;
+import hermes.runtime.HermesRuntime;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -27,6 +33,9 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Example replica that implements a BFT replicated service (a counter).
@@ -78,10 +87,18 @@ public final class CounterServer extends DefaultSingleRecoverable  {
     }
 
     public static void main(String[] args){
+        RMIRuntime.CONFIGURATION = "simple";
         if(args.length < 2) {
             System.out.println("Use: java CounterServer <processId> <cluster id>");
             System.exit(-1);
-        }      
+        }
+        HermesRuntime.getInstance().setID(args[0]);
+        try {
+            HermesRuntime.getInstance().open();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         new CounterServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
     }
 

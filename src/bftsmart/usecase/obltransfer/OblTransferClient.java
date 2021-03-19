@@ -19,7 +19,7 @@ public class OblTransferClient extends PartitionedObject implements Client {
     public void transfer(Integer x)
     {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
-        logger.info("execute transfer with x={}",x);
+//        logger.info("execute transfer with x={}",x);
         runtime.invoke("m1", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
     }
 
@@ -30,9 +30,9 @@ public class OblTransferClient extends PartitionedObject implements Client {
         // calculate response time
         runtime.getExecs().put(id, System.currentTimeMillis() - runtime.getExecs().get(id));
         logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
-        System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
-        logger.info("return value = {}", x);
-        System.out.println(String.format("return value = %s", x));
+//        System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
+//        logger.info("return value = {}", x);
+//        System.out.println(String.format("return value = %s", x));
         responseReceived++;
         // just for oblivious transfer example since it returns zero after the first call
 //        runtime.resetObjectStates();
