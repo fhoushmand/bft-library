@@ -22,7 +22,7 @@ public class AliceServer extends DefaultSingleRecoverable {
 
     public AliceServer(int init, int id, int clusterId) {
         logger = Logger.getLogger(AliceServer.class.getName());
-        HermesRuntime.getInstance().setID(String.valueOf(id));
+//        HermesRuntime.getInstance().setID(String.valueOf(id));
 //        try {
 //            HermesRuntime.getInstance().open();
 //        } catch (Exception e) {

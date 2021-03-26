@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 
 #SBATCH --nodes=%s
 #SBATCH --ntasks=%s
@@ -11,13 +11,13 @@
 module load java/11
 
 
-mkdir -p bin
-rm -rf bin/*
-rm -rf config_*
-rm -rf runtimeconfig_*
+#mkdir -p bin
+#rm -rf bin/*
+#rm -rf config_*
+#rm -rf runtimeconfig_*
 
 
-~/shared/opt/apache-ant-1.10.9/bin/ant -d main
+#~/shared/opt/apache-ant-1.10.9/bin/ant -d main
 
 nodes=($( scontrol show hostnames $SLURM_NODELIST ))
 nnodes=${#nodes[@]}
