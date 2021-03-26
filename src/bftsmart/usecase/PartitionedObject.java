@@ -22,7 +22,7 @@ public class PartitionedObject {
     public Condition requestBlock = objCallLock.newCondition();
 
     protected RMIRuntime runtime;
-    protected int sequenceNumber = 0;
+    public int sequenceNumber = 0;
 
     public void setRuntime(RMIRuntime runtime) {
         this.runtime = runtime;

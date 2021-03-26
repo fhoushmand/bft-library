@@ -149,6 +149,10 @@ public class RMIRuntime extends Thread{
         {
             try {
                 Thread.sleep(10);
+//                if (obj.sequenceNumber == 50)
+//                {
+//
+//                }
                 if (obj instanceof Client) {
                     if(obj instanceof OblTransferClient || obj instanceof OTClient) {
                         if (obj.responseReceived == CMDReader.TRANSFER_USECASES_REP)

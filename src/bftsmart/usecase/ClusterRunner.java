@@ -68,7 +68,7 @@ public class ClusterRunner {
             2) total number of nodes
             3) Memory amount = number of nodes * 500M
              */
-            file = String.format(file, numberOfHosts, numberOfHosts, 500 * numberOfHosts);
+            file = String.format(file, numberOfHosts, numberOfHosts, 1500 * numberOfHosts);
             String fileName = "deploy-" + configFileName + ".sh";
             File deployScript = new File(fileName);
             if(!deployScript.exists()) {

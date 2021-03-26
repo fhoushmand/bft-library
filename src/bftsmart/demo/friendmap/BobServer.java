@@ -19,6 +19,7 @@ public class BobServer extends DefaultSingleRecoverable {
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
     public BobServer(int init, int id, int clusterId) {
+        System.out.println("Starting bob server");
         logger = Logger.getLogger(BobServer.class.getName());
 //        HermesRuntime.getInstance().setID(String.valueOf(id));
 //        try {

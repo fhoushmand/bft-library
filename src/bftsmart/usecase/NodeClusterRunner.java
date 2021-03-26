@@ -22,7 +22,7 @@ public class NodeClusterRunner {
      * @param args[1] is the id of the current runtime
      * @param args[2:n] is the host list name if running on the cluster otherwise it can be null
      */
-    public static boolean local = false;
+    public static boolean local = true;
     public static void main(String[] args) throws Exception {
         Spec spec = null;
         if(local)
@@ -70,7 +70,6 @@ public class NodeClusterRunner {
                     }
                     else if(object.getValue().getKey().equals(AliceClient.class))
                     {
-                        System.out.println("starting alice server");
                         new AliceServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
                     }
                     else if(object.getValue().getKey().equals(BobClient.class))
@@ -79,6 +78,7 @@ public class NodeClusterRunner {
                     }
                     else if(object.getValue().getKey().equals(SnappClient.class))
                     {
+                        System.out.println("starting alice server");
                         new SnappServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
                     }
                     else if(object.getValue().getKey().equals(MapServiceClient.class))

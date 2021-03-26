@@ -17,6 +17,7 @@ public class SnappServer extends DefaultSingleRecoverable {
     HashMap<String,Object> cachedCalls = new HashMap<>();
     
     public SnappServer(int init, int id, int clusterId) {
+        System.out.println("Starting snapp server");
         logger = Logger.getLogger(SnappServer.class.getName());
 //        HermesRuntime.getInstance().setID(String.valueOf(id));
 //        try {

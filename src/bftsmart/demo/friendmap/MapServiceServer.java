@@ -19,6 +19,7 @@ public class MapServiceServer extends DefaultSingleRecoverable {
 
 
     public MapServiceServer(int init, int id, int clusterId) {
+        System.out.println("Starting map server");
         logger = Logger.getLogger(MapServiceServer.class.getName());
 //        HermesRuntime.getInstance().setID(String.valueOf(id));
 //        try {

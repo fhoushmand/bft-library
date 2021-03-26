@@ -61,6 +61,8 @@ Possible bugs:
             Java version must be greater that 11.0.150 (I use 14 local and java/11 on cluster)
     6) disabled cipher:
          add -Djdk.sunec.disableNative=false to the vm options
+    7) In NodeClusterRunner servers are not starting (maybe because if statements are missing?)
+    8) Make sure there is enough memory alloation in run.sh to each runtime (currently 1.5G) and consequently, in ClusterRunner
 
 For building with aspectj with ant:
 https://app.cs.amherst.edu/~jerager/cs23/doc/examples/build.xml

@@ -1,5 +1,6 @@
 module load java/11;
 mkdir -p bin;
+rm deploy-*.sh
 rm -rf bin/*;
 rm -rf config_*;
 rm -rf runtimeconfig_*;
