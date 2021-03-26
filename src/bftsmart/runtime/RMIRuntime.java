@@ -13,6 +13,8 @@ import bftsmart.usecase.Client;
 import bftsmart.usecase.Spec;
 import bftsmart.usecase.auction.AuctionClient;
 import bftsmart.usecase.PartitionedObject;
+import bftsmart.usecase.friendmap.FriendMapClient;
+import bftsmart.usecase.mpc.MPCClient;
 import bftsmart.usecase.obltransfer.OblTransferClient;
 import bftsmart.usecase.onetimetransfer.OTClient;
 import bftsmart.usecase.ticket.TicketSystemClient;
@@ -106,7 +108,7 @@ public class RMIRuntime extends Thread{
         else
             viewController = new ServerViewController(id, "runtimeconfig_"+CONFIGURATION, null, 1);
 
-        cs = new ServerCommunicationSystem(viewController, new MessageHandler());
+        cs = new ServerCommunicationSystem(viewController, new MessageHandler(), spec);
 
         objectsH = spec.getObjectsH();
         initObjectState();
@@ -160,6 +162,16 @@ public class RMIRuntime extends Thread{
                     else if(obj instanceof AuctionClient)
                     {
                         if (obj.responseReceived == CMDReader.AUCTION_USECASE_REP)
+                            break;
+                    }
+                    else if(obj instanceof MPCClient)
+                    {
+                        if (obj.responseReceived == CMDReader.MPC_USECASES_REP)
+                            break;
+                    }
+                    else if(obj instanceof FriendMapClient)
+                    {
+                        if (obj.responseReceived == CMDReader.FRIENDMAP_USECASES_REP)
                             break;
                     }
                 }

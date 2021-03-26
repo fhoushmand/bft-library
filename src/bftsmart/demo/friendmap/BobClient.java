@@ -1,61 +1,55 @@
-package bftsmart.demo.register;
+package bftsmart.demo.friendmap;
 
 import bftsmart.tom.ServiceProxy;
 
 import java.io.*;
-import java.util.Scanner;
 
-public class MapServiceClient {
+public class BobClient {
 
 	public ServiceProxy serviceProxy;
 
-	public MapServiceClient(Integer clientId, Integer clusterId)
+	public BobClient(Integer clientId, Integer clusterId)
 	{
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}
 
-	public String pin(String box, String id) {
+	public Integer getID(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-			objOut.writeObject(MapServiceRequestType.PIN);
+			objOut.writeObject(BobRequestType.ID);
 
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
-			objOut.writeInt(box.getBytes().length);
-			objOut.write(box.getBytes());
+			objOut.writeObject(id);
 
 			objOut.flush();
 			byteOut.flush();
 
-			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 			if (reply.length == 0)
 				return null;
 			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
 				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
-				return (String) objIn.readObject();
+				return (Integer) objIn.readObject();
 			}
 
 		} catch (IOException | ClassNotFoundException e) {
-			System.out.println("Exception pin map in map client: " + e.getMessage());
+			System.out.println("Exception get id in bob: " + e.getMessage());
 		}
 		return null;
 	}
 
-	public String newBox(String id) {
+	public String location(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-			objOut.writeObject(MapServiceRequestType.NEW_BOX);
+			objOut.writeObject(BobRequestType.LOCATION);
 
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
+			objOut.writeObject(id);
 
 			objOut.flush();
 			byteOut.flush();
 
-			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
 			if (reply.length == 0)
 				return null;
 			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
@@ -64,25 +58,18 @@ public class MapServiceClient {
 			}
 
 		} catch (IOException | ClassNotFoundException e) {
-			System.out.println("Exception new box in map client: " + e.getMessage());
+			System.out.println("Exception get location in bob: " + e.getMessage());
 		}
 		return null;
 	}
 
-	public String extend(String box, String loc, String id) {
+	public String comment(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
-			objOut.writeObject(MapServiceRequestType.EXTEND);
+			objOut.writeObject(BobRequestType.COMMENT);
 
-			objOut.writeInt(id.getBytes().length);
-			objOut.write(id.getBytes());
-
-			objOut.writeInt(box.getBytes().length);
-			objOut.write(box.getBytes());
-
-			objOut.writeInt(loc.getBytes().length);
-			objOut.write(loc.getBytes());
+			objOut.writeObject(id);
 
 			objOut.flush();
 			byteOut.flush();
@@ -96,7 +83,7 @@ public class MapServiceClient {
 			}
 
 		} catch (IOException | ClassNotFoundException e) {
-			System.out.println("Exception pin map in map client: " + e.getMessage());
+			System.out.println("Exception comment bob client: " + e.getMessage());
 		}
 		return null;
 	}

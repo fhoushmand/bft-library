@@ -7,7 +7,7 @@ public class Configuration{
     private String className;
     private H hostSet;
 
-    public Configuration(String name, String className, String hosts, String clusterId) {
+    public Configuration(String name, String className, String hosts) {
         this.principalName = name;
         this.className = className;
         hostSet = new H(name);

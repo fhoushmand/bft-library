@@ -8,13 +8,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Spec {
     private boolean isLocal;
+    private boolean injectFault = true;
     private ResiliencyConfiguration resiliencyConfiguration;
     private HashMap<String, Configuration> configurations;
     private int hostsSize;
@@ -35,6 +33,8 @@ public class Spec {
     private HashMap<String, Q> objectsQ;
 
     private HashMap<Integer,String> hostsIpMap = new HashMap<>();
+
+    private ArrayList<Integer> faultyLeaderNodes = new ArrayList<>();
 
     int clusterIDSequence = 0;
 
@@ -77,9 +77,17 @@ public class Spec {
             extractObjectFieldMethods(object);
             extractObjectPlacements(object);
             extractMethodHosts(object);
+            if(injectFault)
+                Arrays.stream(
+                        conf.getHostSet()
+                                .pickFirst(resiliencyConfiguration.getPrincipalResiliency(conf.getPrincipalName()))
+                                .toIntArray())
+                        .forEach(n -> faultyLeaderNodes.add(n));
         }
         getMethodCommunicationQuorum();
         getObjectCommunicationQuorum();
+
+
     }
 
     private void extractObjectFieldMethods(PartitionedObject object)
@@ -160,6 +168,24 @@ public class Spec {
                 methodsQ.put("m6", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 break;
+            case "mpc":
+                methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
+                methodsQ.put("m2", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m3", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
+                break;
+            case "friendmap":
+                methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
+//                methodsQ.put("m2", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m6", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m9", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m3", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m5", new P(configurations.get("S").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("S") + 1));
+                methodsQ.put("m8", new P(configurations.get("M").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("M") + 1));
+                methodsQ.put("m4", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m7", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("ret", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                break;
         }
 
     }
@@ -203,6 +229,29 @@ public class Spec {
                         )
                 );
                 break;
+            case "mpc":
+                objectsQ.put("a",
+                        new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                new POr(new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1),
+                                        new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1))));
+                objectsQ.put("b",
+                        new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                new POr(new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1),
+                                        new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1))));
+                objectsQ.put("c",
+                        new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                new POr(new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1),
+                                        new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1))));
+                break;
+            case "friendmap":
+                objectsQ.put("alice", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                objectsQ.put("bob", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                objectsQ.put("snapp", new P(configurations.get("S").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("S") + 1));
+                objectsQ.put("mapService", new P(configurations.get("M").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("M") + 1));
+                break;
+
+
+
         }
     }
 
@@ -246,8 +295,7 @@ public class Spec {
                     String hostsSetName = line.split("\\s+")[0];
                     String partitionedClassName = line.split("\\s+")[1];
                     String hostList = line.split("\\s+")[2];
-                    String clusterId = line.split("\\s+")[3];
-                    Configuration c = new Configuration(hostsSetName, partitionedClassName, hostList, clusterId);
+                    Configuration c = new Configuration(hostsSetName, partitionedClassName, hostList);
                     configs.put(hostsSetName, c);
                 }
             }
@@ -351,6 +399,10 @@ public class Spec {
 
     public HashMap<String, Configuration> getConfigurations() {
         return configurations;
+    }
+
+    public ArrayList<Integer> getFaultyLeaderNodes() {
+        return faultyLeaderNodes;
     }
 
     public HashMap<String, Map.Entry<Class, Integer>> getObjectFields() {

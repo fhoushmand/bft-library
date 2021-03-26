@@ -1,10 +1,9 @@
-package bftsmart.demo.register;
+package bftsmart.demo.mpc;
 
 import bftsmart.runtime.util.IntIntIntTuple;
 import bftsmart.tom.ServiceProxy;
 
 import java.io.*;
-import java.util.Scanner;
 
 public class MPCClient {
 
@@ -41,7 +40,7 @@ public class MPCClient {
 		return null;
 	}
 
-	public Integer read(String id) {
+	public Integer read(Integer pieceNum, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -50,10 +49,12 @@ public class MPCClient {
 			objOut.writeInt(id.getBytes().length);
 			objOut.write(id.getBytes());
 
+			objOut.writeInt(pieceNum);
+
 			objOut.flush();
 			byteOut.flush();
 
-			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
 			if (reply.length == 0)
 				return null;
 			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);

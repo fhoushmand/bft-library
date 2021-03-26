@@ -4,20 +4,16 @@ import bftsmart.demo.airlineagent.AirlineAgentClient;
 import bftsmart.demo.airlineagent.AirlineAgentServer;
 import bftsmart.demo.bankagent.BankAgentClient;
 import bftsmart.demo.bankagent.BankAgentServer;
-import bftsmart.demo.register.BooleanRegisterClient;
-import bftsmart.demo.register.BooleanRegisterServer;
-import bftsmart.demo.register.IntegerRegisterClient;
-import bftsmart.demo.register.IntegerRegisterServer;
+import bftsmart.demo.friendmap.*;
+import bftsmart.demo.mpc.MPCClient;
+import bftsmart.demo.mpc.MPCServer;
+import bftsmart.demo.register.*;
 import bftsmart.demo.useragent.UserAgentClient;
 import bftsmart.demo.useragent.UserAgentServer;
 import bftsmart.runtime.CMDReader;
 import bftsmart.runtime.RMIRuntime;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 public class NodeClusterRunner {
@@ -56,6 +52,40 @@ public class NodeClusterRunner {
                     else if (object.getValue().getKey().equals(UserAgentClient.class)) {
                         new UserAgentServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
                     }
+                    else if (object.getValue().getKey().equals(MPCClient.class)) {
+                        int init = 500;
+//                        if(host <= 9)
+//                            init = 200;
+//                        else if(host > 9 && host <= 19)
+//                            init = 400;
+//                        else if(host > 19 && host <= 29)
+//                            init = 600;
+//                        if(host <= 3)
+//                            init = 200;
+//                        else if(host > 3 && host <= 7)
+//                            init = 400;
+//                        else if(host > 7 && host <= 11)
+//                            init = 600;
+                        new MPCServer(init, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if(object.getValue().getKey().equals(AliceClient.class))
+                    {
+                        System.out.println("starting alice server");
+                        new AliceServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if(object.getValue().getKey().equals(BobClient.class))
+                    {
+                        new BobServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if(object.getValue().getKey().equals(SnappClient.class))
+                    {
+                        new SnappServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+                    else if(object.getValue().getKey().equals(MapServiceClient.class))
+                    {
+                        new MapServiceServer(0, host, spec.getClusterIDByObjectField(object.getKey()));
+                    }
+
                 }
             }
         }

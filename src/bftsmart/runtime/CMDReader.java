@@ -17,14 +17,20 @@ package bftsmart.runtime;
 
 import bftsmart.usecase.Client;
 import bftsmart.usecase.auction.AuctionClient;
+import bftsmart.usecase.friendmap.FriendMapClient;
+import bftsmart.usecase.friendmap.UserA;
+import bftsmart.usecase.mpc.MPCClient;
 import bftsmart.usecase.obltransfer.OblTransferClient;
 import bftsmart.usecase.onetimetransfer.OTClient;
+import bftsmart.usecase.ticket.TicketSystemClient;
 
 import java.util.Random;
 
 public class CMDReader extends Thread {
 
     public static int TRANSFER_USECASES_REP = 500;
+    public static int MPC_USECASES_REP = 100;
+    public static int FRIENDMAP_USECASES_REP = 100;
     public static int TICKET_USECASE_REP = 1000;
     public static int AUCTION_USECASE_REP = 1000;
 
@@ -38,7 +44,7 @@ public class CMDReader extends Thread {
         try {
             if(runtime.obj instanceof AuctionClient) {
                 for (int i = 0; i < AUCTION_USECASE_REP; i++) {
-                    ((Client) runtime.obj).request(301 + Integer.valueOf(new Random().nextInt(100)));
+                    ((Client) runtime.obj).request(301 + new Random().nextInt(100));
                     runtime.obj.objCallLock.lock();
                     runtime.obj.requestBlock.await();
                     runtime.obj.objCallLock.unlock();
@@ -47,16 +53,34 @@ public class CMDReader extends Thread {
             else if(runtime.obj instanceof OTClient || runtime.obj instanceof OblTransferClient)
             {
                 for (int i = 0; i < TRANSFER_USECASES_REP; i++) {
+                    ((Client) runtime.obj).request(new Random().nextInt(2));
+                    runtime.obj.objCallLock.lock();
+                    runtime.obj.requestBlock.await();
+                    runtime.obj.objCallLock.unlock();
+                }
+            }
+            else if(runtime.obj instanceof TicketSystemClient)
+            {
+                for (int i = 0; i < TICKET_USECASE_REP; i++) {
                     ((Client) runtime.obj).request(2);
                     runtime.obj.objCallLock.lock();
                     runtime.obj.requestBlock.await();
                     runtime.obj.objCallLock.unlock();
                 }
             }
-            else
+            else if(runtime.obj instanceof MPCClient)
             {
-                for (int i = 0; i < TICKET_USECASE_REP; i++) {
-                    ((Client) runtime.obj).request(2);
+                for (int i = 0; i < MPC_USECASES_REP; i++) {
+                    ((Client) runtime.obj).request();
+                    runtime.obj.objCallLock.lock();
+                    runtime.obj.requestBlock.await();
+                    runtime.obj.objCallLock.unlock();
+                }
+            }
+            else if(runtime.obj instanceof FriendMapClient)
+            {
+                for (int i = 0; i < FRIENDMAP_USECASES_REP; i++) {
+                    ((Client) runtime.obj).request();
                     runtime.obj.objCallLock.lock();
                     runtime.obj.requestBlock.await();
                     runtime.obj.objCallLock.unlock();

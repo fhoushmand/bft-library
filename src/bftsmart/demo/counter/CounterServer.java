@@ -19,10 +19,7 @@ import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import hermes.HermesConfig;
 import hermes.runtime.HermesRuntime;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

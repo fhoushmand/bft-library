@@ -16,8 +16,10 @@ limitations under the License.
 package bftsmart.runtime;
 
 import bftsmart.reconfiguration.ServerViewController;
+import bftsmart.runtime.quorum.H;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
+import bftsmart.usecase.Spec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +33,12 @@ import java.net.UnknownHostException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.IntPredicate;
 
 /**
  * This class represents a connection with other server in runtime
@@ -47,8 +51,7 @@ public class ServerConnection {
     
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-
-    private static final long POOL_TIME = 5000;
+	private static final long POOL_TIME = 5000;
     private ServerViewController controller;
     private SSLSocket socket;
     private DataOutputStream socketOutStream = null;
@@ -65,6 +68,8 @@ public class ServerConnection {
     
     private SecretKey secretKey = null;
 
+    private Spec spec;
+
 
     private KeyManagerFactory kmf;
 	private KeyStore ks = null;
@@ -74,10 +79,12 @@ public class ServerConnection {
 	private SSLSocketFactory socketFactory;
 	private static final String SECRET = "MySeCreT_2hMOygBwY";
     
-    public ServerConnection(ServerViewController controller, 
-    		SSLSocket socket, int remoteId,
-            LinkedBlockingQueue<RTMessage> inQueue,
-            ServiceReplica replica) {
+    public ServerConnection(ServerViewController controller,
+							SSLSocket socket, int remoteId,
+							LinkedBlockingQueue<RTMessage> inQueue,
+							ServiceReplica replica, Spec spec) {
+
+    	this.spec = spec;
 
         this.controller = controller;
 
@@ -180,6 +187,23 @@ public class ServerConnection {
 	 * reconnection is done
 	 */
 	private final void sendBytes(byte[] messageData) {
+		// inject crash fault
+//		try {
+//			RTMessage sm = (RTMessage) (new ObjectInputStream(new ByteArrayInputStream(messageData)).readObject());
+//			if (sm.getN() == 50)
+//			{
+////				if(Arrays.stream(controller.getCurrentView().getProcesses()).anyMatch(n -> spec.getFaultyLeaderNodes().contains(n)))
+//				if(Arrays.stream(controller.getCurrentView().getProcesses()).anyMatch(n -> n == 0))
+//					Thread.currentThread().stop();
+////					System.exit(1);
+//
+//			}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		}
+
 		boolean abort = false;
 		do {
 			if (abort)
@@ -362,16 +386,7 @@ public class ServerConnection {
 
 						logger.trace("Read: {}, HasMAC: {}", read, hasMAC);
 
-//						MethodCallMessage m = new MethodCallMessage();
-//						m.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
-//
-//						ObjCallMessage m2 = new ObjCallMessage();
-//						m2.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
-
-
 						RTMessage sm = (RTMessage) (new ObjectInputStream(new ByteArrayInputStream(data)).readObject());
-
-//						sm.rExternal(new ObjectInputStream(new ByteArrayInputStream(data)));
 
 						//The verification it is done for the SSL/TLS protocol.
 						sm.authenticated = true;

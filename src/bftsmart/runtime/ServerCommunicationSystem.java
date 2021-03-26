@@ -18,6 +18,7 @@ package bftsmart.runtime;
 import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 
+import bftsmart.usecase.Spec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +40,14 @@ public class ServerCommunicationSystem extends Thread {
     /**
      * Creates a new instance of ServerCommunicationSystem
      */
-    public ServerCommunicationSystem(ServerViewController controller, MessageHandlerRMI handlerRMI) throws Exception {
+    public ServerCommunicationSystem(ServerViewController controller, MessageHandlerRMI handlerRMI, Spec spec) throws Exception {
         super("Server Comm. System");
         
         messageHandlerRMI = handlerRMI;
 
         inQueue = new LinkedBlockingQueue<RTMessage>(100);
 
-        serversConn = new ServersCommunicationLayer(controller, inQueue);
+        serversConn = new ServersCommunicationLayer(controller, inQueue, spec);
     }
 
     /**

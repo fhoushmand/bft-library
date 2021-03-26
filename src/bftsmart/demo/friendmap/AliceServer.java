@@ -1,10 +1,12 @@
-package bftsmart.demo.register;
+package bftsmart.demo.friendmap;
 
-import bftsmart.demo.map.MapServer;
-import bftsmart.runtime.util.IntIntIntTuple;
+import bftsmart.demo.airlineagent.AirlineAgentRequestType;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
+import bftsmart.usecase.auction.OfferInfo;
+import bftsmart.usecase.ticket.TicketInfo;
+import hermes.runtime.HermesRuntime;
 
 import java.io.*;
 import java.util.HashMap;
@@ -13,73 +15,84 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class MPCServer extends DefaultSingleRecoverable {
+public class AliceServer extends DefaultSingleRecoverable {
 
-    private int memory;
     private Logger logger;
-    private IntIntIntTuple splittedSecret;
+    private int userID = 1;
+
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
 
-    public MPCServer(int init, int id, int clusterId) {
-        memory = 500;
-        splittedSecret = getSplitSecret(memory);
-        System.out.println(splittedSecret);
-        logger = Logger.getLogger(MapServer.class.getName());
+    public AliceServer(int init, int id, int clusterId) {
+        logger = Logger.getLogger(AliceServer.class.getName());
+        HermesRuntime.getInstance().setID(String.valueOf(id));
+        try {
+            HermesRuntime.getInstance().open();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         new ServiceReplica(id, this, this, clusterId);
-    }
-
-    private IntIntIntTuple getSplitSecret(int secret)
-    {
-        int p1 = new Random().nextInt(400) + 1;
-        int p2 = new Random().nextInt(secret - p1) + 1;
-        int p3 = secret - (p1+p2);
-        return new IntIntIntTuple(p1,p2,p3);
     }
 
     public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: demo.demo.MPCServer <default> <server id> <cluster id>");
+            System.out.println("Usage: demo.useragent.UserAgentServer <server id> <cluster id>");
             System.exit(-1);
         }
-        new MPCServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+        new AliceServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
     @Override
     public byte[] appExecuteOrdered(byte[] command, MessageContext msgCtx) {
+//        System.err.println("ordered call in airline agent. probably due to failed synch.");
         byte[] reply = null;
         boolean hasReply = false;
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            MPCRequestType reqType = (MPCRequestType)objIn.readObject();
+            AliceRequestType reqType = (AliceRequestType)objIn.readObject();
+            String id = (String) objIn.readObject();
 
-            //reading the id of the object call
-            int idSize = objIn.readInt();
-            byte[] idBytes = new byte[idSize];
-            objIn.read(idBytes);
-            String id = new String(idBytes);
-
-            // Only do the operation (marked) if the call is not already executed
             switch (reqType) {
-                case SPLIT:
+                case EXPAND:
+                    String box = (String) objIn.readObject();
+                    String loc = (String) objIn.readObject();
+                    String res = "||" + loc + "||";
                     if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to write("+newVal+") in cache");
-                        objOut.writeObject(splittedSecret);
-                        cachedCalls.put(id, splittedSecret);
-                        // actual operation
+                        objOut.writeObject(res);
+                        cachedCalls.put(id, res);
                     }
                     else
-                    {
                         objOut.writeObject(cachedCalls.get(id));
+                    hasReply = true;
+                    break;
+                case PIN:
+                    String map = (String) objIn.readObject();
+                    String comment = (String) objIn.readObject();
+                    String annotatedMap = "@" + map + "(" + comment + ")";
+                    if(!cachedCalls.containsKey(id)) {
+                        objOut.writeObject(annotatedMap);
+                        cachedCalls.put(id, annotatedMap);
                     }
+                    else
+                        objOut.writeObject(cachedCalls.get(id));
+                    hasReply = true;
+                    break;
+                case NEW_BOX:
+                    if(!cachedCalls.containsKey(id)) {
+                        objOut.writeObject("BOX");
+                        cachedCalls.put(id, "BOX");
+                    }
+                    else
+                        objOut.writeObject(cachedCalls.get(id));
                     hasReply = true;
                     break;
                 default:
-                    logger.log(Level.WARNING, "in appExecuteOrdered only split operations are supported");
+                    logger.log(Level.WARNING, "aliceServer: in appExecuteOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -88,50 +101,37 @@ public class MPCServer extends DefaultSingleRecoverable {
             } else {
                 reply = new byte[0];
             }
-
-
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            logger.log(Level.SEVERE, "Occurred during mpc operation execution", e);
+            logger.log(Level.SEVERE, "Occurred during ordered execution", e);
         }
         return reply;
     }
 
     @Override
     public byte[] appExecuteUnordered(byte[] command, MessageContext msgCtx) {
-//        System.out.println("cache: " + cachedCalls);
         byte[] reply = null;
         boolean hasReply = false;
 
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(command);
              ObjectInput objIn = new ObjectInputStream(byteIn);
-             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-            MPCRequestType reqType = (MPCRequestType)objIn.readObject();
-
-            //reading the id of the object call
-            int idSize = objIn.readInt();
-            byte[] idBytes = new byte[idSize];
-            objIn.read(idBytes);
-            String id = new String(idBytes);
-
+            AliceRequestType reqType = (AliceRequestType)objIn.readObject();
+            String id = (String) objIn.readObject();
 
             switch (reqType) {
-                case SPLIT:
+                case ID:
                     if(!cachedCalls.containsKey(id)) {
-//                        logger.log(Level.WARNING, "putting id " + id + " call to write("+newVal+") in cache");
-                        objOut.writeObject(splittedSecret);
-                        cachedCalls.put(id, splittedSecret);
-                        // actual operation
+                        objOut.writeObject(userID);
+                        cachedCalls.put(id, userID);
                     }
                     else
-                    {
                         objOut.writeObject(cachedCalls.get(id));
-                    }
                     hasReply = true;
                     break;
                 default:
-                    logger.log(Level.WARNING, "in appExecuteunOrdered only split operations are supported");
+                    logger.log(Level.WARNING, "alice server: in appExecuteUnOrdered");
             }
             if (hasReply) {
                 objOut.flush();
@@ -142,16 +142,16 @@ public class MPCServer extends DefaultSingleRecoverable {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            logger.log(Level.SEVERE, "Occurred during mpc operation execution", e);
+            logger.log(Level.SEVERE, "Occurred during unordered execution", e);
         }
         return reply;
     }
 
     @Override
     public byte[] getSnapshot() {
-        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
              ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
-            objOut.writeObject(memory);
+            objOut.writeObject(cachedCalls);
             return byteOut.toByteArray();
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error while taking snapshot", e);
@@ -164,7 +164,7 @@ public class MPCServer extends DefaultSingleRecoverable {
     public void installSnapshot(byte[] state) {
         try (ByteArrayInputStream byteIn = new ByteArrayInputStream(state);
              ObjectInput objIn = new ObjectInputStream(byteIn)) {
-            memory = (int) objIn.readObject();
+            cachedCalls = (HashMap<String, Object>) objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Error while installing snapshot", e);
         }

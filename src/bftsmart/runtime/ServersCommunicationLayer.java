@@ -19,6 +19,7 @@ import bftsmart.communication.SystemMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
+import bftsmart.usecase.Spec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,7 @@ public class ServersCommunicationLayer extends Thread {
     private ReentrantLock waitViewLock = new ReentrantLock();
     private List<PendingConnection> pendingConn = new LinkedList<PendingConnection>();
     private ServiceReplica replica;
+    private Spec spec;
     
     
     /**
@@ -90,12 +92,14 @@ public class ServersCommunicationLayer extends Thread {
 	private String ssltlsProtocolVersion;
 
     public ServersCommunicationLayer(ServerViewController controller,
-            LinkedBlockingQueue<RTMessage> inQueue) throws Exception {
+                                     LinkedBlockingQueue<RTMessage> inQueue, Spec runtimeSpec) throws Exception {
 
         this.controller = controller;
         this.inQueue = inQueue;
         this.me = controller.getStaticConf().getProcessId();
         this.ssltlsProtocolVersion = controller.getStaticConf().getSSLTLSProtocolVersion();
+
+        this.spec = runtimeSpec;
 
         String myAddress;
         String confAddress =
@@ -220,7 +224,7 @@ public class ServersCommunicationLayer extends Thread {
         ServerConnection ret = this.connections.get(remoteId);
         if (ret == null) {
             ret = new ServerConnection(controller, null,
-            		remoteId, this.inQueue, null);
+            		remoteId, this.inQueue, null, spec);
             this.connections.put(remoteId, ret);
         }
         connectionsLock.unlock();
@@ -346,7 +350,7 @@ public class ServersCommunicationLayer extends Thread {
                 //first time that this connection is being established
                 //System.out.println("THIS DOES NOT HAPPEN....."+remoteId);
                 this.connections.put(remoteId,
-                			new ServerConnection(controller, newSocket, remoteId, inQueue, null));
+                			new ServerConnection(controller, newSocket, remoteId, inQueue, null, spec));
             } else {
                 //reconnection	
             	logger.debug("ReConnecting with replica: {}", remoteId);

@@ -5,7 +5,6 @@
     <option name="aptOptionsEnabled" value="true" />
   </component>
   <component name="CompilerConfiguration">
-    <option name="DEFAULT_COMPILER" value="ajc" />
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true">
         <processorPath useClasspath="false">

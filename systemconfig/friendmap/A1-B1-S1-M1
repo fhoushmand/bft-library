@@ -1,0 +1,5 @@
+A bftsmart.usecase.friendmap.UserA 0,1,2,3
+B bftsmart.usecase.friendmap.UserB 4,5,6,7
+S bftsmart.usecase.friendmap.SnappService 8,9,10,11
+M bftsmart.usecase.friendmap.MapService 12,13,14,15
+Client bftsmart.usecase.friendmap.FriendMapClient 16
