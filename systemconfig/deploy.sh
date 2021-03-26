@@ -4,10 +4,9 @@
 #SBATCH --ntasks=%s
 #SBATCH --cpus-per-task=4
 #SBATCH --output="result.log"
-#SBATCH --mem=2G
+#SBATCH --mem=%sM
 #SBATCH -p short # This is the default partition, you can use any of the following; intel, batch, highmem, gpu
 
-#$1 = number of reps
 
 module load java/11
 
@@ -16,8 +15,7 @@ mkdir -p bin
 rm -rf bin/*
 rm -rf config_*
 rm -rf runtimeconfig_*
-#rm config/currentView*
-#rm myconfig/currentView*
+
 
 ~/shared/opt/apache-ant-1.10.9/bin/ant -d main
 

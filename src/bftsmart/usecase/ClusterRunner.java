@@ -4,33 +4,24 @@ import java.io.*;
 
 public class ClusterRunner {
 
-    public void executeCommands(String usecaseName, Integer reps) throws IOException, InterruptedException {
+    public void executeCommands(String configPath, Integer reps) throws IOException, InterruptedException {
 
-        for(File f : new File("systemconfig" + System.getProperty("file.separator") + usecaseName).listFiles()) {
-            if(!f.getName().contains(usecaseName+"-"))
-                continue;
-
+            File f = new File(configPath);
             String configName = f.getName();
-            String conf = configName.substring(configName.indexOf('-')+1);
 
             int totalNumberOfHosts = 1;
-            for(String hostConf : conf.split("-"))
+            for(String hostConf : configName.split("-"))
             {
                 String val = hostConf.substring(1);
                 Integer fSize = Integer.valueOf(hostConf.substring(1));
                 totalNumberOfHosts += (3*fSize)+1;
             }
-
             File deployScript = createDeployScript(f.getName(), totalNumberOfHosts);
-            if(deployScript == null)
-            {
-                System.out.println("created deploy script is null for " + f.getName());
-                continue;
-            }
+
             String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
             System.out.println(command);
             for(int i = 0; i < reps; i++) {
-                ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), "systemconfig" + System.getProperty("file.separator") + usecaseName + System.getProperty("file.separator") + f.getName());
+                ProcessBuilder pb = new ProcessBuilder("sbatch", deployScript.toString(), configPath);
                 pb.inheritIO();
                 Process p = pb.start();
 
@@ -57,7 +48,6 @@ public class ClusterRunner {
 
                 Thread.sleep(2000);
             }
-        }
     }
 
     public File createDeployScript(String configFileName, int numberOfHosts){
@@ -76,8 +66,9 @@ public class ClusterRunner {
             /* arguments of the template system.config file:
             1) total number of nodes
             2) total number of nodes
+            3) Memory amount = number of nodes * 500M
              */
-            file = String.format(file, numberOfHosts, numberOfHosts);
+            file = String.format(file, numberOfHosts, numberOfHosts, 500 * numberOfHosts);
             String fileName = "deploy-" + configFileName + ".sh";
             File deployScript = new File(fileName);
             if(!deployScript.exists()) {

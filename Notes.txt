@@ -25,6 +25,8 @@ To create a replicated register, follow the steps below:
 -For now, the method id and the method sequence number are passed to each method in the partition object
 -Later think about how to move them to the runtime
 
+make sure to set defaultkeys to false and usesignature to 1. also, in config*/keys there should exists a privatekey{#id} file
+
 -ObjReCall rule which is implemented in register server and client by adding ids to client methods and a cache (map) from id to return value to the sever code
 
 -Check why the ticket system use-case cannot get random user balance and ticket price?
@@ -66,13 +68,10 @@ https://app.cs.amherst.edu/~jerager/cs23/doc/examples/build.xml
 
 -To run on cluster:
   make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
-  make sure to set defaultkeys to false and usesignature to 1. also, in config*/keys there should exists a privatekey{#id} file
+  run java -cp bin/*:lib/* bftsmart.usecase.ClusterRunner {path_to_config} {number_of_repetitions}
+  make sure there are no errors in result.log
 
-To run oblivious transfer:
-    make sure configurations are present in systemconfig folder (ot-A#-B#)
-    run sbatch deploy.sh to compile the latest code
-    make sure there are no errors in result.log
-    run java -cp bin/*:lib/* bftsmart.usecase.ClusterRunner
+
 
 
 
