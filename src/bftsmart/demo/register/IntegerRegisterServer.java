@@ -4,7 +4,7 @@ import bftsmart.demo.map.MapServer;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import hermes.runtime.HermesRuntime;
+import bftsmart.hermes.runtime.HermesRuntime;
 
 import java.io.*;
 import java.util.HashMap;

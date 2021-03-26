@@ -1,16 +1,12 @@
 package bftsmart.demo.friendmap;
 
-import bftsmart.demo.airlineagent.AirlineAgentRequestType;
 import bftsmart.tom.MessageContext;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.server.defaultservices.DefaultSingleRecoverable;
-import bftsmart.usecase.auction.OfferInfo;
-import bftsmart.usecase.ticket.TicketInfo;
-import hermes.runtime.HermesRuntime;
+import bftsmart.hermes.runtime.HermesRuntime;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

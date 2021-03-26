@@ -28,7 +28,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -46,10 +45,8 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import bftsmart.communication.SystemMessage;
-import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
-import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
 import java.security.SecureRandom;
@@ -57,12 +54,9 @@ import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.logging.Level;
 
-import hermes.runtime.HermesFault;
-import hermes.runtime.HermesRuntime;
-import hermes.runtime.bft.BFTNode;
-import hermes.serialization.HermesSerializableHelper;
+import bftsmart.hermes.runtime.HermesRuntime;
+import bftsmart.hermes.serialization.HermesSerializableHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
