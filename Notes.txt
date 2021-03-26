@@ -68,7 +68,8 @@ https://app.cs.amherst.edu/~jerager/cs23/doc/examples/build.xml
 
 -To run on cluster:
   make sure you load java/11 module, otherwise "InvalidKeyStoreFormat" is thrown
-  run java -cp bin/*:lib/* bftsmart.usecase.ClusterRunner {path_to_config} {number_of_repetitions}
+  run "source compile.sh" to compile and package the source.
+  run "java -cp bin/*:lib/* bftsmart.usecase.ClusterRunner {path_to_config} {number_of_repetitions}" to submit job
   make sure there are no errors in result.log
 
 

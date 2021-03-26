@@ -23,12 +23,12 @@ public class AliceServer extends DefaultSingleRecoverable {
     public AliceServer(int init, int id, int clusterId) {
         logger = Logger.getLogger(AliceServer.class.getName());
         HermesRuntime.getInstance().setID(String.valueOf(id));
-        try {
-            HermesRuntime.getInstance().open();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+//        try {
+//            HermesRuntime.getInstance().open();
+//        } catch (Exception e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
         new ServiceReplica(id, this, this, clusterId);
     }
 

@@ -20,13 +20,13 @@ public class BobServer extends DefaultSingleRecoverable {
 
     public BobServer(int init, int id, int clusterId) {
         logger = Logger.getLogger(BobServer.class.getName());
-        HermesRuntime.getInstance().setID(String.valueOf(id));
-        try {
-            HermesRuntime.getInstance().open();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+//        HermesRuntime.getInstance().setID(String.valueOf(id));
+//        try {
+//            HermesRuntime.getInstance().open();
+//        } catch (Exception e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
         new ServiceReplica(id, this, this, clusterId);
     }
 
