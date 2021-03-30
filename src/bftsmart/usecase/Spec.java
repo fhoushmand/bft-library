@@ -135,15 +135,27 @@ public class Spec {
                 methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
                 methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 break;
+            // old non-optimized ott
+//            case "ott":
+//                methodsQ.put("m4", new P(configurations.get("Client").getHostSet(), 1));
+//                methodsQ.put("m3", new PAnd(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
+//                methodsQ.put("m2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+//                methodsQ.put("m1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+//                methodsQ.put("ret", new POr(
+//                        new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+//                        new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+//                    )
+//                );
+//                break;
             case "ott":
                 methodsQ.put("m4", new P(configurations.get("Client").getHostSet(), 1));
-                methodsQ.put("m3", new PAnd(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
+                methodsQ.put("m3", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("m2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
-                methodsQ.put("m1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+                methodsQ.put("m1", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("ret", new POr(
-                        new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
-                        new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
-                    )
+                                new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                        )
                 );
                 break;
             case "tc":
@@ -199,11 +211,18 @@ public class Spec {
                 objectsQ.put("r2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 objectsQ.put("r", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 break;
+            //old non-optimized ott
+//            case "ott":
+//                objectsQ = new HashMap<>();
+//                objectsQ.put("i1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
+//                objectsQ.put("i2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+//                objectsQ.put("a", new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
+//                break;
             case "ott":
                 objectsQ = new HashMap<>();
                 objectsQ.put("i1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 objectsQ.put("i2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
-                objectsQ.put("a", new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
+                objectsQ.put("a", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 break;
             case "tc":
                 objectsQ.put("airlineAgent", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));

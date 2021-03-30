@@ -43,9 +43,9 @@
 <!--  <logger name="bftsmart.usecase.onetimetransfer.OTTClient" level="TRACE"></logger>-->
 <!--  <logger name="bftsmart.runtime.ServerCommunicationSystem" level="DEBUG"></logger>-->
 <!--  <logger name="bftsmart.runtime.ServersCommunicationLayer" level="DEBUG"></logger>-->
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTA" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTB" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTClient" level="INFO"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer_optimized.OTTA" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer_optimized.OTTB" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer_optimized.OTTClient" level="INFO"></logger>-->
 
 
   <!--   <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>-->

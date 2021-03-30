@@ -141,7 +141,7 @@ public class RMIRuntime extends Thread{
             try {
                 Thread.sleep(10);
                 if (obj instanceof Client) {
-                    if(obj instanceof OblTransferClient || obj instanceof OTTClient) {
+                    if(obj instanceof OblTransferClient || obj instanceof OTTClient || obj instanceof bftsmart.usecase.onetimetransfer_optimized.OTTClient) {
                         if (obj.responseReceived == CMDReader.TRANSFER_USECASES_REP)
                             break;
                     }

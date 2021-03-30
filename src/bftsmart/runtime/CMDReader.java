@@ -49,7 +49,7 @@ public class CMDReader extends Thread {
                     runtime.obj.objCallLock.unlock();
                 }
             }
-            else if(runtime.obj instanceof OTTClient || runtime.obj instanceof OblTransferClient)
+            else if(runtime.obj instanceof OTTClient || runtime.obj instanceof OblTransferClient || runtime.obj instanceof bftsmart.usecase.onetimetransfer_optimized.OTTClient)
             {
                 for (int i = 0; i < TRANSFER_USECASES_REP; i++) {
                     ((Client) runtime.obj).request(new Random().nextInt(2));

@@ -22,7 +22,7 @@ public class NodeClusterRunner {
      * @param args[1] is the id of the current runtime
      * @param args[2:n] is the host list name if running on the cluster otherwise it can be null
      */
-    public static boolean local = false;
+    public static boolean local = true;
     public static void main(String[] args) throws Exception {
         Spec spec = null;
         if(local)
