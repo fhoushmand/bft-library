@@ -203,7 +203,7 @@ public class Spec {
                 objectsQ = new HashMap<>();
                 objectsQ.put("i1", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 objectsQ.put("i2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
-                objectsQ.put("a", new POr(new P(configurations.get("A").getHostSet(), 3), new P(configurations.get("B").getHostSet(), 2)));
+                objectsQ.put("a", new POr(new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1), new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)));
                 break;
             case "tc":
                 objectsQ.put("airlineAgent", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));

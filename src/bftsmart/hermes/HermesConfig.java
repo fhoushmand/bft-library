@@ -42,7 +42,7 @@ public class HermesConfig {
     public static PropertyManager props;
     protected static ReentrantLock m_lock = new ReentrantLock();
     public static final String CONFIG_PARAMETER = "bftsmart.hermes.props";
-    public static final String DEFAULT_CONFIG = "systemconfig/bftsmart.hermes.properties";
+    public static final String DEFAULT_CONFIG = "systemconfig/hermes.properties";
     public static int m_groupSize = 0;
 
     static public PropertyManager getProps() {
@@ -99,12 +99,12 @@ public class HermesConfig {
     }
 
     public static String getNodeIP(int no) {
-        System.out.println("bftsmart.hermes.node.replica" + no + "_ip");
-        return props.getProperty("bftsmart.hermes.node.replica_" + no + "_ip");
+        System.out.println("hermes.node.replica" + no + "_ip");
+        return props.getProperty("hermes.node.replica_" + no + "_ip");
     }
 
     public static String getNodeID(int no) {
-        return props.getProperty("bftsmart.hermes.node.replica_" + no + "_id");
+        return props.getProperty("hermes.node.replica_" + no + "_id");
     }
 
     public static String getNodeClientIP() {

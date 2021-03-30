@@ -33,17 +33,17 @@
 			  value="org.aspectj.tools.ant.taskdefs.AjcTask"/>
 
 
-<!--	<target name="compile" description="Compilation target" >-->
-<!--		<iajc sourceroots="${src.dir}" source="11" destdir="${build.dir}"-->
-<!--			  classpathref="libs"/>-->
-<!--	</target>-->
-
-	<target name="compile" description="Compilation target">
-		<javac classpathref="libs" source="1.8" target="1.8" destdir="${build.dir}" nowarn="on" debug="true">
-			<src path="${src.dir}" />
-			<src path="${test.dir}" />
-		</javac>
+	<target name="compile" description="Compilation target" >
+		<iajc sourceroots="${src.dir}" source="11" destdir="${build.dir}"
+			  classpathref="libs"/>
 	</target>
+
+<!--	<target name="compile" description="Compilation target">-->
+<!--		<javac classpathref="libs" source="1.8" target="1.8" destdir="${build.dir}" nowarn="on" debug="true">-->
+<!--			<src path="${src.dir}" />-->
+<!--			<src path="${test.dir}" />-->
+<!--		</javac>-->
+<!--	</target>-->
 
 	<target name="jar" description="Compression target">
 		<jar jarfile="${dist.dir}/BFT-SMaRt.jar">

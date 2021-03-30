@@ -1,12 +1,6 @@
 package bftsmart.runtime;
 
-import bftsmart.demo.airlineagent.AirlineAgentClient;
-import bftsmart.demo.airlineagent.AirlineAgentServer;
-import bftsmart.demo.bankagent.BankAgentClient;
-import bftsmart.demo.bankagent.BankAgentServer;
 import bftsmart.demo.register.*;
-import bftsmart.demo.useragent.UserAgentClient;
-import bftsmart.demo.useragent.UserAgentServer;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.runtime.quorum.*;
 import bftsmart.usecase.Client;
@@ -16,18 +10,15 @@ import bftsmart.usecase.PartitionedObject;
 import bftsmart.usecase.friendmap.FriendMapClient;
 import bftsmart.usecase.mpc.MPCClient;
 import bftsmart.usecase.obltransfer.OblTransferClient;
-import bftsmart.usecase.onetimetransfer.OTClient;
+import bftsmart.usecase.onetimetransfer.OTTClient;
 import bftsmart.usecase.ticket.TicketSystemClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
@@ -102,11 +93,11 @@ public class RMIRuntime extends Thread{
         this.obj = o;
         this.spec = spec;
         execs = new HashMap<>();
-
-        if(test)
-            viewController = new ServerViewController(id, "testconfig", null, 1);
-        else
-            viewController = new ServerViewController(id, "runtimeconfig_"+CONFIGURATION, null, 1);
+//
+//        if(test)
+//            viewController = new ServerViewController(id, "testconfig", null, 1);
+//        else
+        viewController = new ServerViewController(id, "runtimeconfig_"+CONFIGURATION, null, 1);
 
         cs = new ServerCommunicationSystem(viewController, new MessageHandler(), spec);
 
@@ -149,12 +140,8 @@ public class RMIRuntime extends Thread{
         {
             try {
                 Thread.sleep(10);
-//                if (obj.sequenceNumber == 50)
-//                {
-//
-//                }
                 if (obj instanceof Client) {
-                    if(obj instanceof OblTransferClient || obj instanceof OTClient) {
+                    if(obj instanceof OblTransferClient || obj instanceof OTTClient) {
                         if (obj.responseReceived == CMDReader.TRANSFER_USECASES_REP)
                             break;
                     }
@@ -300,7 +287,7 @@ public class RMIRuntime extends Thread{
             for (; i < argsLength; i++)
                 objectCallArgs[i] = args[i];
             objectCallArgs[i] = mId;
-            logger.trace("blocked until receive {} call to object {}", methodsHosts.get(callingMethod), mId);
+            logger.trace("blocked until receive {} call to object {}", objectsQuorums.get(obj), mId);
             // send object call to the quorum
             msgSent = sendObjectCall(objectCall, callingMethod, callerId, n, objectCallArgs);
 
@@ -310,7 +297,7 @@ public class RMIRuntime extends Thread{
             } while (objCallReceived.get(msgSent) == null);
             do{
 
-            } while (!objCallReceived.get(msgSent).isSuperSetEqual(methodsHosts.get(callingMethod).toIntArray()));
+            } while (!objCallReceived.get(msgSent).isSuperSetEqual(objectsQuorums.get(obj)));
 
             logger.trace("unblocking object call {}", mId);
             // mark it as bot and clear the memory
@@ -328,7 +315,6 @@ public class RMIRuntime extends Thread{
 //            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
 //            System.out.println("Calling method: " + callingMethod);
 //            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
-
         }
 //        try {
 //            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));

@@ -86,13 +86,13 @@ public final class CounterServer extends DefaultSingleRecoverable  {
             System.out.println("Use: java CounterServer <processId> <cluster id>");
             System.exit(-1);
         }
-        HermesRuntime.getInstance().setID(args[0]);
-        try {
-            HermesRuntime.getInstance().open();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+//        HermesRuntime.getInstance().setID(args[0]);
+//        try {
+//            HermesRuntime.getInstance().open();
+//        } catch (Exception e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
         new CounterServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
     }
 

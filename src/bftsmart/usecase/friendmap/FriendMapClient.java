@@ -11,7 +11,7 @@ public class FriendMapClient extends PartitionedObject implements Client {
 
     public void friendMap()
     {
-        System.out.println("friendmap request");
+//        System.out.println("friendmap request");
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         runtime.invoke("m1", "friendMap", sequenceNumber++);
     }
@@ -25,7 +25,7 @@ public class FriendMapClient extends PartitionedObject implements Client {
         logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
 //        System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
 //        logger.info("return value = {}", x);
-        System.out.println(String.format("return value = %s", map));
+//        System.out.println(String.format("return value = %s", map));
         responseReceived++;
         // just for oblivious transfer example since it returns zero after the first call
 //        runtime.resetObjectStates();

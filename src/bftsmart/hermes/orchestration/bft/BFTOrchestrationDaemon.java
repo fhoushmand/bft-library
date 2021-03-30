@@ -128,10 +128,12 @@ public class BFTOrchestrationDaemon extends OrchestrationNodeDaemon {
                 //}
                 //if (pf.m_type[0] == BFTAttackFault.SERIAL_ID) {
                 //System.out.println("RIN=" + cfa.getFaultContext().getRun());
-                if (cfa.getFaultContext().getRun() < 500) {
+
+                //commented the following lines
+//                if (cfa.getFaultContext().getRun() < 50) {
                     //System.out.println("Still not inject fault");                                        
-                    return new CheckFaultInjectionActionResult(false);
-                }
+//                    return new CheckFaultInjectionActionResult(false);
+//                }
                 //}
 
                 try {
@@ -1161,15 +1163,29 @@ public class BFTOrchestrationDaemon extends OrchestrationNodeDaemon {
 
     public static String[] getRandomFaultyNodes(Spec spec) {
         ArrayList<String> s = new ArrayList<>();
+        ArrayList<String> leaders = new ArrayList<>();
+        for(String l : getLeaderFaultyNodes(spec))
+            leaders.add(l);
         for (Map.Entry<String,Integer> b : spec.getResiliencyConfiguration().getResiliencyMap().entrySet()) {
             // no faulty nodes for principals that dont host any object
 //            if(!spec.getObjectsH().containsKey(b.getKey()))
 //                continue;
             for(int i = 0; i < b.getValue(); i++) {
                 int n = getRandomPer(spec.getConfigurations().get(b.getKey()).getHostSet().toIntArray());
-                while (s.contains(String.valueOf(n))) {
+                while (leaders.contains(String.valueOf(n)) || s.contains(String.valueOf(n))) {
                     n = getRandomPer(spec.getConfigurations().get(b.getKey()).getHostSet().toIntArray());
                 }
+                s.add(String.valueOf(n));
+            }
+        }
+        return s.toArray(new String[s.size()]);
+    }
+
+    public static String[] getLeaderFaultyNodes(Spec spec) {
+        ArrayList<String> s = new ArrayList<>();
+        for (Map.Entry<String,Integer> b : spec.getResiliencyConfiguration().getResiliencyMap().entrySet()) {
+            for(int i = 0; i < b.getValue(); i++) {
+                int n = spec.getConfigurations().get(b.getKey()).getHostSet().toIntArray()[0];
                 s.add(String.valueOf(n));
             }
         }
@@ -1188,7 +1204,7 @@ public class BFTOrchestrationDaemon extends OrchestrationNodeDaemon {
 
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         BFTOrchestrationDaemon daemon = new BFTOrchestrationDaemon();
-        String f = args[0];
+        String nodeFaultType = args[0];
         String a = args[1];
         String r = args[2];
 
@@ -1196,24 +1212,108 @@ public class BFTOrchestrationDaemon extends OrchestrationNodeDaemon {
 
         Spec spec = new Spec(true, config, null);
 
-        System.out.println("f:" + f);
+        System.out.println("Faulty Nodes Type: " + nodeFaultType);
         System.out.println("attack:" + a);
         try {
-            daemon.open(f, r, a);
+            daemon.open(nodeFaultType, r, a);
         } catch (IOException ex) {
             Logger.getLogger(HermesNodeServerChannel.class.getName()).log(Level.SEVERE, "OOOO", ex);
         }
         long start = System.currentTimeMillis();
         int attack = Integer.parseInt(a);
-//        int faulty = Integer.parseInt(f);
 
         HermesConfig.setGroupSize(spec.getAllHosts().size());
         System.out.println(HermesConfig.getGroupSize());
 //        HermesConfig.setGroupSize(4);
 
+        String[] faultyNodes = null;
+        if(nodeFaultType.equals("leader"))
+            faultyNodes = getLeaderFaultyNodes(spec);
+        else if(nodeFaultType.equals("nonleader"))
+            faultyNodes = getRandomFaultyNodes(spec);
+        printSet(faultyNodes);
 
-//        String[] faultyNodes = getRandomFaultyNodes(spec);
-        String[] faultyNodes = new String[]{"1"};
+//        ssh i06.ib.hpcc.ucr.edu 'cd /rhome/fhous001/shared/bft-library;sh run.sh 'systemconfig/ot/A1-B1-C1' 0 i06 i07 i12 i16 i41 i42 i43 i44 i45 i46 i47 i48 i49 '
+//        ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; sh run.sh '$1' $i $hostlist"
+        try {
+            //connects to clients
+            daemon.launchNodes(30000);
+            Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level .SEVERE, "launched replicas");
+            daemon.launchClientNode(30000);
+            String command = HermesConfig.getApplicationLaunch();
+//            String[] appargs = new String[]{"-Xmx1024m", "bftsmart.demo.counter.CounterServer"};
+            String[] appargs = new String[]{"-Xmx8000m", "bftsmart.usecase.NodeClusterRunner"};
+            //boostrap
+            daemon.launchHermesReplicas(command, appargs, null, config, 60000);
+            Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, "Performing attack" + attack);
+            daemon.attack1(faultyNodes);
+
+
+        } catch (Exception ex) {
+            Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, "Going to loop");
+
+        try {
+            //wait for things to finish
+            float duration = 315;
+            while (!daemon.m_stopFlag) {
+                long end = System.currentTimeMillis() - start;
+                duration = (float) end / (float) 1000;
+                int l = ((int) duration) % 5;
+                if (l == 0 || duration > 300) {
+                    Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, "Run in progress for " + duration + " seconds");
+                }
+                if (duration > 315) {
+                    break;
+                }
+                //Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, "Run in progress for " + duration + " seconds");
+                Thread.sleep(1000);
+            }
+
+            Logger.getLogger(OrchestrationNodeDaemon.class.getName()).
+                    log(Level.INFO, "OrchestrationNodeDaemon: stopped work!");
+            if (duration > 300) {
+                Logger.getLogger(OrchestrationNodeDaemon.class.getName()).
+                        log(Level.SEVERE, "\n\nError Run\n\n");
+            }
+            daemon.dump();
+            Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, "Shutdowning properly");
+            System.exit(0);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BFTOrchestrationDaemon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void oldmain(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+        BFTOrchestrationDaemon daemon = new BFTOrchestrationDaemon();
+        String nodeFaultType = args[0];
+        String a = args[1];
+        String r = args[2];
+
+        String config = args[3];
+
+        Spec spec = new Spec(true, config, null);
+
+        System.out.println("Faulty Nodes Type: " + nodeFaultType);
+        System.out.println("attack:" + a);
+        try {
+            daemon.open(nodeFaultType, r, a);
+        } catch (IOException ex) {
+            Logger.getLogger(HermesNodeServerChannel.class.getName()).log(Level.SEVERE, "OOOO", ex);
+        }
+        long start = System.currentTimeMillis();
+        int attack = Integer.parseInt(a);
+
+        HermesConfig.setGroupSize(spec.getAllHosts().size());
+        System.out.println(HermesConfig.getGroupSize());
+//        HermesConfig.setGroupSize(4);
+
+        String[] faultyNodes = null;
+        if(nodeFaultType.equals("leader"))
+            faultyNodes = getLeaderFaultyNodes(spec);
+        else if(nodeFaultType.equals("nonleader"))
+            faultyNodes = getRandomFaultyNodes(spec);
         printSet(faultyNodes);
 
         try {

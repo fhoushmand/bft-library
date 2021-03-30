@@ -485,7 +485,7 @@ public class ServerConnection {
 					.writeInt(this.controller.getStaticConf().getProcessId());
 
 		} catch (SocketException e) {
-			logger.error("Connection refused (SocketException)");
+			logger.error("Connection refused (SocketException) In Runtime");
 			// e.printStackTrace();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();

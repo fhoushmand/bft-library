@@ -32,6 +32,6 @@ public class P extends Q{
 
     @Override
     public String toString() {
-        return "P" + size + referenceHosts.toString();
+        return "P_" + size + "{" + referenceHosts.toString() + "}";
     }
 }

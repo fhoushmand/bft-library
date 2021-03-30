@@ -42,9 +42,9 @@
   <logger name="bftsmart.runtime.RMIRuntime" level="TRACE"></logger>
   <logger name="bftsmart.runtime.ServerCommunicationSystem" level="DEBUG"></logger>
   <logger name="bftsmart.runtime.ServersCommunicationLayer" level="DEBUG"></logger>
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTA" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTB" level="TRACE"></logger>-->
-<!--  <logger name="bftsmart.usecase.onetimetransfer.OTClient" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTA" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTB" level="TRACE"></logger>-->
+<!--  <logger name="bftsmart.usecase.onetimetransfer.OTTClient" level="TRACE"></logger>-->
 
 
   <!--   <logger name="bftsmart.reconfiguration.util.ECDSAKeyLoader" level="TRACE"></logger>-->

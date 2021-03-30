@@ -16,7 +16,7 @@ import org.aspectj.lang.annotation.*;
 @Aspect
 public class StartHermesAspect {
 
-//    @Around("execution (* bftsmart.demo.counter.CounterServer.main*(..))")
+    @Around("execution (* bftsmart.demo.*.*.main*(..))")
     public void advice(ProceedingJoinPoint joinPoint) throws Throwable {
         System.out.println("teststststst");
         String[] args = (String[]) joinPoint.getArgs()[0];

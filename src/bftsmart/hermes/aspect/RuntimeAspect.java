@@ -11,12 +11,13 @@ package bftsmart.hermes.aspect;
 
 import bftsmart.hermes.runtime.HermesRuntime;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 @Aspect
 public class RuntimeAspect {
 
-//    @Around("execution (* bftsmart.usecase.NodeClusterRunner.main*(..))")
+    @Around("execution (* bftsmart.usecase.NodeClusterRunner.main*(..))")
     public void advice(ProceedingJoinPoint joinPoint) throws Throwable {
         System.out.println("around NodeClusterRunner main function");
         String[] args = (String[]) joinPoint.getArgs()[0];

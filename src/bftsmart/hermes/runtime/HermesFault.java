@@ -42,7 +42,7 @@ public abstract class HermesFault implements HermesSerializable {
     static public final byte TRIGGER_ALWAYS = 0x1;
     static public final byte TRIGGER_ONCE = 0x2;
     static public final byte TRIGGER_CUSTOM = 0x3;
-    private final static int NOTIFICATION_TIMEOUT = 10000; //ms
+    private final static int NOTIFICATION_TIMEOUT = 100000; //ms
     //Scope of the fault, for now defaults to 'global'
     public final static String GLOBAL_FAULT_SIGNATURE = "global";
     //Not used anymore, keep as a remainder
@@ -126,6 +126,7 @@ public abstract class HermesFault implements HermesSerializable {
 
     @Override
     public void deserializable(ByteBuffer buf) throws Exception {
+        System.out.println("deserialize herme fault");
         int serial = HermesSerializableHelper.deserializeInt(buf);
         if (serial != getSerialID()) {
             throw new Exception("Notification.deserializable: wrong serial");
@@ -202,7 +203,7 @@ public abstract class HermesFault implements HermesSerializable {
     }
 
     protected boolean checkForInjectingFault(long timeout) throws Exception {
-        Logger.getLogger(HermesFault.class.getName()).log(Level.SEVERE, "checkForInjectingFault: " + m_faultID);
+        Logger.getLogger(HermesFault.class.getName()).log(Level.SEVERE, "checkForInjectingFault fault id: " + m_faultID);
         if (isEnabled()) {
             if (CHECK_WITH_ORCHESTRATOR_ONCE) {
                 if (m_orchestratorFlag) {

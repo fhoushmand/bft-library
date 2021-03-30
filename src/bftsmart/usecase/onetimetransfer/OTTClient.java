@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
 // client host: 11
-public class OTClient extends PartitionedObject implements Client {
+public class OTTClient extends PartitionedObject implements Client {
 //    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -19,7 +19,7 @@ public class OTClient extends PartitionedObject implements Client {
     public void transfer(Integer x)
     {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
-        logger.info("execute transfer with x={}",x);
+//        logger.info("execute transfer with x={}",x);
         runtime.invoke("m4", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
     }
 
@@ -29,10 +29,10 @@ public class OTClient extends PartitionedObject implements Client {
         int id = Integer.valueOf(seqNumber);
         // calculate response time
         runtime.getExecs().put(id, System.currentTimeMillis() - runtime.getExecs().get(id));
-        logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
+//        logger.info("response time for call {}: {}", id, runtime.getExecs().get(id));
         System.out.println(String.format("response time for call %s: %s", id, runtime.getExecs().get(id)));
-        logger.info("return value = {}", x);
-        System.out.println(String.format("return value = %s", x));
+//        logger.info("return value = {}", x);
+//        System.out.println(String.format("return value = %s", x));
         responseReceived++;
         // just for oblivious transfer example since it returns zero after the first call
 //        runtime.resetObjectStates();

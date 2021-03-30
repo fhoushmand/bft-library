@@ -75,6 +75,13 @@ https://app.cs.amherst.edu/~jerager/cs23/doc/examples/build.xml
   make sure there are no errors in result.log
 
 
+===========================
+Fault injection hermes:
+    make sure to set RUN inside ServerconnectionAspect
+    commented BFTOrchestrationDaemon onAction faultContext.getRun() if condition value.
+    for some reason the bft-library cannot handle crash in friendmap usecase (it crashes even with one crash)
+
+
 
 
 

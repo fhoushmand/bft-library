@@ -23,13 +23,6 @@ public class BooleanRegisterServer extends DefaultSingleRecoverable {
     public BooleanRegisterServer(boolean init, int id, int clusterId) {
         memory = init;
         logger = Logger.getLogger(MapServer.class.getName());
-//        HermesRuntime.getInstance().setID(String.valueOf(id));
-//        try {
-//            HermesRuntime.getInstance().open();
-//        } catch (Exception e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
         new ServiceReplica(id, this, this, clusterId);
     }
 
