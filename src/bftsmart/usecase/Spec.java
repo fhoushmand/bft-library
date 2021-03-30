@@ -376,14 +376,14 @@ public class Spec {
 
     private void writeHostsConfigFile(H h, int clusterID, String configPath, int basePort)
     {
-        int baseHostID = h.toIntArray()[0];
         try {
             String sep = System.getProperty("file.separator");
             String fileName = configPath + sep + "hosts.config" + clusterID;
             if(!new File(fileName).exists()) {
                 PrintWriter aWriter = new PrintWriter(configPath + sep + "hosts.config" + clusterID, "UTF-8");
                 for (int i = 0; i < h.size(); i++) {
-                    String hostLine = i + baseHostID + " " + hostsIpMap.get(i + baseHostID) + " " + String.valueOf(basePort + (10 * i)) + " " + String.valueOf(basePort + 1 + (10 * i)) + " " + String.valueOf(basePort + 2 + (10 * i)) + "\n";
+//                    String hostLine = i + baseHostID + " " + hostsIpMap.get(i + baseHostID) + " " + String.valueOf(basePort + (10 * i)) + " " + String.valueOf(basePort + 1 + (10 * i)) + " " + String.valueOf(basePort + 2 + (10 * i)) + "\n";
+                    String hostLine = h.toIntArray()[i] + " " + hostsIpMap.get(h.toIntArray()[i]) + " " + String.valueOf(basePort + (10 * i)) + " " + String.valueOf(basePort + 1 + (10 * i)) + " " + String.valueOf(basePort + 2 + (10 * i)) + "\n";
                     aWriter.write(hostLine);
                     aWriter.flush();
                 }
