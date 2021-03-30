@@ -4,7 +4,7 @@
 #SBATCH --ntasks=%s
 #SBATCH --cpus-per-task=2
 #SBATCH --output="result.log"
-#SBATCH --mem=%sM
+#SBATCH --mem=4G
 #SBATCH -p short # This is the default partition, you can use any of the following; intel, batch, highmem, gpu
 
 
@@ -41,5 +41,5 @@ for i in $( seq 0 $last ); do
         ssh ${nodes[$i]}.ib.hpcc.ucr.edu "cd ${HAMRAZ_HOME}; sh run.sh '$1' $i $hostlist" &
 done
 
-sleep 450
+sleep 400
 

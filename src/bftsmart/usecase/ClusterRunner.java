@@ -66,18 +66,17 @@ public class ClusterRunner {
             /* arguments of the template system.config file:
             1) total number of nodes
             2) total number of nodes
-            3) Memory amount = number of nodes * 500M
              */
-            file = String.format(file, numberOfHosts, numberOfHosts, 1500 * numberOfHosts);
+            file = String.format(file, numberOfHosts, numberOfHosts);
             String fileName = "deploy-" + configFileName + ".sh";
             File deployScript = new File(fileName);
-            if(!deployScript.exists()) {
+//            if(!deployScript.exists()) {
 //                PrintWriter systemConfigWriter = new PrintWriter(fileName, "UTF-8");
                 Writer streamWriter = new OutputStreamWriter(new FileOutputStream(deployScript));
                 PrintWriter printWriter = new PrintWriter(streamWriter);
                 printWriter.write(file);
                 printWriter.flush();
-            }
+//            }
             return deployScript;
         }
         catch (IOException e)
