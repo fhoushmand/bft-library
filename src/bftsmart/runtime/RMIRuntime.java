@@ -129,7 +129,7 @@ public class RMIRuntime extends Thread{
     public void run() {
         if (obj instanceof Client) {
             try {
-                Thread.sleep(20000);
+                Thread.sleep(45000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
