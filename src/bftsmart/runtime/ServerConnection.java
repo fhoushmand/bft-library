@@ -193,7 +193,7 @@ public class ServerConnection {
 //			if (sm.getN() == 50)
 //			{
 ////				if(Arrays.stream(controller.getCurrentView().getProcesses()).anyMatch(n -> spec.getFaultyLeaderNodes().contains(n)))
-//				if(Arrays.stream(controller.getCurrentView().getProcesses()).anyMatch(n -> n == 0))
+//				if(spec.getFaultyLeaderNodes().contains(controller.getStaticConf().getProcessId()))
 //					Thread.currentThread().stop();
 ////					System.exit(1);
 //

@@ -16,10 +16,7 @@ limitations under the License.
 package bftsmart.reconfiguration;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 import bftsmart.reconfiguration.views.View;
 import bftsmart.tom.core.TOMLayer;
@@ -295,9 +292,13 @@ public class ServerViewController extends ViewController {
         }
     }
 
-    /*public int getQuorum2F() {
-        return quorum2F;
-    }*/
+    public ArrayList<Integer> getMaxFaultyLeaderNodes()
+    {
+        ArrayList<Integer> nodes = new ArrayList<>();
+        for(int i = 0; i < getStaticConf().getF(); i++)
+            nodes.add(getStaticConf().getInitialView()[i]);
+        return nodes;
+    }
     
 
     public int getQuorum() {

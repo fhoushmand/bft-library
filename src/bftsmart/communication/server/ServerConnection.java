@@ -28,6 +28,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -45,6 +46,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import bftsmart.communication.SystemMessage;
+import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
 import bftsmart.tom.ServiceReplica;
@@ -200,18 +202,26 @@ public class ServerConnection {
 	 * reconnection is done
 	 */
 	private final void sendBytes(byte[] messageData) {
-//		SystemMessage sm = null;
-//		try {
-//			sm = (SystemMessage) (new ObjectInputStream(new ByteArrayInputStream(messageData))
-//					.readObject());
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		}
-//		if(sm instanceof  ConsensusMessage && ((ConsensusMessage)sm).getNumber() == 100)
-//			if(Arrays.stream(controller.getCurrentView().getProcesses()).anyMatch(n -> n == 0))
-//				Thread.currentThread().stop();
+		SystemMessage sm = null;
+		try {
+			sm = (SystemMessage) (new ObjectInputStream(new ByteArrayInputStream(messageData))
+					.readObject());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		if(sm instanceof ConsensusMessage && ((ConsensusMessage)sm).getNumber() == 200)
+			if(controller.getMaxFaultyLeaderNodes().contains(controller.getStaticConf().getProcessId()))
+//			if(controller.getStaticConf().getProcessId() == 0 ||
+//					controller.getStaticConf().getProcessId() == 1 ||
+//					controller.getStaticConf().getProcessId() == 2 //||
+////					controller.getStaticConf().getProcessId() == 3 ||
+////					controller.getStaticConf().getProcessId() == 4 ||
+////					controller.getStaticConf().getProcessId() == 5 ||
+////					controller.getStaticConf().getProcessId() == 6
+//			)
+				Thread.currentThread().stop();
 		boolean abort = false;
 		do {
 			if (abort)

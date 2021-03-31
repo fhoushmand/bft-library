@@ -25,7 +25,7 @@ public class ClusterRunner {
                 pb.inheritIO();
                 Process p = pb.start();
 
-                Thread.sleep((120) * 1000 + 30000);
+                Thread.sleep(3 * 60 * 1000);
 
                 ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts - 1 + ".log");
                 pb2.inheritIO();
@@ -49,6 +49,33 @@ public class ClusterRunner {
                 Thread.sleep(2000);
             }
     }
+
+//    public File createHamrazConfig(String configTemplatePath)
+//    {
+//        File f = new File(configTemplatePath);
+//        int numPrincipals = f.getName().split("_").length + 1;
+//        String[] hostsList = new String[numPrincipals];
+//        try {
+//            FileReader fr = new FileReader(f);
+//            BufferedReader rd = new BufferedReader(fr);
+//            String line = null;
+//            String file = "";
+//            while ((line = rd.readLine()) != null) {
+//                file += line;
+//                file += "\n";
+//            }
+//            fr.close();
+//            rd.close();
+//
+//
+//
+//            String.format(file, )
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 
     public File createDeployScript(String configFileName, int numberOfHosts){
         try
