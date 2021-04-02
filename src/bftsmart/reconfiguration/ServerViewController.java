@@ -294,8 +294,13 @@ public class ServerViewController extends ViewController {
 
     public ArrayList<Integer> getMaxFaultyLeaderNodes()
     {
+        return getFaultyNodesForPrincipal(getStaticConf().getF());
+    }
+
+    public ArrayList<Integer> getFaultyNodesForPrincipal(int numFault)
+    {
         ArrayList<Integer> nodes = new ArrayList<>();
-        for(int i = 0; i < getStaticConf().getF(); i++)
+        for(int i = 0; i < numFault; i++)
             nodes.add(getStaticConf().getInitialView()[i]);
         return nodes;
     }

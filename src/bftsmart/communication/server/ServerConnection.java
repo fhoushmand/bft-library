@@ -28,6 +28,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +91,8 @@ public class ServerConnection {
     
     private SecretKey secretKey = null;
 
+	ArrayList<Integer> principalA = new ArrayList<>();
+
     /**
      * Tulio A. Ribeiro
      * TLS vars. 
@@ -106,6 +109,12 @@ public class ServerConnection {
     		SSLSocket socket, int remoteId,
             LinkedBlockingQueue<SystemMessage> inQueue, 
             ServiceReplica replica) {
+
+
+		principalA.add(22);
+		principalA.add(23);
+		principalA.add(24);
+		principalA.add(25);
 
         this.controller = controller;
 
@@ -211,16 +220,10 @@ public class ServerConnection {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+
 		if(sm instanceof ConsensusMessage && ((ConsensusMessage)sm).getNumber() == 200)
-			if(controller.getMaxFaultyLeaderNodes().contains(controller.getStaticConf().getProcessId()))
-//			if(controller.getStaticConf().getProcessId() == 0 ||
-//					controller.getStaticConf().getProcessId() == 1 ||
-//					controller.getStaticConf().getProcessId() == 2 //||
-////					controller.getStaticConf().getProcessId() == 3 ||
-////					controller.getStaticConf().getProcessId() == 4 ||
-////					controller.getStaticConf().getProcessId() == 5 ||
-////					controller.getStaticConf().getProcessId() == 6
-//			)
+			if(!principalA.contains(controller.getStaticConf().getProcessId()) &&
+					controller.getFaultyNodesForPrincipal(1).contains(controller.getStaticConf().getProcessId()))
 				Thread.currentThread().stop();
 		boolean abort = false;
 		do {
