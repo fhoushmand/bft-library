@@ -222,8 +222,9 @@ public class ServerConnection {
 		}
 
 		if(sm instanceof ConsensusMessage && ((ConsensusMessage)sm).getNumber() == 200)
-			if(!principalA.contains(controller.getStaticConf().getProcessId()) &&
-					controller.getFaultyNodesForPrincipal(1).contains(controller.getStaticConf().getProcessId()))
+			if(
+					//!principalA.contains(controller.getStaticConf().getProcessId()) &&
+					controller.getMaxFaultyNonLeaderNodes().contains(controller.getStaticConf().getProcessId()))
 				Thread.currentThread().stop();
 		boolean abort = false;
 		do {

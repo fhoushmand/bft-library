@@ -6,7 +6,7 @@
 #SBATCH --output="result.log"
 #SBATCH --mem=4G
 #SBATCH -p short # This is the default partition, you can use any of the following; intel, batch, highmem, gpu
-
+#SBATCH --constraint="intel|amd"
 
 module load java/11
 
