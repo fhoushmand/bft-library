@@ -299,7 +299,21 @@ public class ServerViewController extends ViewController {
 
     public ArrayList<Integer> getMaxFaultyNonLeaderNodes()
     {
-        return getFaultyLeaderNodesForPrincipal(getStaticConf().getF());
+        return getFaultyNonLeaderNodesForPrincipal(getStaticConf().getF());
+    }
+
+    public ArrayList<Integer> getMaxFaultyRandomNodes()
+    {
+        return getMaxFaultyRandomNodesForPrincipal(getStaticConf().getF());
+    }
+
+    public ArrayList<Integer> getMaxFaultyRandomNodesForPrincipal(int numFault)
+    {
+        ArrayList<Integer> nodes = new ArrayList<>();
+        Random random = new Random();
+        for(int i = 0; i < numFault; i++)
+            nodes.add(getStaticConf().getInitialView()[random.nextInt(getStaticConf().getInitialView().length - 1)]);
+        return nodes;
     }
 
     public ArrayList<Integer> getFaultyLeaderNodesForPrincipal(int numFault)
