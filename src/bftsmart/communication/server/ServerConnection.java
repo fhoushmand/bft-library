@@ -94,7 +94,6 @@ public class ServerConnection {
     private SecretKey secretKey = null;
 
 	ArrayList<Integer> exlucdedPrincipals = new ArrayList<>();
-	ArrayList<Integer> randomFaultyNodes = new ArrayList<>();
 
     /**
      * Tulio A. Ribeiro
@@ -161,8 +160,7 @@ public class ServerConnection {
     	}
 
 
-
-		System.out.println(exlucdedPrincipals);
+		System.out.println("random: " + controller.getRandomFaults());
 
         this.controller = controller;
 

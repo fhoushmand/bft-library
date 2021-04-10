@@ -30,7 +30,7 @@ public class LocalUsecaseRunner {
             for (Integer host : config.getHostSet().toIntArray()) {
                 new Thread(() -> {
                     try {
-                        NodeClusterRunner.main(new String[]{args[0], String.valueOf(host), null});
+                        NodeClusterRunner.main(new String[]{args[0], String.valueOf(host), args[1], null});
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

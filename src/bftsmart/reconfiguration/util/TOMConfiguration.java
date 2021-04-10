@@ -420,24 +420,21 @@ public class TOMConfiguration extends Configuration {
 
 			//Faulty nodes
             s = (String) configs.remove("system.server.leader.faults");
-            StringTokenizer str = new StringTokenizer(s, ",");
             leaderFaults = new ArrayList<>();
-            for (int i = 0; i < str.countTokens(); i++) {
-                leaderFaults.add(Integer.parseInt(str.nextToken()));
+            for (int i = 0; i < s.split(",").length; i++) {
+                leaderFaults.add(Integer.parseInt(s.split(",")[i]));
             }
 
             s = (String) configs.remove("system.server.follower.faults");
-            str = new StringTokenizer(s, ",");
             followerFaults = new ArrayList<>();
-            for (int i = 0; i < str.countTokens(); i++) {
-                followerFaults.add(Integer.parseInt(str.nextToken()));
+            for (int i = 0; i < s.split(",").length; i++) {
+                followerFaults.add(Integer.parseInt(s.split(",")[i]));
             }
 
             s = (String) configs.remove("system.server.random.faults");
-            str = new StringTokenizer(s, ",");
             randomFaults = new ArrayList<>();
-            for (int i = 0; i < str.countTokens(); i++) {
-                randomFaults.add(Integer.parseInt(str.nextToken()));
+            for (int i = 0; i < s.split(",").length; i++) {
+                randomFaults.add(Integer.parseInt(s.split(",")[i]));
             }
             
         } catch (Exception e) {
