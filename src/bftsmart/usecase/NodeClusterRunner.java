@@ -20,17 +20,22 @@ public class NodeClusterRunner {
     /*
      * @param args[0] is the config file in systemconfig
      * @param args[1] is the id of the current runtime
-     * @param args[2:n] is the host list name if running on the cluster otherwise it can be null
+     * @param args[2] is the fault number (0 -> max)
+     * @param args[3:n] is the host list name if running on the cluster otherwise it can be null
      */
-    public static boolean local = true;
+    public static boolean local = false;
     public static void main(String[] args) throws Exception {
+        if(args[2].equals("max"))
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.MAX_VALUE;
+        else
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.valueOf(args[2]);
+        RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length - 1];
+        RMIRuntime.USECASE_NAME = args[0].split("/")[args[0].split("/").length - 2];
         Spec spec = null;
         if(local)
             spec = new Spec(true, args[0], null);
         else
-            spec = new Spec(false, args[0], Arrays.copyOfRange(args, 2, args.length));
-        RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length - 1];
-        RMIRuntime.USECASE_NAME = args[0].split("/")[args[0].split("/").length - 2];
+            spec = new Spec(false, args[0], Arrays.copyOfRange(args, 3, args.length));
         int host = Integer.parseInt(args[1]);
         PartitionedObject o = (PartitionedObject) Class.forName(spec.getPartitionedClassByHostID(host)).getConstructor().newInstance();
 
@@ -55,18 +60,6 @@ public class NodeClusterRunner {
                     }
                     else if (object.getValue().getKey().equals(MPCClient.class)) {
                         int init = 500;
-//                        if(host <= 9)
-//                            init = 200;
-//                        else if(host > 9 && host <= 19)
-//                            init = 400;
-//                        else if(host > 19 && host <= 29)
-//                            init = 600;
-//                        if(host <= 3)
-//                            init = 200;
-//                        else if(host > 3 && host <= 7)
-//                            init = 400;
-//                        else if(host > 7 && host <= 11)
-//                            init = 600;
                         new MPCServer(init, host, spec.getClusterIDByObjectField(object.getKey()));
                     }
                     else if(object.getValue().getKey().equals(AliceClient.class))

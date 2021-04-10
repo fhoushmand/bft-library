@@ -34,7 +34,7 @@ import static bftsmart.hermes.runtime.faultinjection.bft.BFTForgePayloadFault.*;
 public class RuntimeServerConnectionAspect {
     static Integer run = null;
 
-    @Around("execution (* bftsmart.runtime.ServerConnection.sendBytes(..))")
+//    @Around("execution (* bftsmart.runtime.ServerConnection.sendBytes(..))")
     public void advice(ProceedingJoinPoint joinPoint) throws Throwable {
         String faultID = "5B4FA20ED54E4DA9B6B2A917D1FA724F";
         HermesFault fault = HermesRuntime.getInstance().getFaultManager().getFault(faultID);

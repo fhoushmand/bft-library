@@ -28,7 +28,7 @@ import java.util.Random;
 public class CMDReader extends Thread {
 
     public static int TRANSFER_USECASES_REP = 150;
-    public static int MPC_USECASES_REP = 1500;
+    public static int MPC_USECASES_REP = 150;
     public static int FRIENDMAP_USECASES_REP = 150;
     public static int TICKET_USECASE_REP = 150;
     public static int AUCTION_USECASE_REP = 150;

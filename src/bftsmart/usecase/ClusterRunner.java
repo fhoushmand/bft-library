@@ -6,7 +6,7 @@ import java.io.*;
 
 public class ClusterRunner {
 
-    public void executeCommands(String configPath, Integer reps) throws IOException, InterruptedException {
+    public void executeCommands(String configPath, Integer reps, String numberOfFaults) throws IOException, InterruptedException {
 
             File f = new File(configPath);
             String configName = f.getName();
@@ -18,7 +18,7 @@ public class ClusterRunner {
                 Integer fSize = Integer.valueOf(hostConf.substring(1));
                 totalNumberOfHosts += (3*fSize)+1;
             }
-            File deployScript = createDeployScript(f.getName(), totalNumberOfHosts);
+            File deployScript = createDeployScript(f.getName(), totalNumberOfHosts, numberOfFaults);
 
             String command = "sbatch " + deployScript.toString() +  " systemconfig" + System.getProperty("file.separator") + f.getName();
             System.out.println(command);
@@ -29,7 +29,7 @@ public class ClusterRunner {
 
                 Thread.sleep(3 * 60 * 1000);
 
-                ProcessBuilder pb2 = new ProcessBuilder("tail", "-1", totalNumberOfHosts - 1 + ".log");
+                ProcessBuilder pb2 = new ProcessBuilder("grep", "Average", totalNumberOfHosts - 1 + ".log");
                 pb2.inheritIO();
                 Process p2 = pb2.start();
 
@@ -52,34 +52,7 @@ public class ClusterRunner {
             }
     }
 
-//    public File createHamrazConfig(String configTemplatePath)
-//    {
-//        File f = new File(configTemplatePath);
-//        int numPrincipals = f.getName().split("_").length + 1;
-//        String[] hostsList = new String[numPrincipals];
-//        try {
-//            FileReader fr = new FileReader(f);
-//            BufferedReader rd = new BufferedReader(fr);
-//            String line = null;
-//            String file = "";
-//            while ((line = rd.readLine()) != null) {
-//                file += line;
-//                file += "\n";
-//            }
-//            fr.close();
-//            rd.close();
-//
-//
-//
-//            String.format(file, )
-//        }
-//        catch (IOException e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
-
-    public File createDeployScript(String configFileName, int numberOfHosts){
+    public File createDeployScript(String configFileName, int numberOfHosts, String numberOfFaults){
         try
         {
             FileReader fr = new FileReader("systemconfig/deploy.sh");
@@ -92,11 +65,13 @@ public class ClusterRunner {
             }
             fr.close();
             rd.close();
-            /* arguments of the template system.config file:
+            /* arguments of the template deploy script:
             1) total number of nodes
             2) total number of nodes
+            3) number of faults
+            4) number of faults
              */
-            file = String.format(file, numberOfHosts, numberOfHosts);
+            file = String.format(file, numberOfHosts, numberOfHosts, numberOfFaults, numberOfFaults);
             String fileName = "deploy-" + configFileName + ".sh";
             File deployScript = new File(fileName);
 //            if(!deployScript.exists()) {
@@ -124,11 +99,11 @@ public class ClusterRunner {
      * @throws InterruptedException
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        if(args[2].equals("max"))
-            RMIRuntime.NUMBER_OF_FAULTS = Integer.MAX_VALUE;
-        else
-            RMIRuntime.NUMBER_OF_FAULTS = Integer.valueOf(args[2]);
+//        if(args[2].equals("max"))
+//            RMIRuntime.NUMBER_OF_FAULTS = Integer.MAX_VALUE;
+//        else
+//            RMIRuntime.NUMBER_OF_FAULTS = Integer.valueOf(args[2]);
         ClusterRunner runner = new ClusterRunner();
-        runner.executeCommands(args[0], Integer.parseInt(args[1]));
+        runner.executeCommands(args[0], Integer.parseInt(args[1]), args[2]);
     }
 }
