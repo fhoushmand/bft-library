@@ -1,4 +1,4 @@
-A bftsmart.usecase.mpc.PartyA 0,1,2,3,4,5,6
-B bftsmart.usecase.mpc.PartyB 7,8,9,10
-C bftsmart.usecase.mpc.PartyC 11,12,13,14
+B bftsmart.usecase.mpc.PartyB 0,1,2,3
+C bftsmart.usecase.mpc.PartyC 4,5,6,7
+A bftsmart.usecase.mpc.PartyA 8,9,10,11,12,13,14
 Client bftsmart.usecase.mpc.MPCClient 15

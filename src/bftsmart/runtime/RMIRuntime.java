@@ -40,7 +40,10 @@ public class RMIRuntime extends Thread{
     // set this to true to read configs from testconfig and testmyconfig folders
     public static boolean test = false;
 
+    public static String USECASE_NAME;
     public static String CONFIGURATION;// = "(A:1;B:1)";
+    public static int NUMBER_OF_FAULTS;
+
 //    public static String CONFIGURATION = "(A:1;B:1;C:1)";
 
     public Spec spec;

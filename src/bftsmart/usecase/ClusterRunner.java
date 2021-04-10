@@ -1,5 +1,7 @@
 package bftsmart.usecase;
 
+import bftsmart.runtime.RMIRuntime;
+
 import java.io.*;
 
 public class ClusterRunner {
@@ -115,12 +117,17 @@ public class ClusterRunner {
 
     /**
      *
-     * @param args [0] is the abbriviate name of the use-case in systemconfig folder
+     * @param args [0] is the config path of the use-case (in systemconfig folder)
      * @param args [1] is the number of repetitions
+     * @param args [2] number of faults (0 : max)
      * @throws IOException
      * @throws InterruptedException
      */
     public static void main(String[] args) throws IOException, InterruptedException {
+        if(args[2].equals("max"))
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.MAX_VALUE;
+        else
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.valueOf(args[2]);
         ClusterRunner runner = new ClusterRunner();
         runner.executeCommands(args[0], Integer.parseInt(args[1]));
     }

@@ -292,46 +292,20 @@ public class ServerViewController extends ViewController {
         }
     }
 
-    public ArrayList<Integer> getMaxFaultyLeaderNodes()
+    public ArrayList<Integer> getFaultyLeaderNodes()
     {
-        return getFaultyLeaderNodesForPrincipal(getStaticConf().getF());
+        return getStaticConf().getLeaderFaults();
     }
 
-    public ArrayList<Integer> getMaxFaultyNonLeaderNodes()
+    public ArrayList<Integer> getFaultyFollowerNodes()
     {
-        return getFaultyNonLeaderNodesForPrincipal(getStaticConf().getF());
+        return getStaticConf().getFollowerFaults();
     }
 
-    public ArrayList<Integer> getMaxFaultyRandomNodes()
+    public ArrayList<Integer> getRandomFaults()
     {
-        return getMaxFaultyRandomNodesForPrincipal(getStaticConf().getF());
+        return getStaticConf().getRandomFaults();
     }
-
-    public ArrayList<Integer> getMaxFaultyRandomNodesForPrincipal(int numFault)
-    {
-        ArrayList<Integer> nodes = new ArrayList<>();
-        Random random = new Random();
-        for(int i = 0; i < numFault; i++)
-            nodes.add(getStaticConf().getInitialView()[random.nextInt(getStaticConf().getInitialView().length - 1)]);
-        return nodes;
-    }
-
-    public ArrayList<Integer> getFaultyLeaderNodesForPrincipal(int numFault)
-    {
-        ArrayList<Integer> nodes = new ArrayList<>();
-        for(int i = 0; i < numFault; i++)
-            nodes.add(getStaticConf().getInitialView()[i]);
-        return nodes;
-    }
-
-    public ArrayList<Integer> getFaultyNonLeaderNodesForPrincipal(int numFault)
-    {
-        ArrayList<Integer> nodes = new ArrayList<>();
-        for(int i = 0; i < numFault; i++)
-            nodes.add(getStaticConf().getInitialView()[getStaticConf().getInitialView().length - 1 - i]);
-        return nodes;
-    }
-    
 
     public int getQuorum() {
         return getStaticConf().isBFT() ? quorumBFT : quorumCFT;

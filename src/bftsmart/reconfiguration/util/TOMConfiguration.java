@@ -16,6 +16,8 @@ limitations under the License.
 package bftsmart.reconfiguration.util;
 
 import bftsmart.tom.util.KeyLoader;
+
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import java.util.regex.Pattern;
@@ -70,6 +72,11 @@ public class TOMConfiguration extends Configuration {
     private String [] enabledCiphers;
 
     private String instanceId;
+
+    private ArrayList<Integer> leaderFaults;
+    private ArrayList<Integer> followerFaults;
+    private ArrayList<Integer> randomFaults;
+
     
     
     /** Creates a new instance of TOMConfiguration */
@@ -410,6 +417,28 @@ public class TOMConfiguration extends Configuration {
                         break;
 				}
 			}
+
+			//Faulty nodes
+            s = (String) configs.remove("system.server.leader.faults");
+            StringTokenizer str = new StringTokenizer(s, ",");
+            leaderFaults = new ArrayList<>();
+            for (int i = 0; i < str.countTokens(); i++) {
+                leaderFaults.add(Integer.parseInt(str.nextToken()));
+            }
+
+            s = (String) configs.remove("system.server.follower.faults");
+            str = new StringTokenizer(s, ",");
+            followerFaults = new ArrayList<>();
+            for (int i = 0; i < str.countTokens(); i++) {
+                followerFaults.add(Integer.parseInt(str.nextToken()));
+            }
+
+            s = (String) configs.remove("system.server.random.faults");
+            str = new StringTokenizer(s, ",");
+            randomFaults = new ArrayList<>();
+            for (int i = 0; i < str.countTokens(); i++) {
+                randomFaults.add(Integer.parseInt(str.nextToken()));
+            }
             
         } catch (Exception e) {
             logger.error("Could not parse system configuration file",e);
@@ -602,5 +631,17 @@ public class TOMConfiguration extends Configuration {
 
     public String getInstanceId() {
         return instanceId;
+    }
+
+    public ArrayList<Integer> getLeaderFaults() {
+        return leaderFaults;
+    }
+
+    public ArrayList<Integer> getFollowerFaults() {
+        return followerFaults;
+    }
+
+    public ArrayList<Integer> getRandomFaults() {
+        return randomFaults;
     }
 }

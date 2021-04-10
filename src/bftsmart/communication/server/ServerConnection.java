@@ -50,6 +50,7 @@ import bftsmart.communication.SystemMessage;
 import bftsmart.consensus.messages.ConsensusMessage;
 import bftsmart.reconfiguration.ServerViewController;
 import bftsmart.reconfiguration.VMMessage;
+import bftsmart.runtime.RMIRuntime;
 import bftsmart.tom.ServiceReplica;
 import bftsmart.tom.util.TOMUtil;
 import java.security.SecureRandom;
@@ -60,6 +61,7 @@ import java.security.spec.InvalidKeySpecException;
 
 import bftsmart.hermes.runtime.HermesRuntime;
 import bftsmart.hermes.serialization.HermesSerializableHelper;
+import bftsmart.usecase.ClusterRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +93,8 @@ public class ServerConnection {
     
     private SecretKey secretKey = null;
 
-	ArrayList<Integer> principalA = new ArrayList<>();
+	ArrayList<Integer> exlucdedPrincipals = new ArrayList<>();
+	ArrayList<Integer> randomFaultyNodes = new ArrayList<>();
 
     /**
      * Tulio A. Ribeiro
@@ -111,10 +114,55 @@ public class ServerConnection {
             ServiceReplica replica) {
 
 
-		principalA.add(22);
-		principalA.add(23);
-		principalA.add(24);
-		principalA.add(25);
+    	if(RMIRuntime.NUMBER_OF_FAULTS != Integer.MAX_VALUE) {
+    		switch (RMIRuntime.USECASE_NAME){
+				case "ott":
+					exlucdedPrincipals.add(0);
+					exlucdedPrincipals.add(1);
+					exlucdedPrincipals.add(2);
+					exlucdedPrincipals.add(3);
+					break;
+				case "tc":
+					break;
+				case "mpc":
+					exlucdedPrincipals.add(0);
+					exlucdedPrincipals.add(1);
+					exlucdedPrincipals.add(2);
+					exlucdedPrincipals.add(3);
+					exlucdedPrincipals.add(4);
+					exlucdedPrincipals.add(5);
+					exlucdedPrincipals.add(6);
+					exlucdedPrincipals.add(7);
+					break;
+				case "friendmap":
+					exlucdedPrincipals.add(0);
+					exlucdedPrincipals.add(1);
+					exlucdedPrincipals.add(2);
+					exlucdedPrincipals.add(3);
+					exlucdedPrincipals.add(4);
+					exlucdedPrincipals.add(5);
+					exlucdedPrincipals.add(6);
+					exlucdedPrincipals.add(7);
+					exlucdedPrincipals.add(8);
+					exlucdedPrincipals.add(9);
+					exlucdedPrincipals.add(10);
+					exlucdedPrincipals.add(11);
+					exlucdedPrincipals.add(12);
+					exlucdedPrincipals.add(13);
+					exlucdedPrincipals.add(14);
+					exlucdedPrincipals.add(15);
+					exlucdedPrincipals.add(16);
+					exlucdedPrincipals.add(17);
+					exlucdedPrincipals.add(18);
+					exlucdedPrincipals.add(19);
+					exlucdedPrincipals.add(20);
+					break;
+			}
+    	}
+
+
+
+		System.out.println(exlucdedPrincipals);
 
         this.controller = controller;
 
@@ -221,11 +269,15 @@ public class ServerConnection {
 			e.printStackTrace();
 		}
 
-		if(sm instanceof ConsensusMessage && ((ConsensusMessage)sm).getNumber() == 200)
-			if(
-					//!principalA.contains(controller.getStaticConf().getProcessId()) &&
-					controller.getMaxFaultyNonLeaderNodes().contains(controller.getStaticConf().getProcessId()))
-				Thread.currentThread().stop();
+		if(RMIRuntime.NUMBER_OF_FAULTS != 0) {
+			if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getNumber() == 200) {
+				if (!exlucdedPrincipals.contains(controller.getStaticConf().getProcessId()) &&
+						controller.getRandomFaults().contains(controller.getStaticConf().getProcessId())) {
+					System.out.println("crashing " + controller.getStaticConf().getProcessId());
+					Thread.currentThread().stop();
+				}
+			}
+		}
 		boolean abort = false;
 		do {
 			if (abort)

@@ -11,11 +11,19 @@ import bftsmart.runtime.RMIRuntime;
 
 import java.util.Map;
 
+/*
+* args[0] config path
+* args[1] faults number
+ */
 public class LocalUsecaseRunner {
     public static void main(String[] args) throws Exception {
-        Spec spec = new Spec(true, args[0], null);
         RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length - 1];
+        if(args[1].equals("max"))
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.MAX_VALUE;
+        else
+            RMIRuntime.NUMBER_OF_FAULTS = Integer.valueOf(args[1]);
         NodeClusterRunner.local = true;
+        Spec spec = new Spec(true, args[0], null);
         for (Configuration config : spec.getConfigurations().values()) {
             if (config.getPrincipalName().equals("Client"))
                 Thread.sleep(20000);

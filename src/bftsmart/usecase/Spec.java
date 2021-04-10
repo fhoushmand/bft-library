@@ -1,5 +1,6 @@
 package bftsmart.usecase;
 
+import bftsmart.runtime.RMIRuntime;
 import bftsmart.runtime.quorum.*;
 import bftsmart.runtime.util.IntIntPair;
 
@@ -166,8 +167,8 @@ public class Spec {
                 methodsQ.put("m7", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 methodsQ.put("m8", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 methodsQ.put("ret", new POr(
-                            new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
-                            new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                                new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
+                                new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
                         )
                 );
                 break;
@@ -228,11 +229,11 @@ public class Spec {
                 objectsQ.put("airlineAgent", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 objectsQ.put("bankAgent", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 objectsQ.put("userAgent", new POr(
-                            new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
-                            new POr(
-                                    new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
-                                    new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
-                            )
+                                new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1),
+                                new POr(
+                                        new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
+                                        new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
+                                )
                         )
                 );
                 break;
@@ -358,8 +359,35 @@ public class Spec {
             2) number of servers
             3) number of faulty nodes
             4) initial view
+            5) leader faults
+            6) follower faults
+            7) random faults
              */
-            file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView);
+
+            String leaderFaults = "";
+            String followerFaults = "";
+            String randomFaults = "";
+            int numInjectedFaults = (RMIRuntime.NUMBER_OF_FAULTS == Integer.MAX_VALUE) ? (h.size()-1)/3 : RMIRuntime.NUMBER_OF_FAULTS;
+            for(int i = 0; i < numInjectedFaults; i++)
+            {
+                if(i != numInjectedFaults - 1) {
+                    leaderFaults += h.toIntArray()[i] + ",";
+                    followerFaults += h.toIntArray()[h.size() - 1 - i] + ",";
+                    int f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    while(randomFaults.contains(String.valueOf(f)))
+                        f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    randomFaults +=  f + ",";
+                }
+                else {
+                    leaderFaults += h.toIntArray()[i];
+                    followerFaults += h.toIntArray()[h.size() - 1 - i];
+                    int f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    while(randomFaults.contains(String.valueOf(f)))
+                        f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    randomFaults +=  f;
+                }
+            }
+            file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView, leaderFaults, followerFaults, randomFaults);
             String sep = System.getProperty("file.separator");
             String fileName = configPath + sep + "system.config" + clusterID;
             if(!new File(fileName).exists()) {

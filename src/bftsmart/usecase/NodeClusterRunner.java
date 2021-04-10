@@ -30,6 +30,7 @@ public class NodeClusterRunner {
         else
             spec = new Spec(false, args[0], Arrays.copyOfRange(args, 2, args.length));
         RMIRuntime.CONFIGURATION = args[0].split("/")[args[0].split("/").length - 1];
+        RMIRuntime.USECASE_NAME = args[0].split("/")[args[0].split("/").length - 2];
         int host = Integer.parseInt(args[1]);
         PartitionedObject o = (PartitionedObject) Class.forName(spec.getPartitionedClassByHostID(host)).getConstructor().newInstance();
 
