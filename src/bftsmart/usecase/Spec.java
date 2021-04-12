@@ -368,22 +368,34 @@ public class Spec {
             String followerFaults = "";
             String randomFaults = "";
             int numInjectedFaults = (RMIRuntime.NUMBER_OF_FAULTS == Integer.MAX_VALUE) ? (h.size()-1)/3 : RMIRuntime.NUMBER_OF_FAULTS;
+
             for(int i = 0; i < numInjectedFaults; i++)
             {
                 if(i != numInjectedFaults - 1) {
                     leaderFaults += h.toIntArray()[i] + ",";
                     followerFaults += h.toIntArray()[h.size() - 1 - i] + ",";
-                    int f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
-                    while(randomFaults.contains(String.valueOf(f)))
+                    int f = 0;
+                    if(h.size() == 1)
+                        f = h.toIntArray()[0];
+                    else {
                         f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                        while (randomFaults.contains(String.valueOf(f)))
+                            f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    }
+
                     randomFaults +=  f + ",";
                 }
                 else {
                     leaderFaults += h.toIntArray()[i];
                     followerFaults += h.toIntArray()[h.size() - 1 - i];
-                    int f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
-                    while(randomFaults.contains(String.valueOf(f)))
+                    int f = 0;
+                    if(h.size() == 1)
+                        f = h.toIntArray()[0];
+                    else {
                         f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                        while (randomFaults.contains(String.valueOf(f)))
+                            f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                    }
                     randomFaults +=  f;
                 }
             }
