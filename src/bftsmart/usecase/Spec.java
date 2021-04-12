@@ -378,9 +378,9 @@ public class Spec {
                     if(h.size() == 1)
                         f = h.toIntArray()[0];
                     else {
-                        f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                        f = h.toIntArray()[new Random().nextInt(h.size())];
                         while (randomFaults.contains(String.valueOf(f)))
-                            f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                            f = h.toIntArray()[new Random().nextInt(h.size())];
                     }
 
                     randomFaults +=  f + ",";
@@ -392,9 +392,9 @@ public class Spec {
                     if(h.size() == 1)
                         f = h.toIntArray()[0];
                     else {
-                        f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                        f = h.toIntArray()[new Random().nextInt(h.size())];
                         while (randomFaults.contains(String.valueOf(f)))
-                            f = h.toIntArray()[new Random().nextInt(h.size() - 1)];
+                            f = h.toIntArray()[new Random().nextInt(h.size())];
                     }
                     randomFaults +=  f;
                 }
