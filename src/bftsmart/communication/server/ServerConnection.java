@@ -112,54 +112,6 @@ public class ServerConnection {
             LinkedBlockingQueue<SystemMessage> inQueue, 
             ServiceReplica replica) {
 
-
-    	if(RMIRuntime.NUMBER_OF_FAULTS != Integer.MAX_VALUE) {
-    		switch (RMIRuntime.USECASE_NAME){
-				case "ott":
-					exlucdedPrincipals.add(0);
-					exlucdedPrincipals.add(1);
-					exlucdedPrincipals.add(2);
-					exlucdedPrincipals.add(3);
-					break;
-				case "tc":
-					break;
-				case "mpc":
-					exlucdedPrincipals.add(0);
-					exlucdedPrincipals.add(1);
-					exlucdedPrincipals.add(2);
-					exlucdedPrincipals.add(3);
-					exlucdedPrincipals.add(4);
-					exlucdedPrincipals.add(5);
-					exlucdedPrincipals.add(6);
-					exlucdedPrincipals.add(7);
-					break;
-				case "friendmap":
-					exlucdedPrincipals.add(0);
-					exlucdedPrincipals.add(1);
-					exlucdedPrincipals.add(2);
-					exlucdedPrincipals.add(3);
-					exlucdedPrincipals.add(4);
-					exlucdedPrincipals.add(5);
-					exlucdedPrincipals.add(6);
-					exlucdedPrincipals.add(7);
-					exlucdedPrincipals.add(8);
-					exlucdedPrincipals.add(9);
-					exlucdedPrincipals.add(10);
-					exlucdedPrincipals.add(11);
-					exlucdedPrincipals.add(12);
-					exlucdedPrincipals.add(13);
-					exlucdedPrincipals.add(14);
-					exlucdedPrincipals.add(15);
-					exlucdedPrincipals.add(16);
-					exlucdedPrincipals.add(17);
-					exlucdedPrincipals.add(18);
-					exlucdedPrincipals.add(19);
-					exlucdedPrincipals.add(20);
-					break;
-			}
-    	}
-
-
 		System.out.println("random: " + controller.getRandomFaults());
 
         this.controller = controller;

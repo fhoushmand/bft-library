@@ -363,40 +363,65 @@ public class Spec {
             6) follower faults
             7) random faults
              */
-
             String leaderFaults = "";
             String followerFaults = "";
             String randomFaults = "";
             int numInjectedFaults = (RMIRuntime.NUMBER_OF_FAULTS == Integer.MAX_VALUE) ? (h.size()-1)/3 : RMIRuntime.NUMBER_OF_FAULTS;
-
-            for(int i = 0; i < numInjectedFaults; i++)
-            {
-                if(i != numInjectedFaults - 1) {
-                    leaderFaults += h.toIntArray()[i] + ",";
-                    followerFaults += h.toIntArray()[h.size() - 1 - i] + ",";
-                    int f = 0;
-                    if(h.size() == 1)
-                        f = h.toIntArray()[0];
-                    else {
-                        f = h.toIntArray()[new Random().nextInt(h.size())];
-                        while (randomFaults.contains(String.valueOf(f)))
-                            f = h.toIntArray()[new Random().nextInt(h.size())];
-                    }
-
-                    randomFaults +=  f + ",";
+            boolean noFault = false;
+            if(RMIRuntime.NUMBER_OF_FAULTS != Integer.MAX_VALUE) {
+                switch (useCaseName) {
+                    case "ott":
+                        if (!h.getName().equals("B"))
+                            noFault = true;
+                        break;
+                    case "friendmap":
+                        if (!h.getName().equals("A"))
+                            noFault = true;
+                        break;
+                    case "tc":
+                        if (h.getName().equals("C"))
+                            noFault = true;
+                        break;
+                    case "mpc":
+                        if (!h.getName().equals("A"))
+                            noFault = true;
+                        break;
+                    case "ot":
+                        noFault = true;
+                        break;
+                    case "ac":
+                        noFault = true;
+                        break;
                 }
-                else {
-                    leaderFaults += h.toIntArray()[i];
-                    followerFaults += h.toIntArray()[h.size() - 1 - i];
-                    int f = 0;
-                    if(h.size() == 1)
-                        f = h.toIntArray()[0];
-                    else {
-                        f = h.toIntArray()[new Random().nextInt(h.size())];
-                        while (randomFaults.contains(String.valueOf(f)))
+            }
+            if(!noFault) {
+                for (int i = 0; i < numInjectedFaults; i++) {
+                    if (i != numInjectedFaults - 1) {
+                        leaderFaults += h.toIntArray()[i] + ",";
+                        followerFaults += h.toIntArray()[h.size() - 1 - i] + ",";
+                        int f = 0;
+                        if (h.size() == 1)
+                            f = h.toIntArray()[0];
+                        else {
                             f = h.toIntArray()[new Random().nextInt(h.size())];
+                            while (randomFaults.contains(String.valueOf(f)))
+                                f = h.toIntArray()[new Random().nextInt(h.size())];
+                        }
+
+                        randomFaults += f + ",";
+                    } else {
+                        leaderFaults += h.toIntArray()[i];
+                        followerFaults += h.toIntArray()[h.size() - 1 - i];
+                        int f = 0;
+                        if (h.size() == 1)
+                            f = h.toIntArray()[0];
+                        else {
+                            f = h.toIntArray()[new Random().nextInt(h.size())];
+                            while (randomFaults.contains(String.valueOf(f)))
+                                f = h.toIntArray()[new Random().nextInt(h.size())];
+                        }
+                        randomFaults += f;
                     }
-                    randomFaults +=  f;
                 }
             }
             file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView, leaderFaults, followerFaults, randomFaults);
@@ -474,9 +499,10 @@ public class Spec {
 
     public H getAllHosts()
     {
-        H hs = new H("all");
+        H hs = new H();
         for (Map.Entry<String,Configuration> config : configurations.entrySet())
             hs = H.union(hs, config.getValue().getHostSet());
+        hs.setName("all");
         return hs;
     }
 

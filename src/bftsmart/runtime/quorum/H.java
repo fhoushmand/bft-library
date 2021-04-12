@@ -17,6 +17,11 @@ public class H {
         this.name = n;
     }
 
+    public void setName(String n)
+    {
+        this.name = n;
+    }
+
     public void addHost(Integer h)
     {
         hosts.add(h);
