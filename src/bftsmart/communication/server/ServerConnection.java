@@ -30,6 +30,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -92,8 +93,6 @@ public class ServerConnection {
     private boolean doWork = true;
     
     private SecretKey secretKey = null;
-
-	ArrayList<Integer> exlucdedPrincipals = new ArrayList<>();
 
     /**
      * Tulio A. Ribeiro
@@ -219,12 +218,32 @@ public class ServerConnection {
 			e.printStackTrace();
 		}
 
+
 		if(RMIRuntime.NUMBER_OF_FAULTS != 0) {
 			if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getNumber() == 200) {
-				if (!exlucdedPrincipals.contains(controller.getStaticConf().getProcessId()) &&
-						controller.getRandomFaults().contains(controller.getStaticConf().getProcessId())) {
-					System.out.println("crashing " + controller.getStaticConf().getProcessId());
-					Thread.currentThread().stop();
+				if (controller.getRandomFaults().contains(controller.getStaticConf().getProcessId())) {
+					int fault = new Random().nextInt(3);
+					switch (fault)
+					{
+						case 0:
+							System.out.println("crashing " + controller.getStaticConf().getProcessId());
+							Thread.currentThread().stop();
+							break;
+						case 1:
+							System.out.println("byzantine message " + controller.getStaticConf().getProcessId());
+							for (int ii = 0; ii < messageData.length; ii++) {
+								messageData[ii] = 0;
+							}
+							break;
+						case 2:
+							System.out.println("delay message " + controller.getStaticConf().getProcessId());
+							try {
+								Thread.sleep(5000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							break;
+					}
 				}
 			}
 		}
