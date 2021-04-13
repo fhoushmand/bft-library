@@ -193,7 +193,8 @@ public abstract class RTMessage implements Externalizable {
         String args = "(";
         if(arg != null) {
             for (int i = 0; i < ((Object[]) arg).length; i++) {
-                args += ((Object[]) arg)[i].toString();
+                if(((Object[]) arg)[i] != null)
+                    args += ((Object[]) arg)[i].toString();
                 if (i != ((Object[]) arg).length - 1)
                     args += ",";
             }

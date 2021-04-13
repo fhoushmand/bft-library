@@ -69,6 +69,18 @@ public class BankAgentServer extends DefaultSingleRecoverable {
                     }
                     hasReply = true;
                     break;
+                case GET_BALANCE:
+                    if(!cachedCalls.containsKey(id)) {
+                        objOut.writeObject(userAccount);
+                        cachedCalls.put(id, userAccount);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
                 default:
                     logger.log(Level.WARNING, "bankagent: in appExecuteOrdered");
             }
