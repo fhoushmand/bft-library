@@ -77,6 +77,8 @@ public class ServerConnection {
     
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    static boolean faultEnabled = true;
+
     private static final long POOL_TIME = 5000;
     private ServerViewController controller;
     private SSLSocket socket;
@@ -220,32 +222,35 @@ public class ServerConnection {
 
 
 		if(RMIRuntime.NUMBER_OF_FAULTS != 0) {
-			if (sm instanceof ConsensusMessage && ((ConsensusMessage) sm).getNumber() == 200) {
-				if (controller.getRandomFaults().contains(controller.getStaticConf().getProcessId())) {
-					int fault = new Random().nextInt(3);
-					switch (fault)
-					{
-						case 0:
-							System.out.println("crashing " + controller.getStaticConf().getProcessId());
-							Thread.currentThread().stop();
-							break;
-						case 1:
-							System.out.println("byzantine message " + controller.getStaticConf().getProcessId());
-							for (int ii = 0; ii < messageData.length; ii++) {
-								messageData[ii] = 0;
-							}
-							break;
-						case 2:
-							System.out.println("delay message " + controller.getStaticConf().getProcessId());
-							try {
-								Thread.sleep(5000);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-							break;
+//			if(faultEnabled) {
+				if (sm instanceof ConsensusMessage && (((ConsensusMessage) sm).getNumber() == 100)) {
+					if (controller.getRandomFaults().contains(controller.getStaticConf().getProcessId())) {
+						System.out.println("process: " + controller.getStaticConf().getProcessId());
+						switch (controller.getStaticConf().getRandomFaultsType().get(controller.getStaticConf().getProcessId())) {
+							case 0:
+								System.out.println("fault crashing " + controller.getStaticConf().getProcessId());
+								Thread.currentThread().stop();
+								break;
+							case 1:
+								faultEnabled = false;
+								System.out.println("fault byzantine message " + controller.getStaticConf().getProcessId());
+								for (int ii = 0; ii < messageData.length; ii++) {
+									messageData[ii] = 0;
+								}
+								break;
+							case 2:
+								faultEnabled = false;
+								System.out.println("fault delay message " + controller.getStaticConf().getProcessId());
+								try {
+									Thread.sleep(5000);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								break;
+						}
 					}
 				}
-			}
+//			}
 		}
 		boolean abort = false;
 		do {

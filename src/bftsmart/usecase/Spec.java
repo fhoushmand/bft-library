@@ -35,8 +35,6 @@ public class Spec {
 
     private HashMap<Integer,String> hostsIpMap = new HashMap<>();
 
-    private ArrayList<Integer> faultyLeaderNodes = new ArrayList<>();
-
     int clusterIDSequence = 0;
 
 
@@ -78,12 +76,6 @@ public class Spec {
             extractObjectFieldMethods(object);
             extractObjectPlacements(object);
             extractMethodHosts(object);
-            if(injectFault)
-                Arrays.stream(
-                        conf.getHostSet()
-                                .pickFirst(resiliencyConfiguration.getPrincipalResiliency(conf.getPrincipalName()))
-                                .toIntArray())
-                        .forEach(n -> faultyLeaderNodes.add(n));
         }
         getMethodCommunicationQuorum();
         getObjectCommunicationQuorum();
@@ -362,16 +354,26 @@ public class Spec {
             5) leader faults
             6) follower faults
             7) random faults
+            8) faults type (0: crash, 1: byz message, 2: 5(s) delay)
              */
             String leaderFaults = "";
             String followerFaults = "";
             String randomFaults = "";
+            String faultsType = "";
             int numInjectedFaults = (RMIRuntime.NUMBER_OF_FAULTS == Integer.MAX_VALUE) ? (h.size()-1)/3 : RMIRuntime.NUMBER_OF_FAULTS;
             boolean noFault = false;
+
+            // condition that injects fault only in the cluster 2 (since cluster 1 and 2 both are placed on B)
+            if(RMIRuntime.NUMBER_OF_FAULTS == Integer.MAX_VALUE && useCaseName.equals("ott")) {
+                if (clusterID == 1)
+                    noFault = true;
+            }
+
             if(RMIRuntime.NUMBER_OF_FAULTS != Integer.MAX_VALUE) {
                 switch (useCaseName) {
                     case "ott":
-                        if (!h.getName().equals("B"))
+                        // condition that injects fault only in cluster2 (since cluster 1 and 2 both are placed on B)
+                        if (!h.getName().equals("B") || clusterID != 2)
                             noFault = true;
                         break;
                     case "friendmap":
@@ -407,8 +409,9 @@ public class Spec {
                             while (randomFaults.contains(String.valueOf(f)))
                                 f = h.toIntArray()[new Random().nextInt(h.size())];
                         }
-
                         randomFaults += f + ",";
+
+                        faultsType += new Random().nextInt(3) + ",";
                     } else {
                         leaderFaults += h.toIntArray()[i];
                         followerFaults += h.toIntArray()[h.size() - 1 - i];
@@ -421,10 +424,12 @@ public class Spec {
                                 f = h.toIntArray()[new Random().nextInt(h.size())];
                         }
                         randomFaults += f;
+
+                        faultsType += new Random().nextInt(3);
                     }
                 }
             }
-            file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView, leaderFaults, followerFaults, randomFaults);
+            file = String.format(file, clusterID, h.size(), (h.size()-1)/3, initView, leaderFaults, followerFaults, randomFaults, faultsType);
             String sep = System.getProperty("file.separator");
             String fileName = configPath + sep + "system.config" + clusterID;
             if(!new File(fileName).exists()) {
@@ -483,10 +488,6 @@ public class Spec {
 
     public HashMap<String, Configuration> getConfigurations() {
         return configurations;
-    }
-
-    public ArrayList<Integer> getFaultyLeaderNodes() {
-        return faultyLeaderNodes;
     }
 
     public HashMap<String, Map.Entry<Class, Integer>> getObjectFields() {

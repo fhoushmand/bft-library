@@ -18,6 +18,7 @@ package bftsmart.reconfiguration.util;
 import bftsmart.tom.util.KeyLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import java.util.regex.Pattern;
@@ -77,8 +78,12 @@ public class TOMConfiguration extends Configuration {
     private ArrayList<Integer> followerFaults;
     private ArrayList<Integer> randomFaults;
 
-    
-    
+    private HashMap<Integer,Integer> leadersFaultsType;
+    private HashMap<Integer,Integer> followersFaultsType;
+    private HashMap<Integer,Integer> randomFaultsType;
+
+
+
     /** Creates a new instance of TOMConfiguration */
     public TOMConfiguration(int processId, KeyLoader loader, int clusterId) {
         super(processId, loader, clusterId);
@@ -442,6 +447,18 @@ public class TOMConfiguration extends Configuration {
                     randomFaults.add(Integer.parseInt(s.split(",")[i]));
                 }
             }
+
+            s = (String) configs.remove("system.server.faults.type");
+            leadersFaultsType = new HashMap<>();
+            followersFaultsType = new HashMap<>();
+            randomFaultsType = new HashMap<>();
+            if(s != null && !"".equals(s)) {
+                for (int i = 0; i < s.split(",").length; i++) {
+                    leadersFaultsType.put(leaderFaults.get(i), Integer.parseInt(s.split(",")[i]));
+                    followersFaultsType.put(followerFaults.get(i), Integer.parseInt(s.split(",")[i]));
+                    randomFaultsType.put(randomFaults.get(i), Integer.parseInt(s.split(",")[i]));
+                }
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -647,5 +664,17 @@ public class TOMConfiguration extends Configuration {
 
     public ArrayList<Integer> getRandomFaults() {
         return randomFaults;
+    }
+
+    public HashMap<Integer, Integer> getLeadersFaultsType() {
+        return leadersFaultsType;
+    }
+
+    public HashMap<Integer, Integer> getFollowersFaultsType() {
+        return followersFaultsType;
+    }
+
+    public HashMap<Integer, Integer> getRandomFaultsType() {
+        return randomFaultsType;
     }
 }
