@@ -41,10 +41,10 @@ public class OTTA extends PartitionedObject {
 //            runtime.invoke("m1", callerId+"::m3", ++n);
 //    }
 
-    public void m1(String callerId, Integer n)
+    public void m0(String callerId, Integer n)
     {
-        logger.trace("execute m1");
-        int o = (Integer) runtime.invokeObj("i1", "read", "m1",callerId+"::m1", ++n);
-        runtime.invoke("ret", callerId+"::m1", ++n, o); //send ret(i1.read()) message to the client;
+        logger.trace("execute m0");
+        int o = (Integer) runtime.invokeObj("i1", "read", "m0",callerId+"::m0", ++n);
+        runtime.invoke("ret", callerId+"::m0", ++n, o); //send ret(i1.read()) message to the client;
     }
 }

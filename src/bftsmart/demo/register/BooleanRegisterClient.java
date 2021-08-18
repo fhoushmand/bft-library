@@ -34,8 +34,8 @@ public class BooleanRegisterClient{
 
 	public Boolean write(Boolean newVal, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-				ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
-			
+				ObjectOutput objOut = new ObjectOutputStream(byteOut))
+		{
 			objOut.writeObject(RegisterRequestType.WRITE);
 
 			objOut.writeInt(id.getBytes().length);

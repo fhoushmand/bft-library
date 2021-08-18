@@ -10,13 +10,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class Spec {
     private boolean isLocal;
     private boolean injectFault = true;
     private ResiliencyConfiguration resiliencyConfiguration;
+    //private String resiliencyStr;
     private HashMap<String, Configuration> configurations;
     private int hostsSize;
+    private int n; //the number of the host domain.
 
     private String useCaseName;
 
@@ -25,12 +28,13 @@ public class Spec {
     // A mapping from object fields to its cluster id
     private HashMap<String, Map.Entry<Class,Integer>> objectFields;
 
+    //the hosts for objects and methods
     private HashMap<String, H> objectsH;
     private HashMap<String,H> methodsH;
 
-    // The quorum required for the methods to be able to execute
+    //The quorum required for the methods to be able to execute
+    //the communication quorum for methods and objects
     private HashMap<String, Q> methodsQ;
-
     private HashMap<String, Q> objectsQ;
 
     private HashMap<Integer,String> hostsIpMap = new HashMap<>();
@@ -40,7 +44,13 @@ public class Spec {
 
     public Spec(boolean local, String configPath, String[] hostsList) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         isLocal = local;
-        configurations = readSpecificationFromFile(configPath);
+        objectsH = new HashMap<>();
+        methodsH = new HashMap<>();
+        objectsQ = new HashMap<>();
+        methodsQ = new HashMap<>();
+        configurations =  new HashMap<>();
+        //configurations = readSpecificationFromFile(configPath);
+        readSpecificationFromFile(configPath);
         hostsSize = configurations.values().stream().reduce(0, (size, config) -> size += config.getHostSet().size(), Integer::sum);
         if(isLocal) {
             for (int i = 0; i < hostsSize; i++) {
@@ -55,6 +65,7 @@ public class Spec {
                 hostsIpMap.put(i++, h);
             }
         }
+        //resiliencyStr = configPath.split("/")[configPath.split("/").length-1];
         resiliencyConfiguration = new ResiliencyConfiguration(configPath.split("/")[configPath.split("/").length-1]);
         useCaseName = configPath.split("/")[configPath.split("/").length-2];
         //initialize
@@ -68,19 +79,17 @@ public class Spec {
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         argsMap = new HashMap<>();
         objectFields = new HashMap<>();
-        objectsH = new HashMap<>();
-        methodsH = new HashMap<>();
+        //objectsH = new HashMap<>();
+        //methodsH = new HashMap<>();
         for(Configuration conf : configurations) {
             PartitionedObject object = (PartitionedObject) Class.forName(conf.getClassName()).getConstructor().newInstance();
             extractSplitMethodsArgs(object);
             extractObjectFieldMethods(object);
             extractObjectPlacements(object);
-            extractMethodHosts(object);
+            //extractMethodHosts(object);
         }
-        getMethodCommunicationQuorum();
-        getObjectCommunicationQuorum();
-
-
+        //getMethodCommunicationQuorum();
+        //getObjectCommunicationQuorum();
     }
 
     private void extractObjectFieldMethods(PartitionedObject object)
@@ -99,15 +108,19 @@ public class Spec {
     {
         for(Field objField : object.getClass().getDeclaredFields()) {
             objectFields.put(objField.getName(), Map.entry(objField.getType(), clusterIDSequence++));
-            H hosts = getHostByPartitionedClass(object);
+
+            // previously the object is hosted on every possible node of the trust domain.
+            //now we change with the inferred result.
+
+            /*H hosts = getHostByPartitionedClass(object);
             if(objectsH.containsKey(objField.getName()))
                 objectsH.put(objField.getName(), H.union(objectsH.get(objField.getName()), hosts));
             else
-                objectsH.put(objField.getName(), hosts);
+                objectsH.put(objField.getName(), hosts);*/
         }
     }
 
-    private void extractMethodHosts(PartitionedObject object)
+/*    private void extractMethodHosts(PartitionedObject object, String configPath)
     {
         for(Method m : object.getClass().getDeclaredMethods()) {
             H allHosts = getHostByPartitionedClass(object);
@@ -117,17 +130,17 @@ public class Spec {
             else
                 methodsH.put(m.getName(), requiredHosts);
         }
-    }
+    }*/
 
-    private void getMethodCommunicationQuorum()
+/*    private void getMethodCommunicationQuorum()
     {
         methodsQ = new HashMap<>();
         switch (useCaseName)
         {
-            case "ot":
+*//*            case "ot":
                 methodsQ.put("m1", new P(configurations.get("Client").getHostSet(), 1));
                 methodsQ.put("ret", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
-                break;
+                break;*//*
             // old non-optimized ott
 //            case "ott":
 //                methodsQ.put("m4", new P(configurations.get("Client").getHostSet(), 1));
@@ -141,17 +154,17 @@ public class Spec {
 //                );
 //                break;
             case "ott":
-                methodsQ.put("m4", new P(configurations.get("Client").getHostSet(), 1));
-                methodsQ.put("m3", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m3", new P(configurations.get("Client").getHostSet(), 1));
                 methodsQ.put("m2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("m1", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
+                methodsQ.put("m0", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("ret", new POr(
                                 new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1),
                                 new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1)
                         )
                 );
                 break;
-            case "tc":
+*//*            case "tc":
                 methodsQ.put("m2", new P(configurations.get("Client").getHostSet(), 1));
                 methodsQ.put("m3", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 methodsQ.put("m5", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
@@ -190,7 +203,7 @@ public class Spec {
                 methodsQ.put("m4", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 methodsQ.put("m7", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 methodsQ.put("ret", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
-                break;
+                break;*//*
         }
 
     }
@@ -199,11 +212,11 @@ public class Spec {
     {
         objectsQ = new HashMap<>();
         switch (useCaseName) {
-            case "ot":
+*//*            case "ot":
                 objectsQ.put("r1", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 objectsQ.put("r2", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
                 objectsQ.put("r", new P(configurations.get("C").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("C") + 1));
-                break;
+                break;*//*
             //old non-optimized ott
 //            case "ott":
 //                objectsQ = new HashMap<>();
@@ -217,7 +230,7 @@ public class Spec {
                 objectsQ.put("i2", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 objectsQ.put("a", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 break;
-            case "tc":
+*//*            case "tc":
                 objectsQ.put("airlineAgent", new P(configurations.get("A").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("A") + 1));
                 objectsQ.put("bankAgent", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 objectsQ.put("userAgent", new POr(
@@ -260,16 +273,14 @@ public class Spec {
                 objectsQ.put("bob", new P(configurations.get("B").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("B") + 1));
                 objectsQ.put("snapp", new P(configurations.get("S").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("S") + 1));
                 objectsQ.put("mapService", new P(configurations.get("M").getHostSet(), resiliencyConfiguration.getPrincipalResiliency("M") + 1));
-                break;
-
-
-
+                break;*//*
         }
-    }
+    }*/
 
     public void writeConfigsAndFinalize()
     {
         String configPath = "config" + "_" + resiliencyConfiguration;
+        //String configPath = "config" + "_" + resiliencyStr;
         File directory = new File(configPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -285,6 +296,7 @@ public class Spec {
 
 
         String runtimeConfigPath = "runtimeconfig" + "_"+ resiliencyConfiguration;
+        //String runtimeConfigPath = "runtimeconfig" + "_"+ resiliencyStr;
         directory = new File(runtimeConfigPath);
         if (! directory.exists()){
             directory.mkdir();
@@ -294,21 +306,112 @@ public class Spec {
         writeSystemConfigFile(getAllHosts(), 1, runtimeConfigPath);
     }
 
-    private HashMap<String, Configuration> readSpecificationFromFile(String configpath)
+    private void readSpecificationFromFile(String configpath)
     {
-        HashMap<String,Configuration> configs = new HashMap<>();
+        //HashMap<String,Configuration> configs = new HashMap<>();
+        //record the trust domain order
+        ArrayList<String> nameOrder = new ArrayList<>();
+        HashMap<Integer, String> nameOrder2 = new HashMap<>();
         try
         {
             FileReader fr = new FileReader(configpath);
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
+            //produce the configuration from n and principal set.
+            //eg: n = 3, principals = [7, 4, 1] => A, B, Client
+            //we need to distinguish client and other trust domains.
+            //The result of the type inference may not include client trust domain. But it is default input for the run-time
+            //todo: produce domain name. currently we use the name given in the file
             while ((line = rd.readLine()) != null) {
-                if (!line.startsWith("#")) {
-                    String hostsSetName = line.split("\\s+")[0];
-                    String partitionedClassName = line.split("\\s+")[1];
-                    String hostList = line.split("\\s+")[2];
-                    Configuration c = new Configuration(hostsSetName, partitionedClassName, hostList);
-                    configs.put(hostsSetName, c);
+                if(line.startsWith("#")){
+                    //String hostsSetName = line.split("\\s+")[0];
+                    //String partitionedClassName = line.split("\\s+")[1];
+                    //String hostList = line.split("\\s+")[2];
+                    //Configuration c = new Configuration(hostsSetName, partitionedClassName, hostList);
+                    String hostsSetName = line.split("\\s+")[1];
+                    String partitionedClassName = line.split("\\s+")[2];
+                    Configuration c = new Configuration(hostsSetName, partitionedClassName);
+                    //configs.put(hostsSetName, c);
+                    configurations.put(hostsSetName, c);
+                    nameOrder2.put(nameOrder.size(), hostsSetName);
+                    nameOrder.add(hostsSetName);
+                }
+                //define the number of trust domain
+                else if(line.startsWith("n =")){
+                    String num = line.replaceAll("[^\\d]", "");
+                    n = Integer.valueOf(num);
+                }
+                //define the host list for configs
+                else if(line.startsWith("principals")){
+                    String p = line.replaceAll("[^\\d]", " ");
+                    p = p.trim();
+                    int base = 0;
+                    for(int i = 0; i < n; i++){
+                        int pivot = Integer.parseInt(p.split("\\s+")[i]);
+                        int top = base + pivot;
+                        //configs.get(nameOrder.get(i)).addHostSet(hostListFromNum(base, top));
+                        configurations.get(nameOrder.get(i)).addHostSet(hostListFromNum(base, top));
+                        base = top;
+                    }
+                }
+                //regular expression for method hosts
+                else if(Pattern.compile("resH|m\\d+H").matcher(line).find()){
+                    String methodName = line.substring(0, line.indexOf('H'));
+                    if(methodName.equals("res")){
+                        methodName = "ret";
+                    }
+                    String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
+                    //produce the host from string like: [0, 0, 1]
+                    str = str.replaceAll("[^\\d]", " ");
+                    str =  str.trim();
+                    H mH = new H();
+                    for(int i = 0; i < n; i++){
+                        int hNum = Integer.parseInt(str.split("\\s+")[i]);
+                        if(hNum <= 0){ }
+                        else {
+                            //get host by the order
+                            //mH = mH.union(mH, configs.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
+                            mH = mH.union(mH, configurations.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
+                            mH.setName(configurations.get(nameOrder.get(i)).getHostSet().getName());
+                        }
+                    }
+                    methodsH.put(methodName, mH);
+                }
+                //regular expression for method communication quorums
+                else if(Pattern.compile("resQ|m\\d+Q").matcher(line).find()){
+                    String methodName = line.substring(0, line.indexOf('Q'));
+                    if(methodName.equals("res")){
+                        methodName = "ret";
+                    }
+                    String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
+                    //produce the host from string like: [0, 0, 1]
+                    methodsQ.put(methodName, quorumSTranslation(str, n, nameOrder2));
+                }
+                //regular expression for object communication quorums
+                else if(Pattern.compile("\\w+qc").matcher(line).find()){
+                    String objectName = line.substring(0, line.indexOf("qc"));
+                    String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
+                    objectsQ.put(objectName, quorumSTranslation(str, n, nameOrder2));
+                }
+                //regular expression for object hosts
+                else if(Pattern.compile("\\w+OH").matcher(line).find()){
+                    String objectName = line.substring(0, line.indexOf("OH"));
+                    String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
+                    //produce the host from string like: [0, 0, 1]
+                    str = str.replaceAll("[^\\d]", " ");
+                    str =  str.trim();
+                    H oH = new H();
+                    for(int i = 0; i < n; i++){
+                        int hNum = Integer.parseInt(str.split("\\s+")[i]);
+                        if(hNum <= 0){ }
+                        else {
+                            //get host by the order
+                            //oH = oH.union(oH, configs.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
+                            oH = oH.union(oH, configurations.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
+                            oH.setName(configurations.get(nameOrder.get(i)).getHostSet().getName());
+                        }
+                    }
+                    objectsH.put(objectName, oH);
                 }
             }
             fr.close();
@@ -318,8 +421,95 @@ public class Spec {
         {
             System.out.println("Cannot read use-case config file");
         }
-        return configs;
+        //return configs;
+        return;
+    }
 
+    //produce host list give lower bound and upper bound [lb, ub)
+    private ArrayList<Integer> hostListFromNum(int lowerBound, int upperBound){
+        ArrayList result = new ArrayList();
+        for(int i = lowerBound; i < upperBound; i++){
+            result.add(i);
+        }
+        return result;
+    }
+
+    //translate a string representation of quorum system to a quorum system  Q in bft smart run-time
+    //for example: [3, 0, 0, 0, 0, 0, 0, 2, 0] or [0, 2, 0, 0, 0, 0, 0, 0, 0]
+    private Q quorumSTranslation(String quorumS, int n, HashMap<Integer, String> tMap){
+        // Replacing every non-digit number with ""
+        quorumS = quorumS.replaceAll("[^\\d]", "");
+        int quorumNum = 0;
+        ArrayList<String> quorumString = new ArrayList<>();
+        ArrayList<Q> quorumSystems = new ArrayList<>();
+
+        for(int i = 0; i < quorumS.length(); i = i+n){
+            //if the quorum is empty, we can ignore it
+            if(isEmptyQuorum(quorumS.substring(i, i+n))){}
+            //if the quorum is not empty, we need to add it to P
+            else {
+                quorumNum++;
+                quorumString.add(quorumS.substring(i, i+n));
+            }
+        }
+
+        for(int j = 0; j < quorumNum; j++){
+            quorumSystems.add(quorumTranslation(quorumString.get(j), tMap));
+        }
+
+        return recursionOr(quorumSystems);
+    }
+
+    //filter empty quorum
+    private Boolean isEmptyQuorum(String q){
+        if (q.matches("[0]+")){
+            return true;
+        }
+        else return false;
+    }
+
+    //translate a quorum like 300 to P3(A) in bft smart
+    private Q quorumTranslation(String quorum, HashMap<Integer, String> trustDomain){
+        int andNum = 0;
+        ArrayList<Integer> indexForDomain = new ArrayList<>();
+        for(int i = 0; i < quorum.length(); i++){
+            if(Character.getNumericValue(quorum.charAt(i)) > 0){
+                andNum++;
+                indexForDomain.add(i);
+            }
+        }
+        return recursionAnd(quorum, trustDomain, andNum, indexForDomain);
+    }
+
+    //eg: quorum: 300, andNum: 1, indexForDomain:[0]
+    //or quorum: 312, andNum: 3, indexForDomain:[0, 1, 2]
+    private Q recursionAnd(String quorum, HashMap<Integer, String> trustDomain, int andNum, ArrayList<Integer> indexForDomain){
+        if(andNum == 1){
+            P result = new P(configurations.get(trustDomain.get(indexForDomain.get(0))).getHostSet(),
+                    Character.getNumericValue(quorum.charAt(indexForDomain.get(0))));
+            return  result;
+        }
+        else{
+            P firstQ = new P(configurations.get(trustDomain.get(indexForDomain.get(0))).getHostSet(),
+                    Character.getNumericValue(quorum.charAt(indexForDomain.get(0))));
+            indexForDomain.remove(0);
+            PAnd result = new PAnd(firstQ,
+                    recursionAnd(quorum, trustDomain, andNum -1, indexForDomain));
+            return result;
+        }
+    }
+
+    //use quorum to construct quorum system
+    private Q recursionOr(ArrayList<Q> quorum){
+        if(quorum.size() == 1){
+            return quorum.get(0);
+        }
+        else {
+            Q firstQ = quorum.get(0);
+            quorum.remove(0);
+            POr result = new POr(firstQ, recursionOr(quorum));
+            return result;
+        }
     }
 
     private void writeSystemConfigFile(H h, int clusterID, String configPath)

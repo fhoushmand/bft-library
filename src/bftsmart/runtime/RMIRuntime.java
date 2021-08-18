@@ -314,10 +314,10 @@ public class RMIRuntime extends Thread{
         catch (NullPointerException | NoSuchMethodException e)
         {
             e.printStackTrace();
-//            System.out.println("received object call reqs: " + objCallReceived);
-//            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
-//            System.out.println("Calling method: " + callingMethod);
-//            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
+            System.out.println("received object call reqs: " + objCallReceived);
+            System.out.println("received object call reqs for message " + msgSent + " :" + objCallReceived.get(msgSent));
+            System.out.println("Calling method: " + callingMethod);
+            System.out.println("Hosts of the calling method: " + methodsHosts.get(callingMethod));
         }
 //        try {
 //            Method m = objectsState.get(obj).getClass().getMethod(method, methodArgs.get(objectCall));

@@ -18,7 +18,7 @@ public class OTTClient extends PartitionedObject implements Client {
     {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
 //        logger.info("execute transfer with x={}",x);
-        runtime.invoke("m4", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
+        runtime.invoke("m3", "transfer", sequenceNumber++, x); // send m4(x) message to the hosts of m4;
     }
 
     public void ret(String callerId, Integer n, Integer x)

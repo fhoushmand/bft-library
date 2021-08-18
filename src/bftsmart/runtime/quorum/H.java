@@ -32,7 +32,7 @@ public class H {
     {
         if(size > hosts.size())
             throw new IllegalArgumentException("wrong number of hosts. size cannot be larger than the size of the H");
-        H output = new H();
+        H output = new H(name);
         Iterator<Integer> iterator = hosts.iterator();
         while(size-- > 0)
             output.addHost(iterator.next());
@@ -95,4 +95,6 @@ public class H {
     public String getName() {
         return name;
     }
+
+
 }
