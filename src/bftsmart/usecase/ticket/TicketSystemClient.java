@@ -21,7 +21,8 @@ public class TicketSystemClient extends PartitionedObject implements Client {
     {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         logger.info("{}: execute buyTicket {}", sequenceNumber, ticket);
-        runtime.invoke("m2", "buyTicket", sequenceNumber++, ticket);
+        runtime.invoke("m9", "buyTicket", sequenceNumber++, ticket);
+        //runtime.invoke("m9", "buyTicket", sequenceNumber++);
     }
 
     public void ret(String callerId, Integer n, Boolean bought)

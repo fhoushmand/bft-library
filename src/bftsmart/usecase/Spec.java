@@ -3,6 +3,7 @@ package bftsmart.usecase;
 import bftsmart.runtime.RMIRuntime;
 import bftsmart.runtime.quorum.*;
 import bftsmart.runtime.util.IntIntPair;
+import com.yahoo.ycsb.generator.IntegerGenerator;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -312,6 +313,8 @@ public class Spec {
         //record the trust domain order
         ArrayList<String> nameOrder = new ArrayList<>();
         HashMap<Integer, String> nameOrder2 = new HashMap<>();
+        Boolean changeEntranceMethodQ = false;
+        String entranceMethodName = new String();
         try
         {
             FileReader fr = new FileReader(configpath);
@@ -353,6 +356,12 @@ public class Spec {
                         configurations.get(nameOrder.get(i)).addHostSet(hostListFromNum(base, top));
                         base = top;
                     }
+                    //if we did not define the client field, then we add it in the map manually.
+                    if(n < configurations.keySet().size()){
+                        ArrayList<Integer> clientH = new ArrayList<>();
+                        clientH.add(base);
+                        configurations.get("Client").addHostSet(clientH);
+                    }
                 }
                 //regular expression for method hosts
                 else if(Pattern.compile("resH|m\\d+H").matcher(line).find()){
@@ -365,17 +374,25 @@ public class Spec {
                     str = str.replaceAll("[^\\d]", " ");
                     str =  str.trim();
                     H mH = new H();
+                    int totalHostNum = 0;
                     for(int i = 0; i < n; i++){
                         int hNum = Integer.parseInt(str.split("\\s+")[i]);
                         if(hNum <= 0){ }
                         else {
                             //get host by the order
                             //mH = mH.union(mH, configs.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
+                            totalHostNum += hNum;
                             mH = mH.union(mH, configurations.get(nameOrder.get(i)).getHostSet().pickFirst(hNum));
                             mH.setName(configurations.get(nameOrder.get(i)).getHostSet().getName());
                         }
                     }
-                    methodsH.put(methodName, mH);
+                    //if the retH > 1, then we need to manually set retH on the one node where bftsmart.Client object is.
+                    if(methodName.equals("ret")){
+                        methodsH.put(methodName, configurations.get("Client").getHostSet());
+                    }
+                    else {
+                        methodsH.put(methodName, mH);
+                    }
                 }
                 //regular expression for method communication quorums
                 else if(Pattern.compile("resQ|m\\d+Q").matcher(line).find()){
@@ -386,9 +403,17 @@ public class Spec {
                     String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
                     //produce the host from string like: [0, 0, 1]
                     methodsQ.put(methodName, quorumSTranslation(str, n, nameOrder2));
+                    entranceMethodName = methodName;
                 }
                 //regular expression for object communication quorums
                 else if(Pattern.compile("\\w+qc").matcher(line).find()){
+                    //change the communication quorum for the entrance method to be Client host
+                    if(!changeEntranceMethodQ){
+                        changeEntranceMethodQ = true;
+                        Q entranceQ = new P(methodsH.get("ret"), 1);
+                        entranceQ = new POr(entranceQ, methodsQ.get(entranceMethodName));
+                        methodsQ.put(entranceMethodName, entranceQ);
+                    }
                     String objectName = line.substring(0, line.indexOf("qc"));
                     String str = line.substring(line.indexOf('['), line.indexOf(']')+1);
                     objectsQ.put(objectName, quorumSTranslation(str, n, nameOrder2));

@@ -1,5 +1,41 @@
-A bftsmart.usecase.friendmap.UserA 0,1,2,3,4,5,6
-B bftsmart.usecase.friendmap.UserB 7,8,9,10,11,12,13
-S bftsmart.usecase.friendmap.SnappService 14,15,16,17
-M bftsmart.usecase.friendmap.MapService 18,19,20,21
-Client bftsmart.usecase.friendmap.FriendMapClient 22
+# A bftsmart.usecase.friendmap.UserA 
+# B bftsmart.usecase.friendmap.UserB 
+# M bftsmart.usecase.friendmap.MapService 
+# S bftsmart.usecase.friendmap.SnappService 
+# Client bftsmart.usecase.friendmap.FriendMapClient 
+n = 4
+principals = [ 4, 4, 7, 4]
+sat
+resH:[4, 0, 0, 0]
+m0H:[3, 0, 0, 0]
+m1H:[3, 0, 0, 0]
+m2H:[0, 0, 5, 0]
+m3H:[3, 0, 0, 0]
+m4H:[3, 0, 0, 0]
+m5H:[0, 0, 0, 3]
+m6H:[0, 0, 0, 3]
+m7H:[0, 0, 0, 3]
+m8H:[0, 0, 0, 3]
+resQ:[0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0]
+m0Q:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+m1Q:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+m2Q:[0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+m3Q:[0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+m4Q:[0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+m5Q:[0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+m6Q:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]
+m7Q:[0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+m8Q:[2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Snappqs:[0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Bobqs:[0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0]
+Aliceqs:[0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+mapServqs:[0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Snappqc:[0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Bobqc:[0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0]
+Aliceqc:[0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0]
+mapServqc:[0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+SnappOH:[0, 0, 0, 4]
+BobOH:[0, 4, 0, 0]
+AliceOH:[4, 0, 0, 0]
+mapServOH:[0, 0, 7, 0]
+360.68506240844727

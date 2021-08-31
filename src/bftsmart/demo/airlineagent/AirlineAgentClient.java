@@ -97,13 +97,14 @@ public class AirlineAgentClient {
 	}
 
 
-	public void decSeat(String id)
+	public void decSeat(Integer ticketNum, String id)
 	{
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(AirlineAgentRequestType.DEC_SEAT);
 			objOut.writeObject(id);
+			objOut.writeInt(ticketNum);
 
 			objOut.flush();
 			byteOut.flush();

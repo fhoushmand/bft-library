@@ -14,7 +14,7 @@ public class BankAgentClient {
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}
 
-	public IntIntPair getBalance(String id)
+	public IntIntPair getBalance(Integer ID, String id)
 	{
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {

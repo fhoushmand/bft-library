@@ -12,6 +12,7 @@ public class MPCClient extends PartitionedObject implements Client {
 
     public void average()
     {
+        System.out.println("execute average function!");
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
         runtime.invoke("m1", "average", sequenceNumber++);
     }

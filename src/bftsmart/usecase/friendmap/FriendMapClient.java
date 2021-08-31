@@ -11,9 +11,9 @@ public class FriendMapClient extends PartitionedObject implements Client {
 
     public void friendMap()
     {
-//        System.out.println("friendmap request");
+        //System.out.println("friendmap request");
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
-        runtime.invoke("m1", "friendMap", sequenceNumber++);
+        runtime.invoke("m8", "friendMap", sequenceNumber++);
     }
 
     public void ret(String callerId, Integer n, String map)

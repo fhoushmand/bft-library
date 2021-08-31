@@ -1,4 +1,25 @@
-B bftsmart.usecase.mpc.PartyB 0,1,2,3
-C bftsmart.usecase.mpc.PartyC 4,5,6,7
-A bftsmart.usecase.mpc.PartyA 8,9,10,11,12,13,14,15,16,17
-Client bftsmart.usecase.mpc.MPCClient 18
+# A bftsmart.usecase.mpc.PartyA 
+# B bftsmart.usecase.mpc.PartyB 
+# C bftsmart.usecase.mpc.PartyC 
+# Client bftsmart.usecase.mpc.MPCClient
+n = 3
+principals = [7, 4, 4]
+sat
+resH:[7, 0, 0]
+m3H:[0, 0, 3]
+m2H:[0, 3, 0]
+m1H:[5, 0, 0]
+resQ:[0, 0, 2, 0, 0, 0, 0, 0, 0]
+m3Q:[0, 0, 0, 0, 0, 0, 0, 2, 0]
+m2Q:[3, 0, 0, 0, 0, 0, 0, 0, 0]
+m1Q:[0, 0, 0, 0, 0, 2, 0, 0, 0]
+aqs:[0, 0, 0, 5, 0, 0, 0, 0, 0]
+bqs:[0, 0, 0, 0, 0, 0, 0, 3, 0]
+cqs:[0, 0, 0, 0, 0, 3, 0, 0, 0]
+aqc:[0, 0, 2, 0, 0, 0, 3, 0, 0]
+bqc:[0, 2, 0, 0, 0, 0, 0, 0, 0]
+cqc:[0, 0, 2, 0, 0, 0, 0, 0, 0]
+aOH:[7, 0, 0]
+bOH:[0, 4, 0]
+cOH:[0, 0, 4]
+159.69457077980042

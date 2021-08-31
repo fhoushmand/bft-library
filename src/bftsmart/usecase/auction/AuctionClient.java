@@ -24,7 +24,7 @@ public class AuctionClient extends PartitionedObject implements Client {
         runtime.getExecs().put(sequenceNumber, System.currentTimeMillis());
 //        requests.put(sequenceNumber, offer);
         logger.info("execute auction with x={}",offer);
-        runtime.invoke("m1", "auction", sequenceNumber++, offer);
+        runtime.invoke("m8", "auction", sequenceNumber++, offer);
     }
 
     public void ret(String callerId, Integer n, OfferInfo offer)

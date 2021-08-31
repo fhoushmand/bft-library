@@ -44,9 +44,34 @@ public class UserAgentClient{
 
 	public Integer ticketNum(String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
-			 ObjectOutput objOut = new ObjectOutputStream(byteOut);) {
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.TICKET_NUM);
+			objOut.writeObject(id);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return (Integer) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception reading value from userAgent: " + e.getMessage());
+		}
+		return null;
+	}
+
+	public Integer getID(String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(UserAgentRequestType.GET_ID);
 			objOut.writeObject(id);
 
 			objOut.flush();

@@ -1,4 +1,39 @@
-A bftsmart.usecase.ticket.TicketSystemA 0,1,2,3 1
-B bftsmart.usecase.ticket.TicketSystemB 4,5,6,7 2
-C bftsmart.usecase.ticket.TicketSystemC 8 3
-Client bftsmart.usecase.ticket.TicketSystemClient 9 1
+# A bftsmart.usecase.ticket.TicketSystemA 
+# B bftsmart.usecase.ticket.TicketSystemB 
+# C bftsmart.usecase.ticket.TicketSystemC 
+# Client bftsmart.usecase.ticket.TicketSystemClient 
+n = 3
+principals = [7, 10, 1]
+sat
+resH:[0, 0, 1]
+m0H:[0, 7, 0]
+m1H:[5, 0, 0]
+m2H:[0, 7, 0]
+m3H:[0, 7, 0]
+m4H:[0, 7, 0]
+m5H:[5, 0, 0]
+m6H:[5, 0, 0]
+m7H:[5, 0, 0]
+m8H:[5, 0, 0]
+m9H:[5, 0, 0]
+resQ:[0, 4, 0, 0, 0, 0, 0, 0, 0]
+m0Q:[3, 0, 0, 0, 0, 0, 0, 0, 0]
+m1Q:[0, 0, 0, 0, 0, 0, 0, 4, 0]
+m2Q:[0, 4, 0, 0, 0, 0, 0, 0, 0]
+m3Q:[0, 4, 0, 0, 0, 0, 0, 0, 0]
+m4Q:[0, 0, 0, 0, 0, 0, 3, 0, 0]
+m5Q:[3, 0, 0, 0, 0, 0, 0, 0, 0]
+m6Q:[0, 0, 0, 3, 0, 0, 0, 0, 0]
+m7Q:[0, 0, 0, 3, 0, 0, 0, 0, 0]
+m8Q:[3, 0, 0, 0, 0, 0, 0, 0, 0]
+m9Q:[0, 0, 0, 0, 0, 0, 0, 0, 1]
+bankqs:[0, 7, 0, 0, 0, 0, 0, 0, 0]
+airlineqs:[0, 0, 0, 5, 0, 0, 0, 0, 0]
+customerqs:[0, 0, 1, 0, 0, 0, 0, 0, 0]
+bankqc:[0, 0, 0, 0, 4, 0, 0, 0, 0]
+airlineqc:[0, 0, 0, 0, 0, 0, 3, 0, 0]
+customerqc:[0, 0, 0, 0, 4, 0, 3, 0, 0]
+bankOH:[0, 10, 0]
+airlineOH:[7, 0, 0]
+customerOH:[0, 0, 1]
+215.65342020988464

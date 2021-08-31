@@ -184,6 +184,19 @@ public class UserAgentServer extends DefaultSingleRecoverable {
                     }
                     hasReply = true;
                     break;
+                case GET_ID:
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        objOut.writeObject(ticketNumber);
+                        cachedCalls.put(id, ticketNumber);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
 
                 default:
                     logger.log(Level.WARNING, "in appExecuteOrdered only read operations are supported");

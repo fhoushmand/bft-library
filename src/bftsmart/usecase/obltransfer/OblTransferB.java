@@ -7,6 +7,6 @@ import bftsmart.usecase.PartitionedObject;
 import java.util.HashMap;
 
 public class OblTransferB extends PartitionedObject {
-    public BooleanRegisterClient r;
-    public IntegerRegisterClient r2;
+    public BooleanRegisterClient a;
+    public IntegerRegisterClient i2;
 }

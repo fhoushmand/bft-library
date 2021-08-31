@@ -8,6 +8,7 @@ public class PartyB extends PartitionedObject {
 
     public void m2(String callerId, Integer n, Integer partialSum)
     {
+        System.out.println("execute average m2!");
         logger.trace("execute m2");
         int p2 = (int)runtime.invokeObj("b", "read", "m2", callerId+"::m2", ++n, 2);
         int ap2 = (int)runtime.invokeObj("a", "read", "m2", callerId+"::m2", ++n, 2);
