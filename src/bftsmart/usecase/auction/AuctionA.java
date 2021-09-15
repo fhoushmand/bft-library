@@ -18,8 +18,16 @@ public class AuctionA extends PartitionedObject {
     public void m7(String callerId, Integer n, Integer user, Integer offer)
     {
         //System.out.println("execute m7!");
-        OfferInfo offerA = (OfferInfo) runtime.invokeObj("A", "makeOfferA", "m7", callerId+"::m7", ++n, user, offer);
+        OfferInfo offerA = (OfferInfo) runtime.invokeObj("A", "makeOfferA1", "m7", callerId+"::m7", ++n, user, offer);
 //        System.out.println(offerA.toString() + ":" + offerA.seatInfo + "," + offerA.offer);
-        runtime.invoke("m5", callerId+"::m7", ++n, user, offer, offerA);
+        runtime.invoke("m6", callerId+"::m7", ++n, user, offer, offerA);
+    }
+
+    public void m6(String callerId, Integer n, Integer user, Integer offer, OfferInfo offerIA)
+    {
+        //System.out.println("execute m7!");
+        Integer offerA = (Integer) runtime.invokeObj("A", "makeOfferA2", "m6", callerId+"::m6", ++n, user, offer);
+//        System.out.println(offerA.toString() + ":" + offerA.seatInfo + "," + offerA.offer);
+        runtime.invoke("m5", callerId+"::m6", ++n, user, offer, offerIA, offerA);
     }
 }

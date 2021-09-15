@@ -48,7 +48,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
         new AirlineAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
-    public OfferInfo makeOfferA(Integer user, Integer offer)
+    /*public OfferInfo makeOfferA(Integer user, Integer offer)
     {
         if(offer > ABestOffer )
             return new OfferInfo("airlineA", "seatInfoA", offer-1);
@@ -60,6 +60,34 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
         if(offer > BBestOffer)
             return new OfferInfo("airlineB", "seatInfoB", offer-1);
         return new OfferInfo("airlineB", "seatInfoB", BBestOffer);
+    }*/
+
+    public OfferInfo makeOfferA1(Integer user, Integer offer)
+    {
+        if(offer > ABestOffer )
+            return new OfferInfo("airlineA", "seatInfoA");
+        return new OfferInfo("airlineA", "seatInfoA");
+    }
+
+    public Integer makeOfferA2(Integer user, Integer offer)
+    {
+        if(offer > ABestOffer )
+            return offer-1;
+        return ABestOffer;
+    }
+
+    public OfferInfo makeOfferB1(Integer user, Integer offer)
+    {
+        if(offer > BBestOffer)
+            return new OfferInfo("airlineB", "seatInfoB");
+        return new OfferInfo("airlineB", "seatInfoB");
+    }
+
+    public Integer makeOfferB2(Integer user, Integer offer)
+    {
+        if(offer > BBestOffer)
+            return offer-1;
+        return BBestOffer;
     }
 
 
@@ -76,9 +104,76 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
             AirlineAgentRequestType reqType = (AirlineAgentRequestType)objIn.readObject();
             String id = (String) objIn.readObject();
 
-
             switch (reqType) {
-                case MAKE_OFFER_A:
+                case MAKE_OFFER_A1:
+                    int u = objIn.readInt();
+                    int o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferA1(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                        //objOut.writeObject(out);
+                        //cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_A2:
+                    int u2 = objIn.readInt();
+                    int o2 = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        Integer out2 = makeOfferA2(u2, o2);
+                        objOut.writeObject(out2);
+                        cachedCalls.put(id, out2);
+                        //objOut.writeObject(out);
+                        //cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_B1:
+                    u = objIn.readInt();
+                    o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferB1(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_B2:
+                    u = objIn.readInt();
+                    o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        Integer out = makeOfferB2(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                /*case MAKE_OFFER_A:
                     int u = objIn.readInt();
                     int o = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
@@ -109,7 +204,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
                         objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
-                    break;
+                    break;*/
                 case DEC_SEAT:
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
@@ -155,12 +250,48 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
 
 
             switch (reqType) {
-                case MAKE_OFFER_A:
+                case MAKE_OFFER_A1:
                     int u = objIn.readInt();
                     int o = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferA(u, o);
+                        OfferInfo out = makeOfferA1(u, o);
+                        objOut.writeObject(out);
+                        cachedCalls.put(id, out);
+                        //objOut.writeObject(out);
+                        //cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_A2:
+                    int u2 = objIn.readInt();
+                    int o2 = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        Integer out2 = makeOfferA2(u2, o2);
+                        objOut.writeObject(out2);
+                        cachedCalls.put(id, out2);
+                        //objOut.writeObject(out);
+                        //cachedCalls.put(id, out);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case MAKE_OFFER_B1:
+                    u = objIn.readInt();
+                    o = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        OfferInfo out = makeOfferB1(u, o);
                         objOut.writeObject(out);
                         cachedCalls.put(id, out);
                     }
@@ -171,12 +302,12 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
                     }
                     hasReply = true;
                     break;
-                case MAKE_OFFER_B:
+                case MAKE_OFFER_B2:
                     u = objIn.readInt();
                     o = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo out = makeOfferB(u, o);
+                        Integer out = makeOfferB2(u, o);
                         objOut.writeObject(out);
                         cachedCalls.put(id, out);
                     }

@@ -9,14 +9,14 @@ import java.util.HashMap;
 public class AuctionC extends PartitionedObject {
     public UserAgentClient user;
 
-    public void m5(String callerId, Integer n, Integer user, Integer offer, OfferInfo offerA)
+    public void m5(String callerId, Integer n, Integer user, Integer offer, OfferInfo offerIA, Integer offerA)
     {
         //System.out.println("execute m5!");
-        runtime.invokeObj("user", "updateOffer", "m5", callerId+"::m5",  ++n, offerA);
-        if(offer < offerA.offer)
+        runtime.invokeObj("user", "update", "m5", callerId+"::m5",  ++n, offerIA, offerA);
+        if(offer < offerA)
             runtime.invoke("m0", callerId+"::m5", ++n, offer);
         else
-            runtime.invoke("m4", callerId+"::m5", ++n, user, offerA.offer);
+            runtime.invoke("m4", callerId+"::m5", ++n, user, offerA);
     }
 
     public void m0(String callerId, Integer n, Integer offer)
@@ -26,13 +26,13 @@ public class AuctionC extends PartitionedObject {
         runtime.invoke("ret", callerId+"::m0", ++n, winner);
     }
 
-    public void m2(String callerId, Integer n, OfferInfo offerB, Integer offerA)
+    public void m2(String callerId, Integer n, Integer offerB, Integer offerA, OfferInfo offerBI)
     {
         //System.out.println("execute m2!");
-        runtime.invokeObj("user", "updateOffer", "m2", callerId+"::m2",  ++n, offerB);
-        if(offerB.offer < offerA){
+        runtime.invokeObj("user", "update", "m2", callerId+"::m2",  ++n, offerBI, offerB);
+        if(offerB < offerA){
             //System.out.println("gonna execute m8!");
-            runtime.invoke("m8", callerId+"::m2", ++n, offerB.offer);
+            runtime.invoke("m8", callerId+"::m2", ++n, offerB);
         }
         else {
             //System.out.println("gonna execute m0!");

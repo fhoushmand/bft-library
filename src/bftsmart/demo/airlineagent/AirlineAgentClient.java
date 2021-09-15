@@ -15,7 +15,117 @@ public class AirlineAgentClient {
 		serviceProxy = new ServiceProxy(clientId, clusterId);
 	}
 
-	public OfferInfo makeOfferA(Integer user, Integer offer, String id) {
+	public OfferInfo makeOfferA1(Integer user, Integer offer, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_A1);
+			objOut.writeObject(id);
+			objOut.writeInt(user);
+			objOut.writeInt(offer);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				//return (OfferInfo) objIn.readObject();
+				return (OfferInfo) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception making offer in airlineA: " + e.getMessage());
+		}
+		return null;
+	}
+
+	public Integer makeOfferA2(Integer user, Integer offer, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_A2);
+			objOut.writeObject(id);
+			objOut.writeInt(user);
+			objOut.writeInt(offer);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				//return (OfferInfo) objIn.readObject();
+				return (Integer) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception making offer in airlineA: " + e.getMessage());
+		}
+		return null;
+	}
+
+	public OfferInfo makeOfferB1(Integer user, Integer offer, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_B1);
+			objOut.writeObject(id);
+			objOut.writeInt(user);
+			objOut.writeInt(offer);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return (OfferInfo) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception making offer in airlineB: " + e.getMessage());
+		}
+		return null;
+	}
+
+	public Integer makeOfferB2(Integer user, Integer offer, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(AirlineAgentRequestType.MAKE_OFFER_B2);
+			objOut.writeObject(id);
+			objOut.writeInt(user);
+			objOut.writeInt(offer);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeUnordered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return null;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return (Integer) objIn.readObject();
+			}
+
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Exception making offer in airlineB: " + e.getMessage());
+		}
+		return null;
+	}
+
+/*	public OfferInfo makeOfferA(Integer user, Integer offer, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -67,7 +177,7 @@ public class AirlineAgentClient {
 			System.out.println("Exception making offer in airlineB: " + e.getMessage());
 		}
 		return null;
-	}
+	}*/
 
 	/*public TicketInfo getPrice(Integer ticket, String id)
 	{

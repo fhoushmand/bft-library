@@ -9,29 +9,29 @@ import java.util.Objects;
 public class OfferInfo implements Externalizable {
     public String airlineName;
     public String seatInfo;
-    public Integer offer;
+    //public Integer offer;
 
     public OfferInfo() {
     }
 
-    public OfferInfo(String airlineName, String seatInfo, Integer offer) {
+    public OfferInfo(String airlineName, String seatInfo) {
         this.airlineName = airlineName;
         this.seatInfo = seatInfo;
-        this.offer = offer;
+        //this.offer = offer;
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(airlineName);
         out.writeObject(seatInfo);
-        out.writeInt(offer);
+        //out.writeInt(offer);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         airlineName = (String) in.readObject();
         seatInfo = (String) in.readObject();
-        offer = in.readInt();
+        //offer = in.readInt();
     }
 
     @Override
@@ -52,8 +52,13 @@ public class OfferInfo implements Externalizable {
         return Objects.hash(airlineName);
     }
 
+    //public String getAsString()
+    //{
+        //return airlineName + "<" + seatInfo + ":" + offer + ">";
+    //}
+
     public String getAsString()
     {
-        return airlineName + "<" + seatInfo + ":" + offer + ">";
+        return airlineName + "<" + seatInfo + ":>";
     }
 }

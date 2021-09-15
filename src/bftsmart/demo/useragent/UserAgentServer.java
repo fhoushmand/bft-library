@@ -32,6 +32,9 @@ public class UserAgentServer extends DefaultSingleRecoverable {
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
     HashMap<String, OfferInfo> airlineOffers = new HashMap<>();
+    Integer offerA = 1000;
+    Integer offerB = 1000;
+    //HashMap<String, Integer> airlineOffers = new HashMap<>();
 
 
     public UserAgentServer(int init, int id, int clusterId) {
@@ -47,9 +50,15 @@ public class UserAgentServer extends DefaultSingleRecoverable {
         new UserAgentServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
     }
 
-    public int updateOffer(OfferInfo offerInfo)
+    public int updateOffer(OfferInfo offerInfo, Integer offer)
     {
         airlineOffers.put(offerInfo.airlineName, offerInfo);
+        if(offerInfo.airlineName.equals("airlineA")){
+            offerA = offer;
+        }
+        else {
+            offerB = offer;
+        }
         return 1;
     }
 
@@ -68,9 +77,10 @@ public class UserAgentServer extends DefaultSingleRecoverable {
             switch (reqType) {
                 case UPDATE_OFFER:
                     OfferInfo o = (OfferInfo) objIn.readObject();
+                    Integer offerN = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        int out = updateOffer(o);
+                        int out = updateOffer(o, offerN);
 //                        objOut.writeObject(out);
                         cachedCalls.put(id, out);
                     }
@@ -195,9 +205,16 @@ public class UserAgentServer extends DefaultSingleRecoverable {
                     int winningOffer = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
-                        OfferInfo winnigOfferInfo = (airlineOffers.get("airlineA").offer == winningOffer) ? airlineOffers.get("airlineA") : airlineOffers.get("airlineB");
+                        //String winnigOfferInfo = (airlineOffers.get("airlineA") == winningOffer) ? "airlineA" : "airlineB";
+                        OfferInfo winnigOfferInfo;
+                        if(winningOffer == offerA){
+                            winnigOfferInfo = airlineOffers.get("airlineA");
+                        }
+                        else {
+                            winnigOfferInfo = airlineOffers.get("airlineB");
+                        }
                         objOut.writeObject(winnigOfferInfo);
-                        cachedCalls.put(id, userID);
+                        cachedCalls.put(id, winnigOfferInfo);
                     }
                     else
                     {

@@ -92,13 +92,14 @@ public class UserAgentClient{
 		return null;
 	}
 
-	public void updateOffer(OfferInfo offer, String id) {
+	public void update(OfferInfo seatInfo, Integer offer, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
 			objOut.writeObject(UserAgentRequestType.UPDATE_OFFER);
 			objOut.writeObject(id);
-			objOut.writeObject(offer);
+			objOut.writeObject(seatInfo);
+			objOut.writeInt(offer);
 
 			objOut.flush();
 			byteOut.flush();
