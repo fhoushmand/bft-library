@@ -6,7 +6,7 @@ import bftsmart.usecase.PartitionedObject;
 // set of A hosts: 0,1,2,3,4,5,6
 // set of B hosts: 7,8,9,10
 // client host: 11
-public class OTTClient extends PartitionedObject implements Client {
+public class /**/OTTClient extends PartitionedObject implements Client {
 //    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override

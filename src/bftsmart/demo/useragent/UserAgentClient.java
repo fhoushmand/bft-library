@@ -143,7 +143,59 @@ public class UserAgentClient{
 		return null;
 	}
 
-	public void updateInfo(TicketInfo ticketInfo, String id) {
+	public void updateInfo(String schedule, Integer price, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(UserAgentRequestType.UPDATE_INFO);
+			objOut.writeObject(id);
+			TicketInfo tInfo = new TicketInfo(schedule, price);
+			objOut.writeObject(tInfo);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return ;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return ;
+			}
+
+		} catch (IOException e) {
+			System.out.println("Exception updating info in userAgent: " + e.getMessage());
+		}
+		return ;
+	}
+
+	public void updatePayment(Integer cashback, Integer balance, String id) {
+		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
+			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
+
+			objOut.writeObject(UserAgentRequestType.UPDATE_PAYEMENT);
+			objOut.writeObject(id);
+			IntIntPair cb = new IntIntPair(cashback, balance);
+			objOut.writeObject(cb);
+
+			objOut.flush();
+			byteOut.flush();
+
+			byte[] reply = serviceProxy.invokeOrdered(byteOut.toByteArray());
+			if (reply.length == 0)
+				return ;
+			try (ByteArrayInputStream byteIn = new ByteArrayInputStream(reply);
+				 ObjectInput objIn = new ObjectInputStream(byteIn)) {
+				return ;
+			}
+
+		} catch (IOException e) {
+			System.out.println("Exception updating payment in userAgent: " + e.getMessage());
+		}
+		return ;
+	}
+
+/*	public void updateInfo(TicketInfo ticketInfo, String id) {
 		try (ByteArrayOutputStream byteOut = new ByteArrayOutputStream(2048);
 			 ObjectOutput objOut = new ObjectOutputStream(byteOut)) {
 
@@ -191,6 +243,6 @@ public class UserAgentClient{
 			System.out.println("Exception updating payement in userAgent: " + e.getMessage());
 		}
 		return ;
-	}
+	}*/
 
 }

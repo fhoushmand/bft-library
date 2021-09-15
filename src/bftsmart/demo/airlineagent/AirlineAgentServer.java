@@ -28,7 +28,9 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
     HashMap<Integer,TicketInfo> tickets = new HashMap<>();
 
     int availableSeats = 100;
-    TicketInfo price = new TicketInfo("ticket", 50);
+    String schedule = "ticket";
+    Integer price = 50;
+    //TicketInfo price = new TicketInfo("ticket", 50);
 
 
     public AirlineAgentServer(int init, int id, int clusterId) {
@@ -185,7 +187,39 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
                     }
                     hasReply = true;
                     break;
-                case GET_PRICE:
+                case GET_PRICE1:
+                    int ticketNum1 = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        objOut.writeObject(schedule);
+                        cachedCalls.put(id, schedule);
+                        //objOut.writeObject(price);
+                        //cachedCalls.put(id, price);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case GET_PRICE2:
+                    int ticketNum2 = objIn.readInt();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        objOut.writeObject(price);
+                        cachedCalls.put(id, price);
+                        //objOut.writeObject(price);
+                        //cachedCalls.put(id, price);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+/*                case GET_PRICE:
                     int ticketNum = objIn.readInt();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
@@ -198,7 +232,7 @@ public class AirlineAgentServer extends DefaultSingleRecoverable {
                         objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
-                    break;
+                    break;*/
                 default:
                     logger.log(Level.WARNING, "airlineAgent: in appExecuteununOrdered");
             }

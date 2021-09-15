@@ -20,7 +20,10 @@ public class BankAgentServer extends DefaultSingleRecoverable {
 
     private int userID = 1;
 
-    IntIntPair userAccount = new IntIntPair(40,25000);
+    int userBalance = 25000;
+    int userCashback = 40;
+
+    //IntIntPair userAccount = new IntIntPair(40,25000);
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
@@ -58,8 +61,11 @@ public class BankAgentServer extends DefaultSingleRecoverable {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
 //                        IntIntPair bal = getBalance();
 //                        objOut.writeObject(bal.getSecond());
-                        userAccount.setSecond(userAccount.getSecond()-price);
+
+                        //userAccount.setSecond(userAccount.getSecond()-price);
+                        userBalance = userBalance - price;
                         cachedCalls.put(id, price);
+
 //                        userBalance.setSecond(bal.getSecond()-price);
                     }
                     else
@@ -69,7 +75,31 @@ public class BankAgentServer extends DefaultSingleRecoverable {
                     }
                     hasReply = true;
                     break;
-                case GET_BALANCE:
+                case GET_BALANCE1:
+                    if(!cachedCalls.containsKey(id)) {
+                        objOut.writeObject(userCashback);
+                        cachedCalls.put(id, userCashback);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case GET_BALANCE2:
+                    if(!cachedCalls.containsKey(id)) {
+                        objOut.writeObject(userBalance);
+                        cachedCalls.put(id, userBalance);
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+/*                case GET_BALANCE:
                     if(!cachedCalls.containsKey(id)) {
                         objOut.writeObject(userAccount);
                         cachedCalls.put(id, userAccount);
@@ -80,7 +110,7 @@ public class BankAgentServer extends DefaultSingleRecoverable {
                         objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
-                    break;
+                    break;*/
                 default:
                     logger.log(Level.WARNING, "bankagent: in appExecuteOrdered");
             }
@@ -111,7 +141,45 @@ public class BankAgentServer extends DefaultSingleRecoverable {
             String id = (String) objIn.readObject();
 
             switch (reqType) {
-                case GET_BALANCE:
+                case GET_BALANCE1:
+                    if(!cachedCalls.containsKey(id)) {
+//                        IntIntPair bal = getBalance();
+                        objOut.writeObject(userCashback);
+//                        objOut.flush();
+//                        byteOut.flush();
+//                        reply = byteOut.toByteArray();
+//
+                        cachedCalls.put(id, userCashback);
+//                        logger.log(Level.INFO, "putting id " + id + " call " + bal +  " read in cache");
+
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                case GET_BALANCE2:
+                    if(!cachedCalls.containsKey(id)) {
+//                        IntIntPair bal = getBalance();
+                        objOut.writeObject(userBalance);
+//                        objOut.flush();
+//                        byteOut.flush();
+//                        reply = byteOut.toByteArray();
+//
+                        cachedCalls.put(id, userBalance);
+//                        logger.log(Level.INFO, "putting id " + id + " call " + bal +  " read in cache");
+
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to "+ cachedCalls.get(id));
+                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                /*case GET_BALANCE:
                     if(!cachedCalls.containsKey(id)) {
 //                        IntIntPair bal = getBalance();
                         objOut.writeObject(userAccount);
@@ -129,7 +197,7 @@ public class BankAgentServer extends DefaultSingleRecoverable {
                         objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
-                    break;
+                    break;*/
                 default:
                     logger.log(Level.WARNING, "bankagent: in appExecuteunOrdered");
             }

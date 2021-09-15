@@ -1,0 +1,27 @@
+# A bftsmart.usecase.obltransfer.OblTransferA 
+# B bftsmart.usecase.obltransfer.OblTransferB 
+# C bftsmart.usecase.obltransfer.OblTransferC 
+# Client bftsmart.usecase.obltransfer.OblTransferClient
+n = 3
+principals = [7, 4, 4]
+sat
+resH:[0, 0, 4]
+m0H:[0, 0, 3]
+m1H:[0, 0, 3]
+m2H:[0, 0, 3]
+m3H:[0, 0, 3]
+resQ:[0, 0, 0, 0, 0, 0, 0, 0, 2]
+m0Q:[0, 0, 0, 0, 0, 2, 0, 0, 0]
+m1Q:[0, 0, 0, 0, 0, 0, 0, 0, 2]
+m2Q:[0, 0, 0, 0, 0, 0, 0, 0, 2]
+m3Q:[0, 0, 0, 0, 0, 0, 0, 0, 2]
+aqs:[0, 0, 0, 0, 0, 0, 0, 3, 0]
+i1qs:[5, 0, 0, 0, 0, 0, 0, 0, 0]
+i2qs:[0, 3, 0, 0, 0, 0, 0, 0, 0]
+aqc:[0, 0, 0, 0, 0, 2, 0, 0, 0]
+i1qc:[0, 0, 0, 0, 0, 0, 0, 0, 2]
+i2qc:[0, 0, 2, 0, 0, 0, 0, 0, 0]
+aOH:[0, 4, 0]
+i1OH:[7, 0, 0]
+i2OH:[0, 4, 0]
+9.822131872177124

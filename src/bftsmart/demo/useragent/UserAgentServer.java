@@ -22,8 +22,12 @@ public class UserAgentServer extends DefaultSingleRecoverable {
     private int userID = 1;
     private int ticketNumber = 10;
 
-    TicketInfo ticket;
-    IntIntPair cashbackBalance;
+    String schedule;
+    Integer price;
+    Integer cashback;
+    Integer balance;
+    //TicketInfo ticket;
+    //IntIntPair cashbackBalance;
 
     HashMap<String,Object> cachedCalls = new HashMap<>();
 
@@ -78,6 +82,22 @@ public class UserAgentServer extends DefaultSingleRecoverable {
                     hasReply = true;
                     break;
                 case UPDATE_INFO:
+                    TicketInfo ticketI = (TicketInfo) objIn.readObject();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        cachedCalls.put(id, ticketI);
+                        //ticket = ticketInfo;
+                        schedule = ticketI.scheduleInfo;
+                        price = ticketI.price;
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+//                        objOut.writeObject(cachedCalls.get(id));
+                    }
+                    hasReply = true;
+                    break;
+                /*case UPDATE_INFO:
                     TicketInfo ticketInfo = (TicketInfo) objIn.readObject();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
@@ -90,13 +110,28 @@ public class UserAgentServer extends DefaultSingleRecoverable {
 //                        objOut.writeObject(cachedCalls.get(id));
                     }
                     hasReply = true;
-                    break;
-                case UPDATE_PAYEMENT:
+                    break;*/
+                /*case UPDATE_PAYEMENT:
                     IntIntPair cashbackBalance = (IntIntPair) objIn.readObject();
                     if(!cachedCalls.containsKey(id)) {
 //                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
                         cachedCalls.put(id, cashbackBalance);
                         this.cashbackBalance = cashbackBalance;
+                    }
+                    else
+                    {
+//                        logger.log(Level.INFO, "cache hit with id " + id + " call to read");
+                    }
+                    hasReply = true;
+                    break;*/
+                case UPDATE_PAYEMENT:
+                    IntIntPair cashbackBalance = (IntIntPair) objIn.readObject();
+                    if(!cachedCalls.containsKey(id)) {
+//                        logger.log(Level.WARNING, "putting id " + id + " call to read in cache");
+                        cachedCalls.put(id, cashbackBalance);
+                        //this.cashbackBalance = cashbackBalance;
+                        cashback = cashbackBalance.getFirst();
+                        balance = cashbackBalance.getSecond();
                     }
                     else
                     {
