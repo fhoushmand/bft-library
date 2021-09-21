@@ -1,0 +1,26 @@
+# A bftsmart.usecase.onetimetransfer_optimized.OTTA
+# B bftsmart.usecase.onetimetransfer_optimized.OTTB
+# Client bftsmart.usecase.onetimetransfer_optimized.OTTClient
+n = 3
+principals = [7, 4, 1]
+sat
+resH:[0, 0, 1]
+m0H:[4, 0, 0]
+m1H:[0, 3, 0]
+m2H:[0, 3, 0]
+m3H:[0, 3, 0]
+resQ:[0, 2, 0, 0, 0, 0, 3, 0, 0]
+m0Q:[0, 0, 0, 0, 0, 0, 0, 2, 0]
+m1Q:[0, 2, 0, 0, 0, 0, 0, 0, 0]
+m2Q:[0, 2, 0, 0, 0, 0, 0, 0, 0]
+m3Q:[0, 0, 0, 0, 0, 0, 0, 0, 1]
+aqs:[0, 3, 0, 0, 0, 0, 0, 0, 0]
+i1qs:[0, 0, 0, 0, 0, 0, 4, 0, 0]
+i2qs:[0, 0, 0, 0, 0, 0, 0, 3, 0]
+aqc:[0, 0, 0, 0, 0, 0, 0, 2, 0]
+i1qc:[0, 0, 0, 3, 0, 0, 0, 0, 0]
+i2qc:[0, 2, 0, 0, 0, 0, 0, 0, 0]
+aOH:[0, 4, 0]
+i1OH:[5, 0, 0]
+i2OH:[0, 4, 0]
+5.9885571002960205
